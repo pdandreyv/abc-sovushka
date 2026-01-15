@@ -53,7 +53,7 @@ $config['_imgs'] = array(
 //database - для избегания случайного затирания тестовой базы поля пустые
 $config['mysql_server'] = 'localhost';
 $config['mysql_username'] = 'sovushka';
-$config['mysql_password'] = 'cN4#yR4%eVcW6#jJ7@';
+$config['mysql_password'] = 'eYeIJ5tw5XF9tpUm';
 $config['mysql_database'] = 'sovushka';
 //исключение для локальной версии
 if ($config['local']) {
