@@ -52,6 +52,6 @@ class RegisterController extends Controller
 
         Auth::login($user);
 
-        return redirect('/dashboard')->with('success', 'Регистрация прошла успешно! Добро пожаловать!');
+        return redirect('/profile')->with('success', 'Регистрация прошла успешно! Добро пожаловать! Пожалуйста, проверьте и сохраните данные профиля.');
     }
 }

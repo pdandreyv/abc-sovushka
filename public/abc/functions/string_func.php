@@ -129,6 +129,10 @@ function zerofill($number,$n = 7) {
  * @return string - отформатировання дана
  */
 function date2($date,$type='%d.%m.%y') {
+	// Проверяем, что $date не null
+	if ($date === null || $date === '') {
+		return '';
+	}
 	//названия месяцев $m = strftime('%m',$date);
 	//i18n('calendar|month_'.$m) полное название месяца
 	//i18n('calendar|month2_'.$m) родительный падеж
@@ -138,7 +142,21 @@ function date2($date,$type='%d.%m.%y') {
 	//i18n('calendar|d_'.$d) сокращенное название дня
 	//полная дата, месяц в родительном падеже
 	if ($type=='d month y') {
-		if (is_string($date)) $date = strtotime($date);
+		if (is_string($date)) {
+			// Проверяем, что $date не null перед вызовом strtotime
+			if ($date === null || $date === '') {
+				return '';
+			}
+			$timestamp = strtotime($date);
+			if ($timestamp === false) {
+				return '';
+			}
+			$date = $timestamp;
+		}
+		// Проверяем, что $date является числом
+		if (!is_numeric($date)) {
+			return '';
+		}
 		$d = strftime2('%d',$date);
 		$m = strftime2('%m',$date);
 		$y = strftime2('%Y',$date);
@@ -147,18 +165,37 @@ function date2($date,$type='%d.%m.%y') {
 	//в зависимости от прошедшего времени показывает три варианта
 	//12:52 | 5 июля | 2011 г.
 	elseif ($type=='smart') {
+		// Проверяем, что $date не null
+		if ($date === null || $date === '') {
+			return '';
+		}
 		//если в прошлом году 2011 г.
 		if ($date<date('Y')) return date2($date,'%Y ').i18n('calendar|y');
 		//если в этом году 5 июля
 		elseif 	($date<date('Y-m-d')) {
-			$d = strftime2('%d',strtotime($date));
-			$m = strftime2('%m',strtotime($date));
+			$timestamp = strtotime($date);
+			if ($timestamp === false) {
+				return '';
+			}
+			$d = strftime2('%d', $timestamp);
+			$m = strftime2('%m', $timestamp);
 			return $d.' '.i18n('calendar|month2_'.$m);
 		}
 		// если сегодня 12:52
 		else return date2($date,'%H:%M');
 	}
-	else return strftime2($type,strtotime($date));
+	else {
+		// Проверяем, что $date не null перед вызовом strtotime
+		if ($date === null || $date === '') {
+			return '';
+		}
+		$timestamp = strtotime($date);
+		// Проверяем, что strtotime вернул корректное значение
+		if ($timestamp === false) {
+			return '';
+		}
+		return strftime2($type, $timestamp);
+	}
 }
 
 function strftime2($format, $timestamp = null) {
@@ -167,9 +204,20 @@ function strftime2($format, $timestamp = null) {
 		$timestamp = time();
 	}
 
+	// Перевіряємо, що $timestamp є коректним числом
+	if (!is_numeric($timestamp) || $timestamp === false) {
+		$timestamp = time();
+	}
+
 	// Створюємо об'єкт DateTime з вказаним timestamp
-	$date = new DateTime('@' . $timestamp);
-	$date->setTimezone(new DateTimeZone(date_default_timezone_get())); // Встановлюємо часовий пояс за замовчуванням
+	try {
+		$date = new DateTime('@' . (int)$timestamp);
+		$date->setTimezone(new DateTimeZone(date_default_timezone_get())); // Встановлюємо часовий пояс за замовчуванням
+	} catch (Exception $e) {
+		// Якщо помилка створення DateTime, використовуємо поточний час
+		$date = new DateTime();
+		$date->setTimezone(new DateTimeZone(date_default_timezone_get()));
+	}
 
 	// Мапа для заміни формату strftime на DateTime::format
 	$conversionMap = [

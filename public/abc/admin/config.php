@@ -45,7 +45,7 @@ $modules_admin = array(
 		'image'=>'sitemap',
 		'icon'=>'git-branch', //layers list package
 	),
-	array(
+	/*array(
 		'module'=>'news',
 		'image'=>'news',
 		'icon'=>'tablet', //file
@@ -62,14 +62,14 @@ $modules_admin = array(
 			//'услуги'    =>'landing_items2',
 			//'стоимости работ' =>'landing_items3'
 		)
-	),
+	),*/
 	array(
 		'module'=>'languages',
 		'name'=>'dictionary',
 		'image'=>'dictionary',
 		'icon'=>'book-open',
 	),
-	array(
+	/*array(
 		'module'=>'feedback',
 		'image'=>'feedback',
 		'icon'=>'twitch',
@@ -129,7 +129,7 @@ $modules_admin = array(
 			array('module'=>'order_deliveries'),
 		),
 		//'order_payments'	=> 'order_payments',
-	),
+	),*/
 
 	array(
 		'name'=>'users',
@@ -142,7 +142,7 @@ $modules_admin = array(
 			array('module'=>'user_socials',),
 		),
 	),
-
+/*
 	array(
 		'name'=>'subscribe',
 		'image'=>'subscribe',
@@ -152,7 +152,7 @@ $modules_admin = array(
 			array('module'=>'subscribe_letters',),
 		),
 	),
-
+*/
 	array(
 		'name'=>'config',
 		'image'=>'settings',

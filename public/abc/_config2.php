@@ -51,16 +51,16 @@ $config['_imgs'] = array(
 );
 
 //database - для избегания случайного затирания тестовой базы поля пустые
-$config['mysql_server'] = '';
-$config['mysql_username'] = '';
-$config['mysql_password'] = '';
-$config['mysql_database'] = '';
+$config['mysql_server'] = 'localhost';
+$config['mysql_username'] = 'sovushka';
+$config['mysql_password'] = 'cN4#yR4%eVcW6#jJ7@';
+$config['mysql_database'] = 'sovushka';
 //исключение для локальной версии
 if ($config['local']) {
 	$config['mysql_server'] = ($_SERVER['HTTP_HOST'] == 'localhost') ? 'mariadb' : 'localhost';
 	$config['mysql_username'] = 'root';
 	$config['mysql_password'] = '';
-	$config['mysql_database'] = 'abc';
+	$config['mysql_database'] = 'abc-sovushka';
 }
 //исключение тестовой версии
 elseif($_SERVER['SERVER_NAME'] == 'abc-cms.com'){
