@@ -36,7 +36,7 @@ function mysql_connect_db($server='',$username='',$password='',$database='') {
 				//сброс настроек, чтобы нормально проходили инсерты и апдейты
 				//например когда не передают значение поля у которого нет значения по умолчанию
 				//mysqli_query($connect,"SET @@GLOBAL.sql_mode= ''");
-				mysqli_query($connect,"SET @@SESSION.sql_mode= ''");
+				//mysqli_query($connect,"SET @@SESSION.sql_mode= ''");
 				mysqli_query($connect,"SET innodb_strict_mode='OFF'");
 				return $config['mysql_connect'];
 			}
