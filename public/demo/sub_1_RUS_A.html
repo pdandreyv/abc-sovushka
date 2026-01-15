@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<!--
+  Совушкина школа — Русский язык. Азбука — 1 класс
+  Этот файл: Русский язык. Азбука — 1 класс
+
+  Подсказка для разработчиков-новичков:
+  - Общие стили: CSS/dashboard_styles.css
+  - Общая логика кабинета: JS/dashboard_script.js
+  - Левое меню одинаковое на всех страницах кабинета
+-->
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Русский язык. Азбука — 1 класс — Совушкина школа</title>
+
+  <!-- Шрифты -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet"/>
+
+  <!-- Общие стили кабинета -->
+  <link rel="stylesheet" href="CSS/dashboard_styles.css"/>
+</head>
+<body>
+  <!-- ===== ЛЕВАЯ ПАНЕЛЬ (sidebar): навигация ===== -->
+  <div class="sidebar">
+    <div>
+      <img class="logo" src="images/logo.png" alt="Логотип"/>
+      <div class="user-name">ЮЛИЯ ДОЛЖЕНКО</div>
+      <!-- Ссылка "Выйти" под именем. JS покажет модалку подтверждения выхода. -->
+      <a href="index.html" class="user-logout-link" data-logout>Выйти</a>
+
+      <div class="menu">
+        <button type="button" onclick="window.location.href='dashboard_new_user.html'">Личные данные</button>
+        <button type="button" onclick="window.location.href='portfolio.html'">Портфолио</button>
+        <button type="button" onclick="window.location.href='subscriptions.html'">Подписки</button>
+        <button type="button" onclick="window.location.href='ideas.html'">Кладовая идей</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ОСНОВНАЯ ЧАСТЬ ===== -->
+  <div class="main">
+    <div class="header">
+      <div class="header-title">Русский язык. Азбука — 1 класс</div>
+    </div>
+
+    <div class="content">
+      
+<div class="card">
+  <div class="subpage-top">
+    <div>
+      <h1>Русский язык. Азбука (1 класс)</h1>
+      <p class="muted">
+        Здесь темы и файлы к урокам. Слева — список тем, справа — материалы выбранной темы.
+        Если у темы нет загруженных файлов, она отображается неактивной.
+      </p>
+    </div>
+    <div class="subpage-top__actions">
+      <a class="btn btn-secondary" href="sub_1.html">← Назад к 1 классу</a>
+    </div>
+  </div>
+
+  <!-- Поиск по темам: можно вводить номер темы (например "1") или ключевые слова -->
+  <div class="field full azbuka-search">
+    <label for="azbukaSearch">Поиск темы по номеру или ключевым словам</label>
+    <input id="azbukaSearch" type="search" placeholder="Например: 1, школа, речь, предложение..." autocomplete="off"/>
+  </div>
+
+  <!-- Две колонки: темы слева, файлы справа -->
+  <div class="topics-layout">
+    <!-- ЛЕВАЯ КОЛОНКА -->
+    <div class="topics-panel">
+      <div class="panel-title">Темы</div>
+      <div id="azbukaTopics" class="topic-list" aria-label="Список тем"></div>
+
+      <!-- Если фильтр ничего не нашёл -->
+      <div id="azbukaEmpty" class="search-empty" hidden>
+        Ничего не найдено. Попробуйте другое ключевое слово.
+      </div>
+    </div>
+
+    <!-- ПРАВАЯ КОЛОНКА -->
+    <div class="files-panel">
+      <div class="panel-title">Материалы к теме</div>
+
+      <div id="azbukaHint" class="hint-box">
+        Выберите тему слева, чтобы увидеть файлы.
+      </div>
+
+      <!-- Сюда JS подставляет список файлов -->
+      <div id="azbukaFiles" class="files-list"></div>
+
+      <!-- Описание урока -->
+      <div id="azbukaDescription" class="lesson-description" hidden></div>
+    </div>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+  <!-- Общий JS (модалки, выход, просмотр, лайки и т.д.) -->
+  <script src="JS/dashboard_script.js"></script>
+</body>
+</html>

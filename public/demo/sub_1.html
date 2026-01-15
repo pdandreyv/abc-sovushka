@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<!--
+  Совушкина школа — 1 класс
+  Этот файл: 1 класс
+
+  Подсказка для разработчиков-новичков:
+  - Общие стили: CSS/dashboard_styles.css
+  - Общая логика кабинета: JS/dashboard_script.js
+  - Левое меню одинаковое на всех страницах кабинета
+-->
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>1 класс — Совушкина школа</title>
+
+  <!-- Шрифты -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet"/>
+
+  <!-- Общие стили кабинета -->
+  <link rel="stylesheet" href="CSS/dashboard_styles.css"/>
+</head>
+<body>
+  <!-- ===== ЛЕВАЯ ПАНЕЛЬ (sidebar): навигация ===== -->
+  <div class="sidebar">
+    <div>
+      <img class="logo" src="images/logo.png" alt="Логотип"/>
+      <div class="user-name">ЮЛИЯ ДОЛЖЕНКО</div>
+      <!-- Ссылка "Выйти" под именем. JS покажет модалку подтверждения выхода. -->
+      <a href="index.html" class="user-logout-link" data-logout>Выйти</a>
+
+      <div class="menu">
+        <button type="button" onclick="window.location.href='dashboard_new_user.html'">Личные данные</button>
+        <button type="button" onclick="window.location.href='portfolio.html'">Портфолио</button>
+        <button type="button" onclick="window.location.href='subscriptions.html'">Подписки</button>
+        <button type="button" onclick="window.location.href='ideas.html'">Кладовая идей</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ОСНОВНАЯ ЧАСТЬ ===== -->
+  <div class="main">
+    <div class="header">
+      <div class="header-title">1 класс</div>
+    </div>
+
+    <div class="content">
+      
+<div class="card">
+  <h1>Демо-уроки (можно скачать бесплатно)</h1>
+  <p class="muted">
+    Этот блок помогает пользователю увидеть пример материалов по подписке «1 класс».
+    Позже сюда можно подгружать демо-уроки из базы данных.
+  </p>
+
+  <!-- Пример демо-урока: используем файлы из files/sub_1/RUS_A/1 -->
+  <div class="demo-lesson" style="position: relative;">
+    <!-- <div class="award-badge badge-free">Бесплатно</div> -->
+
+    <div class="card-actions">
+      <a class="btn btn-primary" target="_blank" rel="noopener" download href="files/sub_1/RUS_A/1/presentation.zip">Скачать ZIP</a>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Предметы (папки)</h2>
+  <p class="muted">Выберите предмет. Внутри — темы и файлы к урокам (презентации, рабочие листы, конспекты и др.).</p>
+
+  <!-- Список предметов. Визуально оформлен как "папки". -->
+  <div class="folder-list">
+    <a class="folder-item" href="sub_1_RUS_A.html">
+      <span class="folder-icon">📁</span>
+      <span class="folder-title">Русский язык. Азбука</span>
+    </a>
+
+    <a class="folder-item" href="sub_1_RUS.html"><span class="folder-icon">📁</span><span class="folder-title">Русский язык</span></a>
+    <a class="folder-item" href="sub_1_RUS_Propisi.html"><span class="folder-icon">📁</span><span class="folder-title">Прописи (Горецкого В.Г.)</span></a>
+    <a class="folder-item" href="sub_1_RUS_Propisi_Iluhina.html"><span class="folder-icon">📁</span><span class="folder-title">Чудо-прописи (Илюхиной В.А.)</span></a>
+    <a class="folder-item" href="sub_1_MATH.html"><span class="folder-icon">📁</span><span class="folder-title">Математика</span></a>
+    <a class="folder-item" href="sub_1_RUS_LIT.html"><span class="folder-icon">📁</span><span class="folder-title">Литературное чтение</span></a>
+    <a class="folder-item" href="sub_1_RUS_LIT_ROD.html"><span class="folder-icon">📁</span><span class="folder-title">Литературное чтение (родной русский)</span></a>
+    <a class="folder-item" href="sub_1_SCIENCE.html"><span class="folder-icon">📁</span><span class="folder-title">Окружающий мир</span></a>
+    <a class="folder-item" href="sub_1_ART_PAINT.html"><span class="folder-icon">📁</span><span class="folder-title">Изобразительное искусство</span></a>
+    <a class="folder-item" href="sub_1_ART.html"><span class="folder-icon">📁</span><span class="folder-title">Труд (технология)</span></a>
+    <a class="folder-item" href="sub_1_MUS.html"><span class="folder-icon">📁</span><span class="folder-title">Музыка</span></a>
+    <a class="folder-item" href="sub_1_PE.html"><span class="folder-icon">📁</span><span class="folder-title">Физическая культура</span></a>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+  <!-- Общий JS (модалки, выход, просмотр, лайки и т.д.) -->
+  <script src="JS/dashboard_script.js"></script>
+</body>
+</html>

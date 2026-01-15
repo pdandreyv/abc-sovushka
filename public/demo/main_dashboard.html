@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+
+<!--
+  Совушкина школа — Личный кабинет
+  Этот файл: main_dashboard.html
+  Подсказка: структура страницы — HTML, стили — CSS/dashboard_styles.css, логика — JS/dashboard_script.js
+-->
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Личный кабинет — Совушкина школа</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="CSS/dashboard_styles.css" rel="stylesheet"/>
+<script src="JS/dashboard_script.js"></script>
+</head>
+<body>
+  <!-- ===== ЛЕВАЯ ПАНЕЛЬ (sidebar): навигация личного кабинета ===== -->
+<div class="sidebar">
+  <!-- Здесь логотип, имя пользователя и меню. -->
+<div>
+<img alt="Логотип" class="logo" src="images/logo.png"/>
+<div class="user-name">ЮЛИЯ ДОЛЖЕНКО</div>
+        <a href="index.html" class="user-logout-link" data-logout>Выйти</a>
+<div class="menu">
+<button onclick="window.location.href='dashboard_new_user.html'" type="button">Личные данные</button>
+<button onclick="window.location.href='portfolio.html'" type="button">Портфолио</button>
+<button onclick="window.location.href='subscriptions.html'" type="button">Подписки</button>
+<button onclick="window.location.href='ideas.html'" type="button">Кладовая идей</button>
+</div>
+</div>
+</div>
+<div class="main">
+  <!-- Основной контент страницы (шапка, хлебные крошки, карточки и т.д.) -->
+<div class="header">
+<div class="breadcrumbs">Главная / Кабинет</div>
+<div class="header-icons">
+<img alt="Подписка" src="images/subscription_icon.png"/>
+<a class="subscription-status subscription-status-link" href="subscriptions.html">Осталось 5 дней подписки: продлить / отменить</a>
+<img alt="Поддержка" src="images/support_icon.png"/>
+</div>
+</div>
+<div class="content">
+<h1>Добро пожаловать, Юлия!</h1>
+<div class="cards">
+<div class="card">
+<h3>Моя подписка</h3>
+<p>Вы подписаны на материалы для 1 класса</p>
+</div>
+<div class="card">
+<h3>Кладовая идей</h3>
+<p>Материалы доступны всем пользователям</p>
+</div>
+<div class="card">
+<h3>Портфолио</h3>
+<p>Ваши награды и сертификаты</p>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>

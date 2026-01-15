@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+
+<!--
+  Совушкина школа — Раздел подписки (заглушка)
+  Этот файл: sub_preschool.html
+
+  Для разработчиков:
+  - Это пример страницы раздела (пока без контента).
+  - Позже сюда можно подгружать материалы из БД по подписке пользователя.
+-->
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Дошкольники — Совушкина школа</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+  <link href="CSS/dashboard_styles.css" rel="stylesheet"/>
+  <script src="JS/dashboard_script.js"></script>
+</head>
+<body>
+  <div class="sidebar">
+    <div>
+      <img alt="Логотип" class="logo" src="images/logo.png"/>
+      <div class="user-name">ЮЛИЯ ДОЛЖЕНКО</div>
+      <a class="user-logout-link" data-logout href="index.html">Выйти</a>
+      <div class="menu">
+        <button onclick="window.location.href='dashboard_new_user.html'" type="button">Личные данные</button>
+        <button onclick="window.location.href='portfolio.html'" type="button">Портфолио</button>
+        <button class="active" onclick="window.location.href='subscriptions.html'" type="button">Подписки</button>
+        <button onclick="window.location.href='ideas.html'" type="button">Кладовая идей</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="header">
+      <div class="breadcrumbs">Главная / Кабинет / Подписки / Дошкольники</div>
+      <div class="header-icons">
+        <img alt="Подписка" src="images/subscription_icon.png"/>
+        <a class="subscription-status subscription-status-link" href="subscriptions.html">Вернуться к выбору подписок</a>
+        <img alt="Поддержка" src="images/support_icon.png"/>
+      </div>
+    </div>
+
+    <div class="content">
+      <h1>Дошкольники</h1>
+      <p class="page-hint">Материалы для дошкольников</p>
+
+      <div class="card">
+        <h3>Раздел в разработке</h3>
+        <p>
+          Здесь будет каталог материалов по подписке: презентации, рабочие листы, конспекты и т.д.
+          Сейчас это заглушка для демонстрации переходов по кнопке «Посмотреть».
+        </p>
+        <button class="btn btn-primary" onclick="window.location.href='subscriptions.html'" type="button">
+          Вернуться к оформлению подписки
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

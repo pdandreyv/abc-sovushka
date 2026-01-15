@@ -1,0 +1,38 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Handle X-XSRF-Token Header
+    RewriteCond %{HTTP:x-xsrf-token} .
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+
+    # ABC CMS image resizer: route all /_imgs/* to /abc/_imgs/index.php
+    RewriteCond %{REQUEST_URI} ^/_imgs/ [NC]
+    RewriteRule ^ abc/_imgs/index.php [L,QSA]
+
+    # Route API to legacy /abc/api/index.php (captcha, etc.)
+    RewriteCond %{REQUEST_URI} ^/api/ [NC]
+    RewriteRule ^ abc/api/index.php [L,QSA]
+
+    # Serve files from /abc when links are absolute from site root
+    # Minimal changes: internally rewrite to /abc if such file/dir exists there.
+    RewriteCond %{REQUEST_URI} !^/$
+    RewriteCond %{REQUEST_URI} !^/abc(/|$)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{DOCUMENT_ROOT}/abc%{REQUEST_URI} -f [OR]
+    RewriteCond %{DOCUMENT_ROOT}/abc%{REQUEST_URI} -d
+    RewriteRule ^ abc%{REQUEST_URI} [L]
+
+    # Send Requests To Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>

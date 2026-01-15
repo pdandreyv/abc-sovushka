@@ -1,0 +1,192 @@
+/*
+  Совушкина школа — стили страницы входа/регистрации
+
+  Путь: /CSS/login_page_styles.css
+  Сейчас в index.html используются встроенные стили (внутри <style>),
+  этот файл оставлен на будущее (если решите вынести стили наружу).
+*/
+
+:root {
+  --blue: #004aad;
+  --gray: #ecf1fa;
+  --text: #000;
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+}
+body {
+  display: flex;
+  min-height: 100vh;
+  background-color: white;
+}
+.container {
+  display: flex;
+  width: 100%;
+}
+.left {
+  flex: 1;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  position: relative;
+}
+.left img {
+  max-width: 180px;
+  margin-bottom: 30px;
+}
+.welcome-text {
+  text-align: center;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #333;
+  max-width: 360px;
+}
+.right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+.form-box {
+  width: 100%;
+  max-width: 400px;
+  background: white;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+}
+.tab-switcher {
+  display: flex;
+  justify-content: space-around;
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 24px;
+}
+.tab-switcher div {
+  padding: 10px;
+  cursor: pointer;
+  position: relative;
+  font-weight: 500;
+  color: #777;
+}
+.tab-switcher .active {
+  color: var(--blue);
+}
+.tab-switcher .active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--blue);
+}
+.form-box h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: var(--blue);
+}
+.form-box input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+.form-box button {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--blue);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.form-box button:hover {
+  background-color: #00307e;
+}
+.social-login {
+  margin: 24px 0;
+  text-align: center;
+}
+.social-login p {
+  margin-bottom: 10px;
+}
+.social-login .icons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.social-login .icon-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+.social-login .icon-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.form-footer {
+  margin-top: 20px;
+  font-size: 11px;
+  text-align: center;
+}
+.form-footer a {
+  color: #000;
+  text-decoration: none;
+}
+.form-footer p:last-child {
+  margin-top: 10px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.success-message {
+  text-align: center;
+  padding: 40px;
+}
+.success-message h2 {
+  color: green;
+  margin-bottom: 16px;
+  font-size: 22px;
+}
+.success-message a {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: var(--blue);
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+}
+@media (max-width: 768px) {
+  body {
+    flex-direction: column;
+  }
+  .container {
+    flex-direction: column-reverse;
+  }
+  .left, .right {
+    flex: none;
+    width: 100%;
+    padding: 20px;
+  }
+  .form-box {
+    max-width: 100%;
+  }
+}

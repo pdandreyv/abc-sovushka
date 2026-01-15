@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<!--
+  Совушкина школа — Просмотр документа (открывается в новом окне/вкладке)
+  Этот файл используется кнопкой "Посмотреть" на страницах Портфолио и Кладовая идей.
+
+  Как работает:
+  - Страница принимает параметр ?doc=... (путь к изображению или URL)
+  - Если это PDF (или type=pdf), показываем iframe
+  - Иначе показываем изображение (img)
+-->
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Просмотр документа — Совушкина школа</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="CSS/dashboard_styles.css" />
+</head>
+<body class="viewer-page">
+  <div class="viewer-top">
+    <button class="viewer-close" id="viewerClose" type="button" aria-label="Закрыть">×</button>
+  </div>
+
+  <div class="viewer-wrap">
+    <!-- Для изображений -->
+    <img id="viewerImage" class="viewer-image" alt="Документ" hidden>
+
+    <!-- Для PDF (или внешних страниц, если их разрешат встраивать) -->
+    <iframe id="viewerFrame" class="viewer-frame" title="Документ" hidden></iframe>
+
+    <!-- Подсказка на случай, если браузер запретит закрытие окна -->
+    <div id="viewerNote" class="viewer-note" hidden>
+      Если окно не закрывается кнопкой «×», значит браузер блокирует закрытие вкладки.
+      Просто закройте вкладку вручную.
+    </div>
+
+    <!-- Фолбек-ссылка (если документ не отобразился внутри iframe) -->
+    <a id="viewerOpenDirect" class="viewer-direct" href="#" target="_blank" rel="noopener" hidden>Открыть документ в новой вкладке</a>
+  </div>
+
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const doc = params.get('doc') || params.get('src');
+      const forcedType = params.get('type'); // например: pdf
+
+      const img = document.getElementById('viewerImage');
+      const frame = document.getElementById('viewerFrame');
+      const openDirect = document.getElementById('viewerOpenDirect');
+
+      if (doc) {
+        const isPdf = forcedType === 'pdf' || /\.pdf(\?|$)/i.test(doc);
+
+        if (isPdf) {
+          frame.hidden = false;
+          frame.src = doc;
+          openDirect.hidden = false;
+          openDirect.href = doc;
+        } else {
+          img.hidden = false;
+          img.src = doc;
+          openDirect.hidden = false;
+          openDirect.href = doc;
+        }
+      }
+
+      const closeBtn = document.getElementById('viewerClose');
+      const note = document.getElementById('viewerNote');
+
+      function tryClose() {
+        window.close();
+        // Если браузер блокирует window.close — покажем подсказку
+        window.setTimeout(() => {
+          if (note) note.hidden = false;
+        }, 200);
+      }
+
+      if (closeBtn) closeBtn.addEventListener('click', tryClose);
+    })();
+  </script>
+</body>
+</html>

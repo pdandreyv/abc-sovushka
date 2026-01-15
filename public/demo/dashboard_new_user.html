@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+
+<!--
+  Совушкина школа — Личный кабинет
+  Этот файл: dashboard_new_user.html
+  Подсказка: структура страницы — HTML, стили — CSS/dashboard_styles.css, логика — JS/dashboard_script.js
+-->
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Личный кабинет — Совушкина школа (новый пользователь)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="CSS/dashboard_styles.css" rel="stylesheet"/>
+<script src="JS/dashboard_script.js"></script>
+</head>
+<body>
+  <!-- ===== ЛЕВАЯ ПАНЕЛЬ (sidebar): навигация личного кабинета ===== -->
+<div class="sidebar">
+  <!-- Здесь логотип, имя пользователя и меню. -->
+<div>
+<img alt="Логотип" class="logo" src="images/logo.png"/>
+<div class="user-name">ЮЛИЯ ДОЛЖЕНКО</div>
+        <a href="index.html" class="user-logout-link" data-logout>Выйти</a>
+<div class="menu">
+<button class="active" type="button">Личные данные</button>
+<button onclick="window.location.href='portfolio.html'" type="button">Портфолио</button>
+<button onclick="window.location.href='subscriptions.html'" type="button">Подписки</button>
+<button onclick="window.location.href='ideas.html'" type="button">Кладовая идей</button>
+</div>
+</div>
+</div>
+<div class="main">
+  <!-- Основной контент страницы (шапка, хлебные крошки, карточки и т.д.) -->
+<div class="header">
+<div class="breadcrumbs">Главная / Кабинет / Личные данные</div>
+<div class="header-icons">
+<img alt="Подписка" src="images/subscription_icon.png"/>
+<a class="subscription-status subscription-status-link" href="subscriptions.html">Подписок нет: выбрать / оформить</a>
+<img alt="Поддержка" src="images/support_icon.png"/>
+</div>
+</div>
+<div class="content">
+<h1>Проверьте и сохраните данные профиля</h1>
+<p class="page-hint">
+        Мы создали для вас личный кабинет. Пожалуйста, проверьте данные, добавьте (при желании) дополнительную информацию и нажмите «Сохранить».
+        После сохранения вы сможете редактировать профиль в любой момент.
+      </p>
+<div class="cards">
+<!-- Профиль: проверка/добавление данных -->
+<div class="card" style="grid-column: 1 / -1;">
+<div class="card-header">
+<h3>Личные данные</h3>
+<div class="card-actions">
+<button class="btn btn-secondary" id="editProfileBtn" style="display:none" type="button">Редактировать</button>
+<button class="btn btn-primary" id="saveProfileBtn" type="button">Сохранить</button>
+</div>
+</div>
+<div class="toast" hidden="" id="profileSaved">✅ Данные сохранены</div>
+<form id="profileForm">
+<div class="form-grid">
+<div class="field">
+<label for="last_name">Фамилия</label>
+<input id="last_name" name="last_name" placeholder="Фамилия" required="" type="text" value="Долженко"/>
+</div>
+<div class="field">
+<label for="first_name">Имя</label>
+<input id="first_name" name="first_name" placeholder="Имя" required="" type="text" value="Юлия"/>
+</div>
+<div class="field">
+<label for="middle_name">Отчество</label>
+<input id="middle_name" name="middle_name" placeholder="Отчество" type="text" value=""/>
+</div>
+<div class="field">
+<label for="email">Email</label>
+<input id="email" name="email" placeholder="Email" required="" type="email" value="julia@example.com"/>
+</div>
+<div class="field">
+<label for="role">Вы</label>
+<select id="role" name="role">
+<option selected="" value="teacher">Учитель</option>
+<option value="educator">Воспитатель</option>
+<option value="tutor">Педагог доп. образования</option>
+<option value="parent">Родитель</option>
+<option value="other">Другое</option>
+</select>
+</div>
+<div class="field">
+<label for="phone">Телефон (необязательно)</label>
+<input id="phone" name="phone" placeholder="+7 (___) ___-__-__" type="tel" value=""/>
+</div>
+<div class="field">
+<label for="city">Город (необязательно)</label>
+<input id="city" name="city" placeholder="Город" type="text" value=""/>
+</div>
+<div class="field">
+<label for="organization">Школа/сад (необязательно)</label>
+<input id="organization" name="organization" placeholder="Название организации" type="text" value=""/>
+</div>
+<div class="field full">
+<label for="about">Дополнительная информация (необязательно)</label>
+<textarea id="about" name="about" placeholder="Например: класс, стаж, интересующие предметы, пожелания по материалам"></textarea>
+<div class="helper-text">Эти данные помогут точнее рекомендовать вам материалы и быстрее отвечать в поддержке.</div>
+</div>
+</div>
+</form>
+</div>
+<!-- Безопасность -->
+<div class="card">
+<div class="card-header">
+<h3>Безопасность</h3>
+</div>
+<div class="toast" hidden="" id="passwordSaved">✅ Пароль обновлён</div>
+<div class="field">
+<div class="row-between">
+<label for="password_mask">Пароль</label>
+<a class="link" href="#" id="changePasswordLink">Сменить пароль</a>
+</div>
+<input disabled="" id="password_mask" type="password" value="********"/>
+</div>
+<div hidden="" id="changePasswordPanel">
+<form id="passwordForm">
+<div class="form-grid" style="margin-top: 12px;">
+<div class="field full">
+<label for="current_password">Текущий пароль</label>
+<input autocomplete="current-password" id="current_password" name="current_password" required="" type="password"/>
+</div>
+<div class="field">
+<label for="new_password">Новый пароль</label>
+<input autocomplete="new-password" id="new_password" name="new_password" required="" type="password"/>
+</div>
+<div class="field">
+<label for="repeat_password">Повторите новый пароль</label>
+<input autocomplete="new-password" id="repeat_password" name="repeat_password" required="" type="password"/>
+</div>
+<div class="field full">
+<button class="btn btn-primary" type="submit">Сохранить пароль</button>
+<div class="error-text" id="passwordError"></div>
+</div>
+</div>
+</form>
+</div>
+</div>
+<!-- Подписки (пустое состояние) -->
+<div class="card">
+<h3>Подписки</h3>
+<p>У вас пока нет активных подписок. Выберите класс или направление — материалы откроются сразу после оформления.</p>
+<button class="btn btn-primary" type="button" onclick="window.location.href='subscriptions.html'">Оформить подписку</button>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<!--
+  Совушкина школа — Музыка — 1 класс
+  Этот файл: Музыка — 1 класс
+
+  Подсказка для разработчиков-новичков:
+  - Общие стили: CSS/dashboard_styles.css
+  - Общая логика кабинета: JS/dashboard_script.js
+  - Левое меню одинаковое на всех страницах кабинета
+-->
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Музыка — 1 класс — Совушкина школа</title>
+
+  <!-- Шрифты -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet"/>
+
+  <!-- Общие стили кабинета -->
+  <link rel="stylesheet" href="CSS/dashboard_styles.css"/>
+</head>
+<body>
+  <!-- ===== ЛЕВАЯ ПАНЕЛЬ (sidebar): навигация ===== -->
+  <div class="sidebar">
+    <div>
+      <img class="logo" src="images/logo.png" alt="Логотип"/>
+      <div class="user-name">ЮЛИЯ ДОЛЖЕНКО</div>
+      <!-- Ссылка "Выйти" под именем. JS покажет модалку подтверждения выхода. -->
+      <a href="index.html" class="user-logout-link" data-logout>Выйти</a>
+
+      <div class="menu">
+        <button type="button" onclick="window.location.href='dashboard_new_user.html'">Личные данные</button>
+        <button type="button" onclick="window.location.href='portfolio.html'">Портфолио</button>
+        <button type="button" onclick="window.location.href='subscriptions.html'">Подписки</button>
+        <button type="button" onclick="window.location.href='ideas.html'">Кладовая идей</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ОСНОВНАЯ ЧАСТЬ ===== -->
+  <div class="main">
+    <div class="header">
+      <div class="header-title">Музыка — 1 класс</div>
+    </div>
+
+    <div class="content">
+      
+<div class="card">
+  <div class="subpage-top">
+    <div>
+      <h1>Музыка — 1 класс</h1>
+      <p class="muted">
+        Раздел в разработке. Позже здесь появятся темы и материалы к урокам.
+      </p>
+    </div>
+    <div class="subpage-top__actions">
+      <a class="btn btn-secondary" href="sub_1.html">← Назад к 1 классу</a>
+    </div>
+  </div>
+
+  <div class="hint-box">
+    Подсказка для программистов: по аналогии с <b>sub_1_RUS_A.html</b> можно сделать:
+    поиск по темам, левую колонку (темы) и правую (файлы + описание), а данные подгружать из БД/API.
+  </div>
+</div>
+
+    </div>
+  </div>
+
+  <!-- Общий JS (модалки, выход, просмотр, лайки и т.д.) -->
+  <script src="JS/dashboard_script.js"></script>
+</body>
+</html>

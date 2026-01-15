@@ -1,0 +1,1223 @@
+/*
+  Совушкина школа — общий файл стилей кабинета
+
+  Основной путь: /CSS/dashboard_styles.css
+  Здесь описаны стили для: main_dashboard.html, portfolio.html, ideas.html, dashboard_new_user.html, viewer.html.
+
+  Подсказка новичкам:
+  - Ищите блоки по крупным комментариям: SIDEBAR / CARDS / MODALS / RESPONSIVE.
+  - В корне проекта может лежать копия этого файла для обратной совместимости.
+*/
+
+:root {
+  --blue: #004aad;
+  --light-gray: #f5f5f5;
+  --gray: #ecf1fa;
+  --text: #000;
+  --accent: #ff914d;
+  --green: #00bf63;
+}
+
+
+/* =============================================================
+   ВАЖНО ДЛЯ НОВИЧКОВ:
+   Атрибут HTML [hidden] должен гарантированно скрывать элементы.
+   После разнесения стилей по файлам мы задаём display для модалки,
+   поэтому фиксируем правило ниже.
+   ============================================================= */
+[hidden] { display: none !important; }
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+}
+body {
+  display: flex;
+  height: 100vh;
+  background-color: white;
+}
+.sidebar {
+  width: 260px;
+  background: var(--gray);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px 16px;
+}
+.sidebar .logo {
+  max-width: 160px;
+  margin: 0 auto 24px;
+}
+.sidebar .user-name {
+  text-align: center;
+  font-weight: bold;
+  font-size: 16px;
+  letter-spacing: 1px;
+  line-height: 1.5;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.user-logout-link {
+  display: block;
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.7;
+  color: var(--muted-text);
+  text-decoration: none;
+  margin-top: -8px;
+  margin-bottom: 14px;
+}
+
+.user-logout-link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.menu button {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  color: var(--blue);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 12px;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.menu button:hover {
+  background-color: var(--accent);
+  color: white;
+}
+
+.menu button.active {
+  background-color: var(--green);
+  color: black;
+  border-color: var(--green);
+}
+.toggle-icon {
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+.submenu-list {
+  margin-top: 4px;
+  margin-left: 10px;
+  display: none;
+}
+.submenu-list.open {
+  display: block;
+}
+.submenu-list .sub-button {
+  display: inline-block;
+  margin: 4px 0;
+  padding: 6px 10px;
+  font-size: 13px;
+  border: 1px solid var(--blue);
+  color: var(--blue);
+  border-radius: 6px;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+}
+.submenu-list .sub-button:hover {
+  background-color: var(--green);
+  color: black;
+}
+.submenu-list .inactive {
+  list-style: disc;
+  margin-left: 20px;
+  color: #666;
+  font-size: 13px;
+}
+.main {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.breadcrumbs {
+  font-size: 14px;
+  color: var(--green);
+  padding-bottom: 4px;
+  border-bottom: 2px solid var(--gray);
+}
+.header-icons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.header-icons img {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+}
+.subscription-status {
+  background-color: var(--accent);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+.content h1 {
+  font-size: 24px;
+  color: var(--blue);
+  margin-bottom: 16px;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+.card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+}
+.card h3 {
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.card p {
+  font-size: 14px;
+  color: #666;
+}
+
+/* --- Дополнения для страницы профиля (новый пользователь) --- */
+.page-hint {
+  margin: 8px 0 18px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #666;
+  max-width: 900px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.card-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: 0.2s;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background-color: var(--blue);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: #00307e;
+}
+
+.btn-secondary {
+  background-color: #fff;
+  color: var(--blue);
+  border-color: var(--blue);
+}
+
+.btn-secondary:hover {
+  background-color: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.btn-disabled,
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #fff;
+  font-size: 14px;
+}
+
+.field textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.field input:disabled,
+.field select:disabled,
+.field textarea:disabled {
+  background-color: #f6f7fb;
+  color: #777;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.row-between {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.link {
+  color: var(--blue);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 191, 99, 0.35);
+  background: rgba(0, 191, 99, 0.12);
+  color: #0b3b25;
+  font-size: 14px;
+  margin-bottom: 12px;
+  transform: translateY(-2px);
+  opacity: 0;
+  transition: 0.18s;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.helper-text {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.45;
+}
+
+.error-text {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #b00020;
+}
+
+/* --- Портфолио --- */
+.portfolio-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.award-card {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.award-thumb {
+  position: relative; /* нужно для абсолютных элементов (бейдж/лайк) */
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background: #f6f7fb;
+  overflow: hidden;
+  aspect-ratio: 16 / 11;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.award-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.award-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4f5b66;
+  line-height: 1.35;
+  margin: 10px 0 0;
+}
+
+.award-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+.award-actions a.btn {
+  text-decoration: none;
+}
+
+
+.award-thumb {
+  position: relative;
+}
+
+.award-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+.badge-certificate { background: var(--green); }
+.badge-diploma { background: var(--blue); }
+.badge-award { background: var(--accent); }
+
+
+
+
+/* --- Кладовая идей (бесплатные материалы) ---
+   Разметка похожа на "Портфолио", поэтому мы переиспользуем .award-card.
+   Здесь добавлены:
+   - сердечко-лайк (like-button)
+   - адаптивное поведение кнопок (idea-actions)
+*/
+.ideas-grid {
+  /* сетка как в портфолио, но можно расширять */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.idea-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap; /* на мобильных кнопки красиво переносятся */
+}
+
+/* Кнопка лайка располагается поверх превью справа сверху */
+.like-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 6px 10px;
+  border-radius: 999px;
+
+  border: 1px solid #ddd;
+  background: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+}
+
+.like-button:hover {
+  border-color: var(--accent);
+}
+
+.like-button.is-liked {
+  border-color: var(--accent);
+}
+
+.like-heart {
+  color: var(--accent);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.like-count {
+  font-weight: 600;
+  color: var(--blue);
+}
+
+/* Небольшая подсказка в тексте страницы */
+.hint-muted {
+  color: #666;
+  font-size: 13px;
+}
+
+/* Метка "Бесплатно" */
+.badge-free { background: var(--green); }
+
+/* --- Просмотр документа (новое окно) --- */
+.viewer-page {
+  min-height: 100vh;
+  background: var(--gray);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.viewer-top {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.viewer-close {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: var(--blue);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+}
+
+.viewer-close:hover {
+  background-color: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.viewer-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.viewer-image {
+  max-width: 98vw;
+  max-height: 86vh;
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #ddd;
+  object-fit: contain;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+}
+
+.viewer-note {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+}
+
+
+
+/* --- Модальное окно (универсальное) ---
+   Используется для:
+   - Описания материалов (Кладовая идей)
+   - Подтверждения выхода ("Выйти")
+*/
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 999;
+}
+
+.modal {
+  width: 100%;
+  max-width: 720px;
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+  padding: 16px;
+  max-height: 80vh;
+  overflow: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.modal-title {
+  font-weight: 600;
+  color: var(--blue);
+}
+
+.modal-close {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: #fff;
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--blue);
+}
+
+.modal-body {
+  padding-top: 12px;
+  color: #111;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 14px;
+}
+
+/* --- Кнопка выхода в меню --- */
+.logout-btn {
+  margin-top: 10px;
+  background: #fff;
+  color: #b00020;
+  border: 1px solid rgba(176,0,32,0.35);
+}
+
+.logout-btn:hover {
+  background: #b00020;
+  color: #fff;
+  border-color: #b00020;
+}
+
+/* --- Viewer (iframe + ссылка) --- */
+.viewer-frame {
+  width: 100%;
+  height: calc(100vh - 110px);
+  border: 0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.viewer-direct {
+  display: inline-block;
+  margin-top: 10px;
+  color: var(--blue);
+  text-decoration: underline;
+}
+
+
+@media (max-width: 900px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 768px) {
+  body {
+    flex-direction: column;
+  }
+  .sidebar {
+    display: none;
+  }
+  .mobile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: var(--gray);
+  }
+  .hamburger {
+    font-size: 24px;
+    cursor: pointer;
+  }
+}
+
+
+/* =============================================================
+   Кладовая идей — поиск (ideas.html)
+   ============================================================= */
+
+.idea-search {
+  margin: 14px 0 18px;
+  max-width: 720px;
+}
+
+.search-empty {
+  margin: 8px 0 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px dashed #cfcfcf;
+  background: #fff;
+  font-size: 14px;
+  color: #555;
+}
+
+
+
+/* =======================================================================
+   Subscriptions page (subscriptions.html)
+   -----------------------------------------------------------------------
+   В этом блоке стили для страницы выбора подписок и тарифа (3 шага).
+   ======================================================================= */
+
+.subscription-status-link {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Сетка из 3-х шагов */
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 16px;
+}
+
+/* Карточка шага */
+.step-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 16px 16px 14px;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  min-height: 260px;
+}
+
+.step-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(46, 162, 118, 0.12);
+  color: #1f7f5a;
+  font-weight: 700;
+}
+
+.subs-list, .tariffs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sub-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: #fafafa;
+}
+
+.sub-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.sub-title {
+  font-weight: 600;
+}
+
+.tariff-option {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: #fafafa;
+  cursor: pointer;
+}
+
+.tariff-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tariff-note {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.tariff-price {
+  font-weight: 700;
+}
+
+.discounts-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(46, 162, 118, 0.06);
+  border: 1px solid rgba(46, 162, 118, 0.18);
+}
+
+.discount-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.discount-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.step-note {
+  margin-top: 10px;
+  opacity: 0.7;
+}
+
+/* Итоговая панель */
+.checkout-panel {
+  margin-top: 18px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 16px;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.checkout-left {
+  flex: 1;
+  min-width: 240px;
+}
+
+.checkout-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.checkout-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(0,0,0,0.12);
+  margin-top: 6px;
+  font-size: 18px;
+}
+
+.checkout-right {
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-sm {
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 12px;
+}
+
+.btn-pay {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 15px;
+  border-radius: 16px;
+}
+
+.checkout-note {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.debug-order {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #0b1020;
+  color: #dbe7ff;
+  overflow: auto;
+  max-height: 220px;
+}
+
+/* Адаптив: на телефоне складываем шаги в один столбец */
+@media (max-width: 980px) {
+  .steps-grid {
+    grid-template-columns: 1fr;
+  }
+  .checkout-panel {
+    flex-direction: column;
+  }
+  .checkout-right {
+    width: 100%;
+  }
+}
+
+
+/* ============================================================
+   СТРАНИЦЫ ПОДПИСОК: папки / темы / файлы (1 класс и т.п.)
+   ------------------------------------------------------------
+   Эти стили используются на:
+   - sub_1.html (список предметов как "папки")
+   - sub_1_RUS_A.html (двухколоночный список тем + файлов)
+   ============================================================ */
+
+.muted {
+  color: #5a5a5a;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* Верхняя строка на страницах разделов (заголовок + кнопка "назад") */
+.subpage-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.subpage-top__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* "Папки" — список предметов */
+.folder-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.folder-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 14px;
+  border-radius: 12px;
+  border: 1px solid #e2e2e2;
+  background: #fff;
+  text-decoration: none;
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, border-color 0.08s ease;
+}
+
+.folder-item:hover {
+  transform: translateY(-1px);
+  border-color: #cfcfcf;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.folder-icon {
+  font-size: 20px;
+}
+
+.folder-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* Демо-урок (sub_1.html) */
+.demo-lesson {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px dashed #d1d1d1;
+  background: #fafafa;
+}
+
+.demo-lesson__title {
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.demo-lesson__meta {
+  font-size: 13px;
+  color: #6b6b6b;
+  margin-bottom: 10px;
+}
+
+/* Двухколоночная сетка: темы слева, файлы справа */
+.topics-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.topics-panel,
+.files-panel {
+  border: 1px solid #e6e6e6;
+  border-radius: 14px;
+  padding: 14px;
+  background: #fff;
+}
+
+.panel-title {
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.topic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.topic-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 1px solid #e2e2e2;
+  background: #fff;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.08s ease, border-color 0.08s ease;
+}
+
+.topic-item:hover {
+  background: #f5fbff;
+  border-color: #cfe8fb;
+}
+
+.topic-item.is-active {
+  background: #eaf6ff;
+  border-color: #98d2ff;
+}
+
+.topic-item.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: #f8f8f8;
+}
+
+.topic-number {
+  font-weight: 800;
+  min-width: 22px;
+}
+
+.topic-title {
+  flex: 1;
+  font-weight: 600;
+}
+
+.topic-badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #e2e2e2;
+  background: #fff;
+  color: #666;
+}
+
+/* Правая колонка: файлы */
+.hint-box {
+  margin: 8px 0 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px dashed #cfcfcf;
+  background: #fff;
+  font-size: 14px;
+  color: #555;
+}
+
+.files-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.file-card {
+  border: 1px solid #e2e2e2;
+  border-radius: 12px;
+  padding: 12px 12px;
+  background: #fff;
+}
+
+.file-card__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.file-name {
+  font-weight: 800;
+}
+
+.file-type {
+  font-size: 12px;
+  color: #666;
+  border: 1px solid #e2e2e2;
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: #fff;
+}
+
+.lesson-description {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #e2e2e2;
+  background: #fafafa;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.lesson-description ul {
+  margin: 10px 0 0 18px;
+}
+
+/* Адаптив: на телефонах колонки становятся вертикальными */
+@media (max-width: 920px) {
+  .topics-layout {
+    grid-template-columns: 1fr;
+  }
+}
+/* === Кабинет: правки выравнивания кнопок и меню подписок === */
+
+/* 1) Кнопки (ссылки) без подчеркивания */
+.btn,
+.btn:link,
+.btn:visited {
+  text-decoration: none;
+}
+.btn:hover,
+.btn:active,
+.btn:focus {
+  text-decoration: none;
+}
+
+/* 2-3) Материалы к теме: выравнивание кнопок по правому краю, перенос на 2 строки при необходимости */
+.file-card__top {
+  align-items: center; /* вместо baseline */
+}
+.file-card__top .file-name {
+  flex: 1 1 auto;
+  align-self: center;
+}
+.file-card__top .card-actions {
+  margin-left: auto;
+  justify-content: flex-end;
+  align-items: center;
+  align-content: center;
+  text-align: right;
+}
+
+/* 4) Левое меню: подменю "Подписки" */
+.menu-subscriptions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.menu-section-title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted-text);
+  padding: 0 2px;
+  opacity: 0.8;
+}
+
+.menu-submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 14px;
+}
+
+/* под-кнопки: немного компактнее */
+.menu-submenu button {
+  font-size: 13px;
+  padding: 9px 10px;
+  border-radius: 8px;
+}

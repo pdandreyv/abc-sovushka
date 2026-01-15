@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<!--
+  Совушкина школа — Личный кабинет
+  Этот файл: subscriptions.html (Страница "Подписки")
+
+  Для разработчиков:
+  - Разметка: три шага (подписки → тариф → скидка/итог)
+  - Стили: CSS/dashboard_styles.css (внизу файла есть блок "Subscriptions page")
+  - Логика расчёта: JS/subscriptions_script.js
+  - Кнопка "Оформить подписку" — заглушка, сюда позже подключается платёжный провайдер и бэкенд.
+-->
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Подписки — Совушкина школа</title>
+
+  <!-- Шрифты -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+
+  <!-- Общие стили кабинета -->
+  <link href="CSS/dashboard_styles.css" rel="stylesheet"/>
+
+  <!-- Общий JS кабинета (меню, модалка "Выйти" и т.п.) -->
+  <script src="JS/dashboard_script.js"></script>
+
+  <!-- JS для страницы подписок (расчёты и поведение) -->
+  <script src="JS/subscriptions_script.js" defer></script>
+</head>
+
+<body>
+  <!-- ===== ЛЕВАЯ ПАНЕЛЬ (sidebar): навигация личного кабинета ===== -->
+  <div class="sidebar">
+    <div>
+      <img alt="Логотип" class="logo" src="images/logo.png"/>
+      <div class="user-name">ЮЛИЯ ДОЛЖЕНКО</div>
+      <!-- Ссылка выхода: обработчик подтверждения находится в JS/dashboard_script.js -->
+      <a class="user-logout-link" data-logout href="index.html">Выйти</a>
+
+      <div class="menu">
+        <button onclick="window.location.href='dashboard_new_user.html'" type="button">Личные данные</button>
+        <button onclick="window.location.href='portfolio.html'" type="button">Портфолио</button>
+        <button class="active" onclick="window.location.href='subscriptions.html'" type="button">Подписки</button>
+        <button onclick="window.location.href='ideas.html'" type="button">Кладовая идей</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ПРАВАЯ ЧАСТЬ (main): контент страницы ===== -->
+  <div class="main">
+    <div class="header">
+      <div class="breadcrumbs">Главная / Кабинет / Подписки</div>
+      <div class="header-icons">
+        <img alt="Подписка" src="images/subscription_icon.png"/>
+        <!-- Можно сделать ссылкой на эту же страницу — удобно, если в шапке показывается статус подписки -->
+        <a class="subscription-status subscription-status-link" href="subscriptions.html">Выбор подписок и тарифа</a>
+        <img alt="Поддержка" src="images/support_icon.png"/>
+      </div>
+    </div>
+
+    <div class="content">
+      <h1>Подписки</h1>
+      <p class="page-hint">
+        Выберите нужные подписки и тариф — итоговая сумма и скидка пересчитаются автоматически.
+      </p>
+
+      <!-- ===== ТРИ ШАГА ВЫБОРА: подписки → тариф → скидка ===== -->
+      <div id="subscriptionsApp" class="steps-grid">
+        <!-- Шаг 1 -->
+        <div class="step-card">
+          <div class="step-title">
+            <span class="step-num">1</span>
+            <span>Выберите подписки</span>
+          </div>
+
+          <!-- Список подписок генерируется в JS на основе массива SUBSCRIPTIONS -->
+          <div id="subsList" class="subs-list">
+            <!-- JS вставит элементы сюда -->
+          </div>
+
+          <div class="step-note">
+            <small>Нажмите «Посмотреть», чтобы открыть страницу направления (заглушки для будущих разделов).</small>
+          </div>
+        </div>
+
+        <!-- Шаг 2 -->
+        <div class="step-card">
+          <div class="step-title">
+            <span class="step-num">2</span>
+            <span>Выберите тариф</span>
+          </div>
+
+          <!-- Тарифы генерируются в JS на основе массива TARIFFS -->
+          <div id="tariffsList" class="tariffs-list">
+            <!-- JS вставит элементы сюда -->
+          </div>
+
+          <div class="step-note">
+            <small>Цены указаны за 1 подписку. Итог зависит от количества выбранных подписок.</small>
+          </div>
+        </div>
+
+        <!-- Шаг 3 -->
+        <div class="step-card">
+          <div class="step-title">
+            <span class="step-num">3</span>
+            <span>Выгодные предложения</span>
+          </div>
+
+          <!-- Скидки автоматически активируются в зависимости от количества выбранных подписок -->
+          <div class="discounts-box">
+            <label class="discount-row">
+              <input disabled id="disc2" type="checkbox"/>
+              <span>2 подписки — <b>−10%</b></span>
+            </label>
+            <label class="discount-row">
+              <input disabled id="disc3" type="checkbox"/>
+              <span>3+ подписки — <b>−15%</b></span>
+            </label>
+            <label class="discount-row">
+              <input disabled id="discAll" type="checkbox"/>
+              <span>Все подписки — <b>−20%</b></span>
+            </label>
+            <div id="discountHint" class="discount-hint">1 подписка — выгодных предложений нет</div>
+          </div>
+
+          <div class="step-note">
+            <small>Скидка применяется автоматически и отображается в расчёте ниже.</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== ИТОГ / ОПЛАТА ===== -->
+      <div class="checkout-panel">
+        <div class="checkout-left">
+          <div class="checkout-line">
+            <span>Выбрано подписок:</span>
+            <b id="sumCount">0</b>
+          </div>
+          <div class="checkout-line">
+            <span>Тариф:</span>
+            <b id="sumTariff">—</b>
+          </div>
+          <div class="checkout-line">
+            <span>Стоимость:</span>
+            <b id="sumSubtotal">0 ₽</b>
+          </div>
+          <div class="checkout-line">
+            <span>Скидка:</span>
+            <b id="sumDiscount">0 ₽</b>
+          </div>
+          <div class="checkout-total">
+            <span>Итого:</span>
+            <b id="sumTotal">0 ₽</b>
+          </div>
+        </div>
+
+        <div class="checkout-right">
+          <!-- В будущем на эту кнопку будет навешан вызов платёжной системы -->
+          <button id="payBtn" class="btn btn-primary btn-pay" type="button" disabled>Оформить подписку</button>
+          <div class="checkout-note">
+            <small>Демо: оплата будет подключена позже (через бэкенд / платёжного провайдера).</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Технический блок (скрытый): здесь удобно хранить "параметры заказа" для отправки на сервер -->
+      <pre id="debugOrder" class="debug-order" hidden></pre>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+
+<!--
+  Совушкина школа — Личный кабинет
+  Этот файл: portfolio.html
+  Подсказка: структура страницы — HTML, стили — CSS/dashboard_styles.css, логика — JS/dashboard_script.js
+-->
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Портфолио — Совушкина школа</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="CSS/dashboard_styles.css" rel="stylesheet"/>
+<script src="JS/dashboard_script.js"></script>
+</head>
+<body>
+  <!-- ===== ЛЕВАЯ ПАНЕЛЬ (sidebar): навигация личного кабинета ===== -->
+<div class="sidebar">
+  <!-- Здесь логотип, имя пользователя и меню. -->
+<div>
+<img alt="Логотип" class="logo" src="images/logo.png"/>
+<div class="user-name">ЮЛИЯ ДОЛЖЕНКО</div>
+        <a href="index.html" class="user-logout-link" data-logout>Выйти</a>
+<div class="menu">
+<button onclick="window.location.href='dashboard_new_user.html'" type="button">Личные данные</button>
+<button class="active" type="button">Портфолио</button>
+<button onclick="window.location.href='subscriptions.html'" type="button">Подписки</button>
+<button onclick="window.location.href='ideas.html'" type="button">Кладовая идей</button>
+</div>
+</div>
+</div>
+<div class="main">
+  <!-- Основной контент страницы (шапка, хлебные крошки, карточки и т.д.) -->
+<div class="header">
+<div class="breadcrumbs">Главная / Кабинет / Портфолио</div>
+<div class="header-icons">
+<img alt="Подписка" src="images/subscription_icon.png"/>
+<a class="subscription-status subscription-status-link" href="subscriptions.html">Подписок нет: выбрать / оформить</a>
+<img alt="Поддержка" src="images/support_icon.png"/>
+</div>
+</div>
+<div class="content">
+<h1>Портфолио</h1>
+<p class="page-hint">
+        Здесь собраны ваши сертификаты, дипломы и другие награды. Нажмите «Посмотреть», чтобы открыть документ в новом окне почти на весь экран,
+        или «Скачать», чтобы открыть файл для скачивания в новом окне (текущая страница останется открытой).
+      </p>
+<div class="cards portfolio-grid">
+<!-- Сертификат 1 -->
+<div class="card award-card">
+<div class="award-thumb"><span class="award-badge badge-certificate">Сертификат</span>
+<img alt="Четыре шаблона проектной работы учащихся 1–4 классов" src="images/portfolio_assets/thumbs/cert_projects.jpg"/>
+</div>
+<div class="award-actions">
+<button class="btn btn-secondary" data-view-doc="images/portfolio_assets/cert_projects.png" type="button">Посмотреть</button>
+<a class="btn btn-primary" download="" href="images/portfolio_assets/cert_projects.png" rel="noopener" target="_blank">Скачать</a>
+</div>
+<div class="award-title">Четыре шаблона проектной работы учащихся 1–4 классов (36 ч.)</div>
+</div>
+<!-- Сертификат 2 -->
+<div class="card award-card">
+<div class="award-thumb"><span class="award-badge badge-certificate">Сертификат</span>
+<img alt="Активный отдых на переменах" src="images/portfolio_assets/thumbs/cert_active_rest.jpg"/>
+</div>
+<div class="award-actions">
+<button class="btn btn-secondary" data-view-doc="images/portfolio_assets/cert_active_rest.png" type="button">Посмотреть</button>
+<a class="btn btn-primary" download="" href="images/portfolio_assets/cert_active_rest.png" rel="noopener" target="_blank">Скачать</a>
+</div>
+<div class="award-title">Создание методического пособия для педагогов «Активный отдых на переменах» (36 ч.)</div>
+</div>
+<!-- Сертификат 3 -->
+<div class="card award-card">
+<div class="award-thumb"><span class="award-badge badge-certificate">Сертификат</span>
+<img alt="Функциональная грамотность (внеурочная деятельность)" src="images/portfolio_assets/thumbs/cert_vd_fg.jpg"/>
+</div>
+<div class="award-actions">
+<button class="btn btn-secondary" data-view-doc="images/portfolio_assets/cert_vd_fg.png" type="button">Посмотреть</button>
+<a class="btn btn-primary" download="" href="images/portfolio_assets/cert_vd_fg.png" rel="noopener" target="_blank">Скачать</a>
+</div>
+<div class="award-title">Разработка программы внеурочной деятельности «Функциональная грамотность» (1–4 кл.) (36 ч.)</div>
+</div>
+<!-- Наградной документ (пример) -->
+<div class="card award-card">
+<div class="award-thumb"><span class="award-badge badge-certificate">Сертификат</span>
+<img alt="Формирование функциональной грамотности у детей дошкольного и младшего школьного возраста" src="images/portfolio_assets/thumbs/cert_1320257441.jpg"/>
+</div>
+<div class="award-actions">
+<button class="btn btn-secondary" data-view-doc="images/portfolio_assets/cert_1320257441.jpg" type="button">Посмотреть</button>
+<a class="btn btn-primary" download="" href="images/portfolio_assets/cert_1320257441.jpg" rel="noopener" target="_blank">Скачать</a>
+</div>
+<div class="award-title">Формирование функциональной грамотности у детей дошкольного и младшего школьного возраста (36 ч.)</div>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
