@@ -28,6 +28,8 @@ class User extends Authenticatable
         'city',
         'organization',
         'about',
+        'social_id',
+        'social_provider',
     ];
 
     /**

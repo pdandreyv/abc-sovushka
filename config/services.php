@@ -35,4 +35,23 @@ return [
         ],
     ],
 
+    'vkontakte' => [
+        'client_id' => env('VKONTAKTE_CLIENT_ID'),
+        'client_secret' => env('VKONTAKTE_CLIENT_SECRET'),
+        'redirect' => env('VKONTAKTE_REDIRECT_URI'),
+    ],
+
+    'yandex' => [
+        'client_id' => env('YANDEX_CLIENT_ID'),
+        'client_secret' => env('YANDEX_CLIENT_SECRET'),
+        'redirect' => env('YANDEX_REDIRECT_URI'),
+    ],
+
+    'odnoklassniki' => [
+        'client_id' => env('ODNOKLASSNIKI_CLIENT_ID'),
+        'client_secret' => env('ODNOKLASSNIKI_CLIENT_SECRET'),
+        'redirect' => env('ODNOKLASSNIKI_REDIRECT_URI'),
+        'public_key' => env('ODNOKLASSNIKI_PUBLIC_KEY'),
+    ],
+
 ];

@@ -51,9 +51,26 @@
           </div>
         </div>
         @if (session('success'))
-          <div class="toast show" id="profileSaved">✅ {{ session('success') }}</div>
+          <div class="toast toast-success show" id="profileSaved">✅ {{ session('success') }}</div>
         @else
-          <div class="toast" hidden id="profileSaved">✅ Данные сохранены</div>
+          <div class="toast toast-success" hidden id="profileSaved">✅ Данные сохранены</div>
+        @endif
+        
+        @if (session('error'))
+          <div class="toast toast-error show" id="profileError">❌ {{ session('error') }}</div>
+        @else
+          <div class="toast toast-error" hidden id="profileError">❌ Ошибка</div>
+        @endif
+        
+        @if ($errors->any())
+          <div class="toast toast-error show" id="validationErrors">
+            ❌ <strong>Ошибки валидации:</strong>
+            <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+              @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+              @endforeach
+            </ul>
+          </div>
         @endif
         <form id="profileForm" method="POST" action="{{ route('profile.update') }}">
           @csrf
@@ -61,19 +78,31 @@
           <div class="form-grid">
             <div class="field">
               <label for="last_name">Фамилия</label>
-              <input id="last_name" name="last_name" placeholder="Фамилия" required type="text" value="{{ old('last_name', Auth::user()->last_name) }}"/>
+              <input id="last_name" name="last_name" placeholder="Фамилия" required type="text" value="{{ old('last_name', Auth::user()->last_name) }}" class="@error('last_name') input-error @enderror"/>
+              @error('last_name')
+                <div class="error-text">{{ $message }}</div>
+              @enderror
             </div>
             <div class="field">
               <label for="first_name">Имя</label>
-              <input id="first_name" name="first_name" placeholder="Имя" required type="text" value="{{ old('first_name', Auth::user()->first_name) }}"/>
+              <input id="first_name" name="first_name" placeholder="Имя" required type="text" value="{{ old('first_name', Auth::user()->first_name) }}" class="@error('first_name') input-error @enderror"/>
+              @error('first_name')
+                <div class="error-text">{{ $message }}</div>
+              @enderror
             </div>
             <div class="field">
               <label for="middle_name">Отчество</label>
-              <input id="middle_name" name="middle_name" placeholder="Отчество" type="text" value="{{ old('middle_name', Auth::user()->middle_name) }}"/>
+              <input id="middle_name" name="middle_name" placeholder="Отчество" type="text" value="{{ old('middle_name', Auth::user()->middle_name) }}" class="@error('middle_name') input-error @enderror"/>
+              @error('middle_name')
+                <div class="error-text">{{ $message }}</div>
+              @enderror
             </div>
             <div class="field">
               <label for="email">Email</label>
-              <input id="email" name="email" placeholder="Email" required type="email" value="{{ old('email', Auth::user()->email) }}"/>
+              <input id="email" name="email" placeholder="Email" required type="email" value="{{ old('email', Auth::user()->email) }}" class="@error('email') input-error @enderror"/>
+              @error('email')
+                <div class="error-text">{{ $message }}</div>
+              @enderror
             </div>
             <div class="field">
               <label for="role">Вы</label>
@@ -87,7 +116,10 @@
             </div>
             <div class="field">
               <label for="phone">Телефон (необязательно)</label>
-              <input id="phone" name="phone" placeholder="+7 (___) ___-__-__" type="tel" value="{{ old('phone', Auth::user()->phone) }}"/>
+              <input id="phone" name="phone" placeholder="+7 (___) ___-__-__" type="tel" value="{{ old('phone', Auth::user()->phone) }}" class="@error('phone') input-error @enderror"/>
+              @error('phone')
+                <div class="error-text">{{ $message }}</div>
+              @enderror
             </div>
             <div class="field">
               <label for="city">Город (необязательно)</label>
@@ -111,9 +143,15 @@
           <h3>Безопасность</h3>
         </div>
         @if (session('password_success'))
-          <div class="toast show" id="passwordSaved">✅ {{ session('password_success') }}</div>
+          <div class="toast toast-success show" id="passwordSaved" style="display: inline-flex !important; opacity: 1 !important;">✅ {{ session('password_success') }}</div>
         @else
-          <div class="toast" hidden id="passwordSaved">✅ Пароль обновлён</div>
+          <div class="toast toast-success" hidden id="passwordSaved">✅ Пароль обновлён</div>
+        @endif
+        
+        @if (session('password_error'))
+          <div class="toast toast-error show" id="passwordError" style="display: inline-flex !important; opacity: 1 !important;">❌ {{ session('password_error') }}</div>
+        @else
+          <div class="toast toast-error" hidden id="passwordError">❌ Ошибка</div>
         @endif
         <div class="field">
           <div class="row-between">

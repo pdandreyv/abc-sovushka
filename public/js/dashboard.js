@@ -320,7 +320,47 @@ function initProfileOnboardingPage() {
     changePasswordLink.addEventListener('click', (e) => {
       e.preventDefault();
       changePasswordPanel.hidden = !changePasswordPanel.hidden;
+      // Очищаем ошибки при открытии панели
+      if (!changePasswordPanel.hidden && passwordError) {
+        passwordError.hidden = true;
+        passwordError.classList.remove('show');
+      }
     });
+  }
+
+  // Автоматически показываем уведомления о пароле при загрузке страницы
+  if (passwordSaved) {
+    // Проверяем, есть ли уведомление в сессии (оно уже должно быть видимым из Blade)
+    if (passwordSaved.classList.contains('show')) {
+      // Убеждаемся, что уведомление видимо
+      passwordSaved.hidden = false;
+      passwordSaved.style.display = 'inline-flex';
+      passwordSaved.style.opacity = '1';
+      
+      // Если есть успешное уведомление, скрываем панель смены пароля
+      if (changePasswordPanel) changePasswordPanel.hidden = true;
+      // Очищаем поля формы
+      ['current_password', 'new_password', 'repeat_password'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      // Прокручиваем к уведомлению, чтобы пользователь его увидел
+      setTimeout(() => {
+        passwordSaved.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 200);
+    }
+  }
+  
+  // Также обрабатываем ошибки пароля
+  if (passwordError && passwordError.classList.contains('show')) {
+    // Убеждаемся, что уведомление видимо
+    passwordError.hidden = false;
+    passwordError.style.display = 'inline-flex';
+    passwordError.style.opacity = '1';
+    // Прокручиваем к ошибке
+    setTimeout(() => {
+      passwordError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 200);
   }
 
   // Смена пароля
@@ -330,6 +370,7 @@ function initProfileOnboardingPage() {
       if (passwordForm.action && passwordForm.method) {
         // Позволяем форме отправиться на сервер
         // Валидация будет на сервере
+        // После успешной отправки Laravel вернет страницу с сессионным сообщением
         return true;
       }
 
@@ -339,19 +380,34 @@ function initProfileOnboardingPage() {
       const newPass = document.getElementById('new_password')?.value || '';
       const repeatPass = document.getElementById('repeat_password')?.value || '';
 
-      if (passwordError) passwordError.textContent = '';
+      if (passwordError) {
+        passwordError.hidden = true;
+        passwordError.classList.remove('show');
+      }
 
       if (!newPass || newPass.length < 6) {
-        if (passwordError) passwordError.textContent = 'Пароль должен быть не короче 6 символов.';
+        if (passwordError) {
+          passwordError.textContent = 'Пароль должен быть не короче 6 символов.';
+          passwordError.hidden = false;
+          passwordError.classList.add('show');
+        }
         return;
       }
       if (newPass !== repeatPass) {
-        if (passwordError) passwordError.textContent = 'Пароли не совпадают.';
+        if (passwordError) {
+          passwordError.textContent = 'Пароли не совпадают.';
+          passwordError.hidden = false;
+          passwordError.classList.add('show');
+        }
         return;
       }
 
       // В демо просто показываем успешный toast
-      showTemporarily(passwordSaved, 2000);
+      if (passwordSaved) {
+        passwordSaved.hidden = false;
+        passwordSaved.classList.add('show');
+        showTemporarily(passwordSaved, 3000);
+      }
       if (changePasswordPanel) changePasswordPanel.hidden = true;
 
       // Очистим поля
@@ -832,6 +888,66 @@ badge.title = hasFiles ? 'Материалы доступны' : 'В работ�
 }
 
 
+/** Автоматическое скрытие toast-уведомлений */
+function initToastAutoHide() {
+  // Небольшая задержка, чтобы уведомления успели отобразиться
+  setTimeout(() => {
+    const toasts = document.querySelectorAll('.toast.show');
+    toasts.forEach((toast) => {
+      // Скрываем через 5 секунд для ошибок, 4 секунды для успеха
+      const isError = toast.classList.contains('toast-error');
+      const delay = isError ? 5000 : 4000;
+      
+      // Для уведомлений о пароле используем больше времени, чтобы пользователь успел их увидеть
+      if (toast.id === 'passwordSaved' || toast.id === 'passwordError') {
+        const passwordDelay = isError ? 7000 : 6000; // Увеличено до 6-7 секунд
+        setTimeout(() => {
+          toast.classList.remove('show');
+          setTimeout(() => {
+            toast.hidden = true;
+            toast.style.display = 'none';
+          }, 180); // После завершения анимации
+        }, passwordDelay);
+        return;
+      }
+      
+      // Для других уведомлений (например, profileSaved) используем стандартное время
+      if (toast.id === 'profileSaved' || toast.id === 'profileError' || toast.id === 'validationErrors') {
+        setTimeout(() => {
+          toast.classList.remove('show');
+          setTimeout(() => {
+            toast.hidden = true;
+            toast.style.display = 'none';
+          }, 180); // После завершения анимации
+        }, delay);
+        return;
+      }
+      
+      // Для остальных уведомлений
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+          toast.hidden = true;
+          toast.style.display = 'none';
+        }, 180); // После завершения анимации
+      }, delay);
+    });
+  }, 300); // Задержка перед началом скрытия
+}
+
+/** Прокрутка к первой ошибке в форме */
+function scrollToFirstError() {
+  const firstError = document.querySelector('.input-error, .error-text');
+  if (firstError) {
+    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Фокус на поле с ошибкой
+    const input = firstError.closest('.field')?.querySelector('input, select, textarea');
+    if (input) {
+      setTimeout(() => input.focus(), 300);
+    }
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   initSubmenuToggle();
   initLogoutButtons();
@@ -840,4 +956,12 @@ document.addEventListener('DOMContentLoaded', function () {
   initPortfolioPage(); // также работает и для "Кладовой идей" (кнопка "Посмотреть")
   initIdeasPage();
   initSub1AzbukaPage();
+  
+  // Автоматическое скрытие toast-уведомлений
+  initToastAutoHide();
+  
+  // Прокрутка к ошибкам, если они есть
+  if (document.querySelector('.toast-error.show, .input-error')) {
+    setTimeout(scrollToFirstError, 100);
+  }
 });

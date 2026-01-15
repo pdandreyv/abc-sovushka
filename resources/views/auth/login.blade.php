@@ -52,14 +52,14 @@
                 <div class="social-login">
                     <p>или через соцсети:</p>
                     <div class="icons">
-                        <button class="icon-btn" type="button"><img src="{{ asset('images/vk-pin.png') }}" alt="VK"></button>
-                        <button class="icon-btn" type="button"><img src="{{ asset('images/yandex-pin.png') }}" alt="Yandex"></button>
-                        <button class="icon-btn" type="button"><img src="{{ asset('images/ok-pin.png') }}" alt="OK"></button>
+                        <a href="{{ route('social.redirect', ['provider' => 'vkontakte']) }}" class="icon-btn" type="button"><img src="{{ asset('images/vk-pin.png') }}" alt="VK"></a>
+                        <a href="{{ route('social.redirect', ['provider' => 'yandex']) }}" class="icon-btn" type="button"><img src="{{ asset('images/yandex-pin.png') }}" alt="Yandex"></a>
+                        <a href="{{ route('social.redirect', ['provider' => 'odnoklassniki']) }}" class="icon-btn" type="button"><img src="{{ asset('images/ok-pin.png') }}" alt="OK"></a>
                     </div>
                 </div>
                 <div class="form-footer">
-                    <p><a href="#">Политика конфиденциальности</a></p>
-                    <p><a href="#">Пользовательское соглашение</a></p>
+                    <p><a href="{{ route('page.show', ['url' => 'politika-konfidentsialnosti']) }}">Политика конфиденциальности</a></p>
+                    <p><a href="{{ route('page.show', ['url' => 'polzovatelskoe-soglashenie']) }}">Пользовательское соглашение</a></p>
                 </div>
             </div>
 
