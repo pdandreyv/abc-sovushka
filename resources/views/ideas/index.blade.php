@@ -63,7 +63,7 @@
     <!-- Сетка карточек -->
     <div class="cards portfolio-grid ideas-grid">
       @forelse($ideas as $idea)
-        <div class="card award-card idea-card" data-keywords="{{ strtolower($idea->title . ' ' . $idea->description) }}">
+        <div class="card award-card idea-card" data-keywords="{{ strtolower(trim($idea->title . ' ' . ($idea->description_text ?? ''))) }}">
           <div class="award-thumb">
             <span class="award-badge badge-free">Бесплатно</span>
 
@@ -101,7 +101,7 @@
 
           <!-- Скрытый блок с описанием -->
           <div class="idea-description" id="desc_idea_{{ $idea->id }}" hidden>
-            {!! nl2br(e($idea->description)) !!}
+            {!! $idea->formatted_description !!}
           </div>
         </div>
       @empty
@@ -141,14 +141,23 @@ document.addEventListener('DOMContentLoaded', function() {
   const emptyMessage = document.getElementById('ideasEmpty');
   const ideaCards = document.querySelectorAll('.idea-card');
 
-  if (searchInput) {
+  if (searchInput && ideaCards.length > 0) {
     searchInput.addEventListener('input', function() {
       const searchTerm = this.value.toLowerCase().trim();
       let foundCount = 0;
 
       ideaCards.forEach(function(card) {
-        const keywords = card.getAttribute('data-keywords') || '';
-        if (keywords.includes(searchTerm) || searchTerm === '') {
+        const keywords = (card.getAttribute('data-keywords') || '').toLowerCase();
+        
+        // Если поисковый запрос пустой, показываем все карточки
+        if (searchTerm === '') {
+          card.style.display = '';
+          foundCount++;
+          return;
+        }
+        
+        // Проверяем, содержит ли keywords поисковый запрос
+        if (keywords.includes(searchTerm)) {
           card.style.display = '';
           foundCount++;
         } else {
@@ -156,9 +165,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
 
+      // Показываем сообщение, если ничего не найдено
       if (foundCount === 0 && searchTerm !== '') {
         emptyMessage.removeAttribute('hidden');
       } else {
+        emptyMessage.setAttribute('hidden', '');
+      }
+    });
+    
+    // Обработка очистки поиска
+    searchInput.addEventListener('search', function() {
+      if (this.value === '') {
+        ideaCards.forEach(function(card) {
+          card.style.display = '';
+        });
         emptyMessage.setAttribute('hidden', '');
       }
     });

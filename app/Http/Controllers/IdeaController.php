@@ -13,7 +13,7 @@ class IdeaController extends Controller
      */
     public function index()
     {
-        $ideas = Idea::orderBy('created_at', 'desc')->get();
+        $ideas = Idea::orderBy('rank', 'desc')->orderBy('created_at', 'desc')->get();
         $userId = Auth::id();
 
         // Помечаем, какие идеи уже лайкнуты текущим пользователем

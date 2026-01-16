@@ -9,8 +9,7 @@
 if ($get['u']=='edit') {
 	// Обработка пустых полей
 	$config['mysql_null'] = true;
-	if (@$post['description']=='') $post['description'] = null;
-	else $post['description'] = trim($post['description']);
+	// hypertext обрабатывается автоматически, не нужно обрезать
 	if (@$post['image']=='') $post['image'] = null;
 	else $post['image'] = trim($post['image']);
 	if (@$post['pdf_file']=='') $post['pdf_file'] = null;
@@ -27,11 +26,12 @@ $a18n['image'] = 'Картинка';
 $a18n['pdf_file'] = 'Файл PDF';
 $a18n['zip_file'] = 'Файл ZIP';
 $a18n['likes'] = 'Лайки';
+$a18n['rank'] = 'Сортировка';
 
 $table = array(
-	'id'		=>	'created_at:desc id',
+	'id'		=>	'rank:desc created_at:desc id',
 	'title'		=>	'',
-	'description'	=>	'',
+	'rank'		=>	'',
 	'likes'		=>	'',
 	'created_at'	=>	'date_smart',
 );
@@ -55,8 +55,13 @@ $query = "
 
 $filter[] = array('search');
 
-$form[] = array('input td12','title');
-$form[] = array('textarea td12','description');
+$form[] = array('input td8','title');
+$form[] = array('input td2','rank');
+$form[] = array('input td2','likes',array(
+	'name'=>'Количество лайков',
+	'value'=>@$post['likes'] ? $post['likes'] : 0
+));
+$form[] = array('hypertext td12','description');
 $form[] = array('file td12','image',array(
 	'name'=>'Картинка'
 ));
@@ -66,7 +71,5 @@ $form[] = array('file td12','pdf_file',array(
 $form[] = array('file td12','zip_file',array(
 	'name'=>'Файл ZIP'
 ));
-$form[] = array('input td3','likes',array(
-	'name'=>'Количество лайков',
-	'value'=>@$post['likes'] ? $post['likes'] : 0
-));
+
+$content = html_array('form/hypertext_templates',array('key'=>'description'));
