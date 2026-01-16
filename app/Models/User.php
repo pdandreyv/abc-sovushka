@@ -63,4 +63,13 @@ class User extends Authenticatable
         $parts = array_filter([$this->last_name, $this->first_name, $this->middle_name]);
         return implode(' ', $parts);
     }
+
+    /**
+     * Идеи, которые пользователь лайкнул
+     */
+    public function likedIdeas(): BelongsToMany
+    {
+        return $this->belongsToMany(Idea::class, 'idea_likes')
+            ->withTimestamps();
+    }
 }

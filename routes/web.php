@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\IdeaController;
 
 // Главная страница - редирект на страницу входа
 Route::get('/', function () {
@@ -34,6 +35,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.change-password');
+    
+    // Кладовая идей
+    Route::get('/ideas', [IdeaController::class, 'index'])->name('ideas.index');
+    Route::post('/ideas/{idea}/like', [IdeaController::class, 'like'])->name('ideas.like');
 });
 
 // Публичные страницы (должен быть в конце, чтобы не перехватывать другие маршруты)

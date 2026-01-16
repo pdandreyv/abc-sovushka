@@ -20,7 +20,7 @@
       <button class="active" type="button" onclick="window.location.href='{{ route('profile.show') }}'">Личные данные</button>
       <button onclick="window.location.href='{{ route('dashboard') }}'" type="button">Портфолио</button>
       <button onclick="window.location.href='{{ route('dashboard') }}'" type="button">Подписки</button>
-      <button onclick="window.location.href='{{ route('dashboard') }}'" type="button">Кладовая идей</button>
+      <button onclick="window.location.href='{{ route('ideas.index') }}'" type="button">Кладовая идей</button>
     </div>
   </div>
 </div>

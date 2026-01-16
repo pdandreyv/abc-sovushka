@@ -64,10 +64,17 @@ $modules_admin = array(
 		)
 	),*/
 	array(
-		'module'=>'languages',
 		'name'=>'dictionary',
 		'image'=>'dictionary',
 		'icon'=>'book-open',
+		'module'=>array(
+			array('module'=>'languages')
+		)
+	),
+	array(
+		'module'=>'ideas',
+		'image'=>'ideas',
+		'icon'=>'star',
 	),
 	/*array(
 		'module'=>'feedback',

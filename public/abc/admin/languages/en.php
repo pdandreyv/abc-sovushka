@@ -38,6 +38,7 @@ $a18n = array(
 'gallery' => 'gallery',
 'go_to_site' => 'go to site',
 'id' => 'ID',
+'ideas' => 'Ideas',
 'img' => 'large',
 'imgp-' => 'preview',
 'imgm-' => 'average',
