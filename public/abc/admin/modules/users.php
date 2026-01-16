@@ -8,6 +8,7 @@
  * v1.4.24 - исправление ошибки
  * v1.4.31 - создание новой записи в автозаплнении
  * v1.4.48 - удалил дату
+ * 2026-01-15 - добавлены поля профиля: last_name, first_name, middle_name, role, city, organization, about
  */
 
 //статусы пользователя
@@ -29,13 +30,28 @@ if ($get['u']=='edit') {
 	else $post['email'] = trim($post['email']);
 	if (@$post['phone']=='') $post['phone'] = null;
 	else $post['phone'] = trim($post['phone']);
+	// Обработка новых полей профиля
+	if (@$post['last_name']=='') $post['last_name'] = null;
+	else $post['last_name'] = trim($post['last_name']);
+	if (@$post['first_name']=='') $post['first_name'] = null;
+	else $post['first_name'] = trim($post['first_name']);
+	if (@$post['middle_name']=='') $post['middle_name'] = null;
+	else $post['middle_name'] = trim($post['middle_name']);
+	if (@$post['role']=='') $post['role'] = null;
+	else $post['role'] = trim($post['role']);
+	if (@$post['city']=='') $post['city'] = null;
+	else $post['city'] = trim($post['city']);
+	if (@$post['organization']=='') $post['organization'] = null;
+	else $post['organization'] = trim($post['organization']);
+	if (@$post['about']=='') $post['about'] = null;
+	else $post['about'] = trim($post['about']);
 	//дополнительные параметры
 	$post['fields'] = isset($post['fields']) ? serialize($post['fields']) : '';
 }
 //исключение для быстрого редактирования
 if ($get['u']=='post') {
 	//если пустые то null, если нет то обрезаем пробелы
-	if (in_array($get['name'],array('phone','email'))) {
+	if (in_array($get['name'],array('phone','email','last_name','first_name','middle_name','role','city','organization','about'))) {
 		$config['mysql_null'] = true; //v1.2.89
 		if ($get['value']=='') $get['value'] = null;
 		else $get['value'] = trim($get['value']);
@@ -44,6 +60,13 @@ if ($get['u']=='post') {
 
 $a18n['type']	= 'статус';
 $a18n['remember_me']	= 'запомнить меня';
+$a18n['last_name']	= 'Фамилия';
+$a18n['first_name']	= 'Имя';
+$a18n['middle_name']	= 'Отчество';
+$a18n['role']	= 'Роль';
+$a18n['city']	= 'Город';
+$a18n['organization']	= 'Школа/сад';
+$a18n['about']	= 'Дополнительная информация';
 
 $table = array(
 	'id'		=>	'id:desc created_at last_visit email',
@@ -70,6 +93,12 @@ $where = (isset($get['type']) && $get['type']>0) ? "AND users.type = '".$get['ty
 if (isset($get['search']) && $get['search']!='') $where.= "
 	AND (
 		LOWER(users.email) like '%".mysql_res(mb_strtolower($get['search'],'UTF-8'))."%'
+		OR LOWER(users.phone) like '%".mysql_res(mb_strtolower($get['search'],'UTF-8'))."%'
+		OR LOWER(users.last_name) like '%".mysql_res(mb_strtolower($get['search'],'UTF-8'))."%'
+		OR LOWER(users.first_name) like '%".mysql_res(mb_strtolower($get['search'],'UTF-8'))."%'
+		OR LOWER(users.middle_name) like '%".mysql_res(mb_strtolower($get['search'],'UTF-8'))."%'
+		OR LOWER(users.city) like '%".mysql_res(mb_strtolower($get['search'],'UTF-8'))."%'
+		OR LOWER(users.organization) like '%".mysql_res(mb_strtolower($get['search'],'UTF-8'))."%'
 		OR LOWER(users.fields) like '%".mysql_res(mb_strtolower($get['search'],'UTF-8'))."%'
 	)
 ";
@@ -97,8 +126,23 @@ function event_delete_users ($q) {
 	mysql_fn('query','DELETE FROM user_socials WHERE user='.$q['id']);
 }
 
+$form[] = array('input td3','last_name');
+$form[] = array('input td3','first_name');
+$form[] = array('input td3','middle_name');
 $form[] = array('input td3','email');
 $form[] = array('input td3','phone');
+$form[] = array('select td3','role',array(
+	'value'=>array(true,array(
+		'teacher' => 'Учитель',
+		'educator' => 'Воспитатель',
+		'tutor' => 'Педагог доп. образования',
+		'parent' => 'Родитель',
+		'other' => 'Другое'
+	),'')
+));
+$form[] = array('input td3','city');
+$form[] = array('input td3','organization');
+$form[] = array('textarea td12','about');
 $form[] = array('input td3','password',array(
 	'value'=>'',
 	'attr'=>'disabled="disabled"'

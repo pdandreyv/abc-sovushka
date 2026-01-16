@@ -21,11 +21,8 @@ Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 
 // Социальная авторизация
-Route::get('/auth/{provider}', [SocialAuthController::class, 'redirect'])->name('social.redirect');
-Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])->name('social.callback');
-
-// Публичные страницы
-Route::get('/page/{url}', [PageController::class, 'show'])->name('page.show');
+Route::get('/auth/{provider}', [SocialAuthController::class, 'redirect'])->where('provider', 'vkontakte|yandex|odnoklassniki')->name('social.redirect');
+Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])->where('provider', 'vkontakte|yandex|odnoklassniki')->name('social.callback');
 
 // Защищенные маршруты
 Route::middleware('auth')->group(function () {
@@ -38,3 +35,6 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.change-password');
 });
+
+// Публичные страницы (должен быть в конце, чтобы не перехватывать другие маршруты)
+Route::get('/{url}', [PageController::class, 'show'])->name('page.show');
