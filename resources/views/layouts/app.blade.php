@@ -12,7 +12,8 @@
     @yield('content')
     @php
         $currentUrl = isset($url) ? $url : (request()->segment(1) ?? '');
-        $hideFooter = in_array($currentUrl, ['politika-konfidentsialnosti', 'polzovatelskoe-soglashenie']);
+        $isAuthPage = request()->routeIs('login') || request()->routeIs('register') || request()->is('login') || request()->is('register');
+        $hideFooter = in_array($currentUrl, ['politika-konfidentsialnosti', 'polzovatelskoe-soglashenie']) || $isAuthPage;
     @endphp
     @if(!$hideFooter)
     <footer class="dashboard-footer">
