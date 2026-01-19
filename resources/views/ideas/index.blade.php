@@ -80,7 +80,7 @@
             </button>
 
             @if($idea->image)
-              <img src="{{ asset('storage/' . $idea->image) }}" alt="{{ $idea->title }}" />
+              <img src="/_imgs/270x185/files/ideas/{{ $idea->id }}/image/{{ $idea->image }}" alt="{{ $idea->title }}" />
             @else
               <img src="{{ asset('images/placeholder.jpg') }}" alt="{{ $idea->title }}" />
             @endif
@@ -88,11 +88,11 @@
 
           <div class="award-actions idea-actions">
             @if($idea->pdf_file)
-              <button class="btn btn-secondary" type="button" data-view-doc="{{ asset('storage/' . $idea->pdf_file) }}">Посмотреть</button>
-              <a class="btn btn-primary" href="{{ asset('storage/' . $idea->pdf_file) }}" target="_blank" rel="noopener">Скачать PDF</a>
+              <button class="btn btn-secondary" type="button" data-view-doc="/files/{{ $idea->pdf_file }}">Посмотреть</button>
+              <a class="btn btn-primary" href="/files/{{ $idea->pdf_file }}" target="_blank" rel="noopener">Скачать PDF</a>
             @endif
             @if($idea->zip_file)
-              <a class="btn btn-secondary" href="{{ asset('storage/' . $idea->zip_file) }}" target="_blank" rel="noopener">Скачать ZIP</a>
+              <a class="btn btn-secondary" href="/files/{{ $idea->zip_file }}" target="_blank" rel="noopener">Скачать ZIP</a>
             @endif
             <button class="btn btn-secondary" type="button" data-open-description="idea_{{ $idea->id }}">Описание</button>
           </div>

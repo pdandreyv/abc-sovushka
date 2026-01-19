@@ -608,7 +608,12 @@ function form_file ($type,$key, $param = array()) {
 	//загрузка с записью в БД
 	elseif ($t=='mysql') {
 		$file = isset($post[$key]) ? $post[$key] : ''; //название файла
-		$root = ROOT_DIR.'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/'; //папка от корня основной папки
+		// Для PDF и ZIP файлов модуля ideas сохраняем в public/files
+		if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
+			$root = ROOT_DIR.'../files/'; //папка от корня основной папки (public/files/)
+		} else {
+			$root = ROOT_DIR.'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/'; //папка от корня основной папки
+		}
 		$temp = isset($_FILES[$key]['tmp_name']) ? $_FILES[$key]['tmp_name'] : ''; //error_handler(1,2,3,'-'.serialize($_FILES).'-');
 		//данные объекта
 		$q = array(
@@ -618,16 +623,40 @@ function form_file ($type,$key, $param = array()) {
 		$message = '';//сообщение с ошибкой
 		if ($get['u']=='edit') {
 			if (is_uploaded_file($temp)) {//проверка записался ли файл на сервер во временную папку
-				if (is_dir($root)) delete_all($root,false); //удаляем без слеша в конце
+				// Для PDF и ZIP файлов модуля ideas не удаляем всю папку, только старый файл
+				if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
+					// Удаляем старый файл, если он существует
+					if ($file && file_exists($root.$file)) {
+						unlink($root.$file);
+					}
+				} else {
+					if (is_dir($root)) delete_all($root,false); //удаляем без слеша в конце
+				}
 				if (is_dir($root) || mkdir ($root,0755,true)) { //создание папок для файла
 					$file = strtolower(trunslit($_FILES[$key]['name'])); //название файла
-					//успешное копирование файла
-					if (copy2 ($temp,$root,$file,$param['sizes'])) {
-						$q[$key] = $file;
-						$message = 'файл загружен!';
+					// Для PDF и ZIP файлов используем простое копирование (copy2 удаляет всю папку)
+					if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
+						// Удаляем только старый файл с таким же именем, если существует
+						if (file_exists($root.$file)) {
+							unlink($root.$file);
+						}
+						// Простое копирование
+						if (copy($temp, $root.$file)) {
+							$q[$key] = $file;
+							$message = 'файл загружен!';
+						} else {
+							$q[$key] = '';
+							$message = 'ошибка загрузки!';
+						}
 					} else {
-						$q[$key] = '';
-						$message = 'ошибка загрузки!';
+						//успешное копирование файла
+						if (copy2 ($temp,$root,$file,$param['sizes'])) {
+							$q[$key] = $file;
+							$message = 'файл загружен!';
+						} else {
+							$q[$key] = '';
+							$message = 'ошибка загрузки!';
+						}
 					}
 					mysql_fn('update',$module['table'],$q);
 				}
@@ -636,11 +665,17 @@ function form_file ($type,$key, $param = array()) {
 		}
 		//шаблон
 		$img = get_img($module['table'],$q,$key,'');
+		// Для PDF и ZIP файлов модуля ideas проверяем файл в public/files
+		if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
+			$is_file = is_file($root.$file);
+		} else {
+			$is_file = is_file($root.$file);
+		}
 		$data = array(
 			'key'=>$key,
 			'img'=>$img,
 			'preview'=>'/_imgs/100x100'.$img,
-			'is_file'=>is_file($root.$file),
+			'is_file'=>$is_file,
 			'file'=>$file,
 			'message'=>$message,
 			'name'=>$name
@@ -650,6 +685,13 @@ function form_file ($type,$key, $param = array()) {
 	//загрузка с записью в БД (HTML5)
 	elseif ($t=='file') {
 		$file = $post[$key] = isset($post[$key]) ? $post[$key] : ''; //название файла
+		// Для PDF и ZIP файлов модуля ideas сохраняем в public/files
+		if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
+			$root = ROOT_DIR.'../files/'; //папка от корня основной папки (public/files/)
+		} else {
+			$relative = 'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/'; //v1.3.17 относительный путь папки
+			$root = ROOT_DIR.$relative; //папка от корня основной папки
+		}
 		//данные объекта
 		$q = array(
 			'id' => $get['id'],
@@ -658,9 +700,17 @@ function form_file ($type,$key, $param = array()) {
 		if ($get['u']=='edit') {
 			//ручное удаление картинки или загрузка новой
 			if ($file=='' OR is_numeric($file)) {
-				delete_all($root,true);
-				//v1.4.41 - удаление превью
-				delete_imgs ($module['table'],$get['id']);
+				// Для PDF и ZIP не удаляем всю папку, только конкретный файл
+				if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
+					// Удаляем только файл из public/files, если он существует
+					if ($file && file_exists($root.$file)) {
+						unlink($root.$file);
+					}
+				} else {
+					delete_all($root,true);
+					//v1.4.41 - удаление превью
+					delete_imgs ($module['table'],$get['id']);
+				}
 			}
 			$temp = ROOT_DIR.'files/temp/'.$file.'/'; //временная папка на сервере
 			//если название файла целое число и есть временная папка, значит происходит загрузка нового файла
@@ -673,13 +723,27 @@ function form_file ($type,$key, $param = array()) {
 						break;
 					}
 				}
-				//успешное копирование файла
-				if (copy2 ($temp_file,$root,$file,$param['sizes'])) {
-					$q[$key] = $file;
-				}
-				//ошибка
-				else {
-					$q[$key] = '';
+				// Для PDF и ZIP файлов используем простое копирование (copy2 удаляет всю папку)
+				if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
+					// Удаляем только старый файл с таким же именем, если существует
+					if (file_exists($root.$file)) {
+						unlink($root.$file);
+					}
+					// Простое копирование
+					if (copy($temp_file, $root.$file)) {
+						$q[$key] = $file;
+					} else {
+						$q[$key] = '';
+					}
+				} else {
+					//успешное копирование файла
+					if (copy2 ($temp_file,$root,$file,$param['sizes'])) {
+						$q[$key] = $file;
+					}
+					//ошибка
+					else {
+						$q[$key] = '';
+					}
 				}
 				$post[$key] = $q[$key];
 				mysql_fn('update',$module['table'],$q);
@@ -687,11 +751,17 @@ function form_file ($type,$key, $param = array()) {
 				delete_all($temp,true);
 			}
 		}
+		// Для PDF и ZIP файлов модуля ideas проверяем файл в public/files
+		if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
+			$is_file = is_file($root.$file);
+		} else {
+			$is_file = is_file($root.$file);
+		}
 		$data = array(
 			'img'=>get_img($module['table'],$q,$key),
 			'name'=>$name,
 			'type'=>$type,
-			'is_file'=>is_file($root.$file),
+			'is_file'=>$is_file,
 			'key'=>$key,
 			'item'=>$q,
 			'sizes'=>$param['sizes'],

@@ -398,7 +398,14 @@ function get_img($table,$q,$key='img',$p='') {
 	//тут можно написать полный путь с доменом
 	$site = '';
 	//одна картинка
-	if (@$q[$key]) $img = '/files/'.$table.'/'.$q['id'].'/'.$key.'/'.$p.$q[$key];
+	if (@$q[$key]) {
+		// Для PDF и ZIP файлов модуля ideas путь в public/files
+		if ($table == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
+			$img = '/files/'.$p.$q[$key];
+		} else {
+			$img = '/files/'.$table.'/'.$q['id'].'/'.$key.'/'.$p.$q[$key];
+		}
+	}
 	//v1.4.59 - hypertext
 	elseif (strpos($key, '_')) {
 		// /news/18/hypertext/2_3/img.jpg

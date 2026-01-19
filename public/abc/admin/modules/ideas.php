@@ -63,7 +63,8 @@ $form[] = array('input td2','likes',array(
 ));
 $form[] = array('hypertext td12','description');
 $form[] = array('file td12','image',array(
-	'name'=>'Картинка'
+	'name'=>'Картинка',
+	'sizes'=>array(''=>'', '270x185'=>'resize 270x185')
 ));
 $form[] = array('file td12','pdf_file',array(
 	'name'=>'Файл PDF'
