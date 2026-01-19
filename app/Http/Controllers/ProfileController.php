@@ -101,16 +101,24 @@ class ProfileController extends Controller
         try {
             $request->validate([
                 'current_password' => 'required',
-                'new_password' => ['required', 'confirmed', Password::defaults()],
+                'new_password' => ['required', 'confirmed', Password::min(8)],
             ], [
                 'current_password.required' => 'Введите текущий пароль.',
                 'new_password.required' => 'Введите новый пароль.',
+                'new_password.min' => 'Пароль должен содержать минимум 8 символов.',
                 'new_password.confirmed' => 'Пароли не совпадают.',
             ]);
 
             $user = Auth::user();
 
             if (!Hash::check($request->current_password, $user->password)) {
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Неверный текущий пароль.',
+                        'error_type' => 'current_password'
+                    ], 422);
+                }
                 return back()
                     ->withErrors(['current_password' => 'Неверный текущий пароль.'])
                     ->with('password_error', 'Неверный текущий пароль.');
@@ -120,14 +128,34 @@ class ProfileController extends Controller
                 'password' => Hash::make($request->new_password),
             ]);
 
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Вы успешно сменили пароль!'
+                ]);
+            }
+
             return back()->with('password_success', 'Вы успешно сменили пароль!');
             
         } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Пожалуйста, исправьте ошибки в форме.',
+                    'errors' => $e->errors()
+                ], 422);
+            }
             return back()
                 ->withErrors($e->errors())
                 ->with('password_error', 'Пожалуйста, исправьте ошибки в форме.');
                 
         } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Произошла ошибка при изменении пароля. Попробуйте еще раз.'
+                ], 500);
+            }
             return back()
                 ->with('password_error', 'Произошла ошибка при изменении пароля. Попробуйте еще раз.');
         }

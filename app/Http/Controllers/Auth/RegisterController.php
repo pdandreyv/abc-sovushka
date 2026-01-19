@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\DB;
 
 class RegisterController extends Controller
@@ -17,7 +16,7 @@ class RegisterController extends Controller
      */
     public function showRegistrationForm()
     {
-        return view('auth.register');
+        return view('auth.login');
     }
 
     /**
@@ -30,7 +29,7 @@ class RegisterController extends Controller
             'first_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => ['required', 'confirmed', Password::defaults()],
+            'password' => 'required|string|min:8|confirmed',
         ], [
             'last_name.required' => 'Поле Фамилия обязательно для заполнения.',
             'first_name.required' => 'Поле Имя обязательно для заполнения.',
@@ -38,6 +37,7 @@ class RegisterController extends Controller
             'email.email' => 'Email должен быть действительным адресом электронной почты.',
             'email.unique' => 'Пользователь с таким email уже зарегистрирован.',
             'password.required' => 'Поле Пароль обязательно для заполнения.',
+            'password.min' => 'Пароль должен содержать минимум 8 символов.',
             'password.confirmed' => 'Пароли не совпадают.',
         ]);
 

@@ -10,6 +10,24 @@
 </head>
 <body>
     @yield('content')
+    @php
+        $currentUrl = isset($url) ? $url : (request()->segment(1) ?? '');
+        $hideFooter = in_array($currentUrl, ['politika-konfidentsialnosti', 'polzovatelskoe-soglashenie']);
+    @endphp
+    @if(!$hideFooter)
+    <footer class="dashboard-footer">
+        <div class="footer-content">
+            <div class="footer-copyright">
+                © {{ date('Y') }} Совушкина школа
+            </div>
+            <div class="footer-links">
+                <a href="{{ route('page.show', ['url' => 'politika-konfidentsialnosti']) }}" target="_blank" rel="noopener noreferrer">Политика конфиденциальности</a>
+                <span class="footer-separator">|</span>
+                <a href="{{ route('page.show', ['url' => 'polzovatelskoe-soglashenie']) }}" target="_blank" rel="noopener noreferrer">Пользовательское соглашение</a>
+            </div>
+        </div>
+    </footer>
+    @endif
     @stack('scripts')
 </body>
 </html>

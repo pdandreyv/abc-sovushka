@@ -144,6 +144,7 @@ body {
 .main {
   flex: 1;
   padding: 24px;
+  padding-bottom: 60px; /* Отступ для подвала */
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -1255,4 +1256,71 @@ body {
   font-size: 13px;
   padding: 9px 10px;
   border-radius: 8px;
+}
+
+/* =============================================================
+   FOOTER - Подвал для личного кабинета
+   ============================================================= */
+.dashboard-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--light-gray);
+  border-top: 1px solid #e0e0e0;
+  padding: 12px 0;
+  z-index: 100;
+}
+
+.footer-content {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: #666;
+}
+
+.footer-copyright {
+  flex-shrink: 0;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.footer-links a {
+  color: #666;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover {
+  color: var(--blue);
+  text-decoration: underline;
+}
+
+.footer-separator {
+  color: #ccc;
+  margin: 0 4px;
+}
+
+/* Адаптация для мобильных устройств */
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+    font-size: 12px;
+  }
+  
+  .footer-links {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }

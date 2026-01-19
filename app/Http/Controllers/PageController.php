@@ -31,6 +31,7 @@ class PageController extends Controller
         return view('page.show', [
             'page' => $page,
             'content' => $content,
+            'url' => $url,
         ]);
     }
 }

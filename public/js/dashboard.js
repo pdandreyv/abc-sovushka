@@ -1,29 +1,80 @@
 /* 
   Совушкина школа — общий JS для страниц кабинета
-
-  Основной путь: /JS/dashboard_script.js
   Скрипт делает:
   - модальные окна (в т.ч. подтверждение выхода)
   - просмотр документов (через viewer.html)
   - лайки и описание на странице ideas.html
   - переключатели/мелкие интерактивные элементы
-
-  Подсказка новичкам:
-  - Главные функции: initLogoutButtons(), initPortfolioPage(), initIdeasPage()
-  - В корне проекта может лежать копия этого файла для обратной совместимости.
+  - AJAX отправка формы смены пароля
 */
-// Совушкина школа — общий скрипт личного кабинета
-// -------------------------------------------------------------
-// Для новичков-программистов:
-// - Этот файл подключается ко всем страницам кабинета.
-// - Здесь лежит "поведение": раскрытие меню подписок, сохранение профиля,
-//   просмотр документов, лайки, модальные окна и подтверждение выхода.
-// - Проект сейчас работает в статическом режиме (без сервера). Поэтому:
-//   * профиль и лайки сохраняются в localStorage (внутри браузера пользователя)
-//   * "общие лайки всех пользователей" можно сделать только после подключения backend API.
-// -------------------------------------------------------------
 
-/** Утилита: безопасно читаем JSON из localStorage */
+// Глобальные функции для работы с формой смены пароля
+window.showPasswordErrors = function(errors) {
+  const passwordError = document.getElementById('passwordError');
+  const passwordSaved = document.getElementById('passwordSaved');
+  const changePasswordPanel = document.getElementById('changePasswordPanel');
+  const validationErrors = document.getElementById('validationErrors');
+  
+  if (!passwordError) return;
+  
+  const errorContent = document.getElementById('passwordErrorContent');
+  if (!errorContent) return;
+  
+  if (passwordSaved) {
+    passwordSaved.hidden = true;
+    passwordSaved.classList.remove('show');
+  }
+  
+  if (validationErrors) {
+    validationErrors.hidden = true;
+    validationErrors.classList.remove('show');
+  }
+  
+  if (errors.length === 1) {
+    errorContent.innerHTML = '❌ ' + errors[0];
+  } else {
+    errorContent.innerHTML = '❌ <strong>Ошибки:</strong><ul style="margin: 8px 0 0 0; padding-left: 20px;">' +
+      errors.map(err => '<li>' + err + '</li>').join('') +
+      '</ul>';
+  }
+  
+  passwordError.hidden = false;
+  passwordError.classList.add('show');
+  passwordError.style.display = 'block';
+  passwordError.style.opacity = '1';
+  
+  if (changePasswordPanel) {
+    changePasswordPanel.hidden = false;
+  }
+  
+  setTimeout(() => {
+    passwordError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 100);
+};
+
+window.showPasswordSuccess = function(message) {
+  const passwordSaved = document.getElementById('passwordSaved');
+  const passwordError = document.getElementById('passwordError');
+  
+  if (!passwordSaved) return;
+  
+  if (passwordError) {
+    passwordError.hidden = true;
+    passwordError.classList.remove('show');
+  }
+  
+  passwordSaved.textContent = '✅ ' + (message || 'Пароль успешно изменен!');
+  passwordSaved.hidden = false;
+  passwordSaved.classList.add('show');
+  passwordSaved.style.display = 'inline-flex';
+  passwordSaved.style.opacity = '1';
+  
+  setTimeout(() => {
+    passwordSaved.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 100);
+};
+
+// Утилиты
 function loadJSON(key, fallback = null) {
   try {
     const raw = localStorage.getItem(key);
@@ -33,34 +84,27 @@ function loadJSON(key, fallback = null) {
   }
 }
 
-/** Утилита: безопасно пишем JSON в localStorage */
 function saveJSON(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (e) {
-    // Если localStorage недоступен (редко), просто молчим
+    // localStorage недоступен
   }
 }
 
-/** Утилита: показать элемент на короткое время (toast/баннер) */
 function showTemporarily(el, ms = 2000) {
   if (!el) return;
   el.hidden = false;
   window.setTimeout(() => (el.hidden = true), ms);
 }
 
-/** Утилита: получить параметр из URL */
 function getQueryParam(name) {
   const p = new URLSearchParams(window.location.search);
   return p.get(name);
 }
 
-/* =============================================================
-   1) Подменю "Подписки"
-   ============================================================= */
-
+// Подменю "Подписки"
 function toggleSubmenu() {
-  // Глобальная функция нужна, потому что в main_dashboard.html используется inline onclick="toggleSubmenu()"
   const submenuList = document.querySelector('.submenu-list');
   const toggleIcon = document.querySelector('.toggle-icon');
   if (!submenuList) return;
@@ -72,24 +116,14 @@ function toggleSubmenu() {
 }
 
 function initSubmenuToggle() {
-  // На новых страницах используем атрибут data-submenu-toggle (без inline JS)
   const btn = document.querySelector('button[data-submenu-toggle]');
   if (!btn) return;
 
-  btn.addEventListener('click', function () {
-    toggleSubmenu();
-  });
+  btn.addEventListener('click', toggleSubmenu);
 }
 
-/* =============================================================
-   2) Модальное окно (универсальное)
-   Используем для:
-   - "Описание" (Кладовая идей)
-   - подтверждение "Выйти" (все страницы кабинета)
-   ============================================================= */
-
+// Модальное окно (универсальное)
 function ensureModalExists() {
-  // Если модалки нет в HTML — создадим её через JS (чтобы не дублировать разметку во всех страницах)
   let overlay = document.getElementById('modalOverlay');
   if (overlay) return;
 
@@ -131,10 +165,8 @@ function openModal({ title = '', bodyHTML = '', showActions = false, onConfirm =
   titleEl.textContent = title;
   bodyEl.innerHTML = bodyHTML;
 
-  // Управляем кнопками подтверждения
   if (actions) actions.hidden = !showActions;
 
-  // Сбросим старые обработчики подтверждения
   if (btnConfirm) btnConfirm.onclick = null;
   if (btnCancel) btnCancel.onclick = null;
 
@@ -146,7 +178,6 @@ function openModal({ title = '', bodyHTML = '', showActions = false, onConfirm =
     };
   }
 
-  // Закрытие по кнопке крестик / клику на фон / ESC
   function onOverlayClick(e) {
     if (e.target === overlay) closeModal();
   }
@@ -162,7 +193,6 @@ function openModal({ title = '', bodyHTML = '', showActions = false, onConfirm =
     btnClose.onclick = () => closeModal();
   }
 
-  // Запомним обработчики, чтобы снять их при закрытии
   overlay._cleanup = () => {
     overlay.removeEventListener('click', onOverlayClick);
     document.removeEventListener('keydown', onEsc);
@@ -174,17 +204,13 @@ function closeModal() {
   if (!overlay) return;
   overlay.hidden = true;
 
-  // Снимаем обработчики (если есть)
   if (typeof overlay._cleanup === 'function') {
     overlay._cleanup();
     overlay._cleanup = null;
   }
 }
 
-/* =============================================================
-   3) Кнопка "Выйти" + подтверждение
-   ============================================================= */
-
+// Кнопка "Выйти" + подтверждение
 function initLogoutButtons() {
   const logoutButtons = document.querySelectorAll('.user-logout-link[data-logout]');
   if (!logoutButtons.length) return;
@@ -199,12 +225,10 @@ function initLogoutButtons() {
         bodyHTML: '<p>Вы уверены, что хотите выйти из личного кабинета?</p>',
         showActions: true,
         onConfirm: () => {
-          // Находим форму выхода и отправляем её
           const logoutForm = document.getElementById('logout-form') || document.querySelector('form[action*="logout"]');
           if (logoutForm) {
             logoutForm.submit();
           } else {
-            // Если форма не найдена, редиректим на страницу входа
             window.location.href = '/login';
           }
         },
@@ -213,33 +237,24 @@ function initLogoutButtons() {
   });
 }
 
-/* =============================================================
-   4) Страница нового пользователя: "Личные данные"
-   - сохранение профиля
-   - режим "редактировать"
-   - "Сменить пароль" (показывает форму)
-   ============================================================= */
-
+// Страница "Личные данные"
 function initProfileOnboardingPage() {
   const profileForm = document.getElementById('profileForm');
-  if (!profileForm) return; // На других страницах формы нет
+  if (!profileForm) return;
 
   const formFields = profileForm.querySelectorAll('input, select, textarea');
   const saveBtn = document.getElementById('saveProfileBtn');
   const editBtn = document.getElementById('editProfileBtn');
   const savedBanner = document.getElementById('profileSaved');
-
   const changePasswordLink = document.getElementById('changePasswordLink');
   const changePasswordPanel = document.getElementById('changePasswordPanel');
-  const passwordForm = document.getElementById('passwordForm');
-  const passwordSaved = document.getElementById('passwordSaved');
   const passwordError = document.getElementById('passwordError');
+  const passwordSaved = document.getElementById('passwordSaved');
 
   const STORAGE_KEY = 'sovushka_profile_v1';
 
   function setReadOnly(isReadOnly) {
     formFields.forEach((el) => {
-      // Можно исключать поля из блокировки: data-always-editable="true"
       if (el.dataset.alwaysEditable === 'true') return;
       el.disabled = isReadOnly;
     });
@@ -266,20 +281,11 @@ function initProfileOnboardingPage() {
     return data;
   }
 
-  // При загрузке страницы: если это Laravel форма с данными, показываем режим "только чтение"
-  // Проверяем, есть ли данные в форме (Laravel заполняет форму из базы данных)
   const hasData = Array.from(formFields).some(field => field.value && field.value.trim() !== '');
   
-  // Если форма Laravel (имеет action), проверяем наличие данных
   if (profileForm.action && profileForm.method) {
-    // Для Laravel: если есть данные, показываем режим "только чтение"
-    if (hasData) {
-      setReadOnly(true);
-    } else {
-      setReadOnly(false);
-    }
+    setReadOnly(hasData);
   } else {
-    // Для демо: используем localStorage
     const savedProfile = loadJSON(STORAGE_KEY, null);
     if (savedProfile) {
       fillForm(savedProfile);
@@ -293,15 +299,11 @@ function initProfileOnboardingPage() {
     saveBtn.addEventListener('click', (e) => {
       e.preventDefault();
       
-      // Если форма имеет action (Laravel форма), отправляем её на сервер
       if (profileForm.action && profileForm.method) {
         profileForm.submit();
       } else {
-        // Иначе используем localStorage (для демо)
         const data = collectFormData();
         saveJSON(STORAGE_KEY, data);
-
-        // Покажем подтверждение и заблокируем поля
         showTemporarily(savedBanner, 2000);
         setReadOnly(true);
       }
@@ -315,116 +317,44 @@ function initProfileOnboardingPage() {
     });
   }
 
-  // "Сменить пароль" — показываем/скрываем панель
   if (changePasswordLink && changePasswordPanel) {
     changePasswordLink.addEventListener('click', (e) => {
       e.preventDefault();
       changePasswordPanel.hidden = !changePasswordPanel.hidden;
-      // Очищаем ошибки при открытии панели
-      if (!changePasswordPanel.hidden && passwordError) {
+      if (changePasswordPanel.hidden && passwordError) {
         passwordError.hidden = true;
         passwordError.classList.remove('show');
       }
     });
   }
 
-  // Автоматически показываем уведомления о пароле при загрузке страницы
-  if (passwordSaved) {
-    // Проверяем, есть ли уведомление в сессии (оно уже должно быть видимым из Blade)
-    if (passwordSaved.classList.contains('show')) {
-      // Убеждаемся, что уведомление видимо
-      passwordSaved.hidden = false;
-      passwordSaved.style.display = 'inline-flex';
-      passwordSaved.style.opacity = '1';
-      
-      // Если есть успешное уведомление, скрываем панель смены пароля
-      if (changePasswordPanel) changePasswordPanel.hidden = true;
-      // Очищаем поля формы
-      ['current_password', 'new_password', 'repeat_password'].forEach((id) => {
-        const el = document.getElementById(id);
-        if (el) el.value = '';
-      });
-      // Прокручиваем к уведомлению, чтобы пользователь его увидел
-      setTimeout(() => {
-        passwordSaved.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 200);
-    }
+  if (passwordSaved && passwordSaved.classList.contains('show')) {
+    passwordSaved.hidden = false;
+    passwordSaved.style.display = 'inline-flex';
+    passwordSaved.style.opacity = '1';
+    
+    if (changePasswordPanel) changePasswordPanel.hidden = true;
+    ['current_password', 'new_password', 'repeat_password'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    setTimeout(() => {
+      passwordSaved.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 200);
   }
   
-  // Также обрабатываем ошибки пароля
   if (passwordError && passwordError.classList.contains('show')) {
-    // Убеждаемся, что уведомление видимо
     passwordError.hidden = false;
     passwordError.style.display = 'inline-flex';
     passwordError.style.opacity = '1';
-    // Прокручиваем к ошибке
     setTimeout(() => {
       passwordError.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 200);
   }
-
-  // Смена пароля
-  if (passwordForm) {
-    passwordForm.addEventListener('submit', (e) => {
-      // Если форма имеет action (Laravel форма), отправляем её на сервер
-      if (passwordForm.action && passwordForm.method) {
-        // Позволяем форме отправиться на сервер
-        // Валидация будет на сервере
-        // После успешной отправки Laravel вернет страницу с сессионным сообщением
-        return true;
-      }
-
-      // Иначе используем клиентскую валидацию (для демо)
-      e.preventDefault();
-
-      const newPass = document.getElementById('new_password')?.value || '';
-      const repeatPass = document.getElementById('repeat_password')?.value || '';
-
-      if (passwordError) {
-        passwordError.hidden = true;
-        passwordError.classList.remove('show');
-      }
-
-      if (!newPass || newPass.length < 6) {
-        if (passwordError) {
-          passwordError.textContent = 'Пароль должен быть не короче 6 символов.';
-          passwordError.hidden = false;
-          passwordError.classList.add('show');
-        }
-        return;
-      }
-      if (newPass !== repeatPass) {
-        if (passwordError) {
-          passwordError.textContent = 'Пароли не совпадают.';
-          passwordError.hidden = false;
-          passwordError.classList.add('show');
-        }
-        return;
-      }
-
-      // В демо просто показываем успешный toast
-      if (passwordSaved) {
-        passwordSaved.hidden = false;
-        passwordSaved.classList.add('show');
-        showTemporarily(passwordSaved, 3000);
-      }
-      if (changePasswordPanel) changePasswordPanel.hidden = true;
-
-      // Очистим поля
-      ['current_password', 'new_password', 'repeat_password'].forEach((id) => {
-        const el = document.getElementById(id);
-        if (el) el.value = '';
-      });
-    });
-  }
 }
 
-/* =============================================================
-   5) Портфолио: кнопка "Посмотреть"
-   ============================================================= */
-
+// Портфолио: кнопка "Посмотреть"
 function initPortfolioPage() {
-  // Кнопки просмотра документов в портфолио/кладовой идей помечены data-view-doc
   const viewButtons = document.querySelectorAll('[data-view-doc]');
   if (!viewButtons.length) return;
 
@@ -432,31 +362,17 @@ function initPortfolioPage() {
     btn.addEventListener('click', () => {
       const doc = btn.getAttribute('data-view-doc');
       if (!doc) return;
-
-      // Открываем viewer.html в новом окне/вкладке.
-      // viewer.html сам подставит нужный документ по параметру doc.
       window.open(`viewer.html?doc=${encodeURIComponent(doc)}`, '_blank', 'noopener');
     });
   });
 }
 
-/* =============================================================
-   6) Кладовая идей:
-   - лайки (сердечко)
-   - модалка "Описание"
-   ============================================================= */
-
+// Кладовая идей: лайки и описание
 function initIdeasPage() {
-  // Эта функция нужна только на странице ideas.html
   if (!document.body || !document.title.includes('Кладовая идей')) return;
 
-  // Поиск по материалам (поле вверху страницы)
   initIdeasSearch();
 
-  // ---- ЛАЙКИ ----
-  // Храним в localStorage:
-  // - sov_like_user::<id>  (true/false) — поставил ли лайк текущий пользователь
-  // - sov_like_count::<id> (number) — счётчик (в демо локальный)
   const likeButtons = document.querySelectorAll('[data-like-id]');
   likeButtons.forEach((btn) => {
     const id = btn.getAttribute('data-like-id');
@@ -477,10 +393,8 @@ function initIdeasPage() {
     }
 
     btn.addEventListener('click', () => {
-      // toggle
       liked = !liked;
       count = Math.max(0, count + (liked ? 1 : -1));
-
       saveJSON(userKey, liked);
       saveJSON(countKey, count);
       render();
@@ -489,16 +403,13 @@ function initIdeasPage() {
     render();
   });
 
-  // ---- ОПИСАНИЕ (модальное окно) ----
   const descButtons = document.querySelectorAll('[data-open-description]');
   descButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
       const id = btn.getAttribute('data-open-description');
       const block = document.getElementById(`desc_${id}`);
-      const title = 'Описание материала';
-
       openModal({
-        title,
+        title: 'Описание материала',
         bodyHTML: block ? block.innerHTML : '<p>Описание не найдено.</p>',
         showActions: false,
       });
@@ -506,22 +417,10 @@ function initIdeasPage() {
   });
 }
 
-/* =============================================================
-   Инициализация: запускаем нужные функции после загрузки DOM
-   ============================================================= */
-
-
-
-/* =============================================================
-   8) Кладовая идей — поиск по ключевым словам (ideas.html)
-   Для новичков:
-   - Мы читаем текст из названия карточки и описания (скрытый блок).
-   - Пользователь вводит слово — карточки фильтруются “на лету”.
-   ============================================================= */
-
+// Кладовая идей — поиск
 function initIdeasSearch() {
   const searchInput = document.getElementById('ideasSearch');
-  if (!searchInput) return; // не на странице ideas.html
+  if (!searchInput) return;
 
   const cards = Array.from(document.querySelectorAll('.idea-card'));
   const emptyState = document.getElementById('ideasEmpty');
@@ -560,21 +459,10 @@ function initIdeasSearch() {
   }
 
   searchInput.addEventListener('input', applyFilter);
-  applyFilter(); // применим на старте (если браузер восстановил текст)
+  applyFilter();
 }
 
-
-
-
-/* ============================================================
-   1 класс → Русский язык. Азбука (sub_1_RUS_A.html)
-   ------------------------------------------------------------
-   Как это работает:
-   - Слева список тем (topic-list)
-   - Справа список файлов выбранной темы (files-list) + описание
-   - Неактивные темы — те, у которых пока нет загруженных файлов
-   - Поиск фильтрует темы по номеру/названию/ключевым словам
-   ============================================================ */
+// 1 класс → Русский язык. Азбука
 function initSub1AzbukaPage() {
   const searchInput = document.getElementById('azbukaSearch');
   const topicsRoot = document.getElementById('azbukaTopics');
@@ -583,13 +471,8 @@ function initSub1AzbukaPage() {
   const filesRoot = document.getElementById('azbukaFiles');
   const descRoot = document.getElementById('azbukaDescription');
 
-  // Если мы не на странице Азбуки — просто выходим
   if (!searchInput || !topicsRoot || !filesRoot) return;
 
-  // Данные для демо (позже легко заменить на загрузку из БД/API)
-  // Вариант для сервера:
-  // - Список тем приходит с сервера (id, title, keywords, files[], descriptionHtml)
-  // - По клику на тему можно подгружать файлы отдельно (lazy load)
   const TOPICS = [
     {
       id: 1,
@@ -631,7 +514,7 @@ function initSub1AzbukaPage() {
       number: 2,
       title: 'Устная и письменная речь. Предложение',
       keywords: 'устная письменная речь предложение',
-      files: [], // пока нет файлов → тема неактивна
+      files: [],
       descriptionHtml: '',
     },
     {
@@ -639,7 +522,7 @@ function initSub1AzbukaPage() {
       number: 3,
       title: 'Кто любит трудиться, тому без дела не сидится. Предложение и слово',
       keywords: 'трудиться без дела предложение слово',
-      files: [], // пока нет файлов → тема неактивна
+      files: [],
       descriptionHtml: '',
     },
   ];
@@ -652,20 +535,17 @@ function initSub1AzbukaPage() {
 
   function matchesTopic(topic, query) {
     if (!query) return true;
-
     const q = normalize(query);
     const hay = normalize(`${topic.number} ${topic.title} ${topic.keywords}`);
     return hay.includes(q);
   }
 
   function openViewer(path) {
-    // Viewer открывается в новой вкладке; doc можно передавать как относительный путь.
     const url = `viewer.html?doc=${encodeURIComponent(path)}`;
     window.open(url, '_blank', 'noopener');
   }
 
   function renderFiles(topic) {
-    // Очистим правую колонку
     filesRoot.innerHTML = '';
     if (descRoot) {
       descRoot.hidden = true;
@@ -673,7 +553,6 @@ function initSub1AzbukaPage() {
     }
     if (hintBox) hintBox.hidden = true;
 
-    // Если файлов нет — покажем аккуратную подсказку
     if (!topic || !Array.isArray(topic.files) || topic.files.length === 0) {
       if (hintBox) {
         hintBox.hidden = false;
@@ -683,13 +562,9 @@ function initSub1AzbukaPage() {
     }
 
     const all = topic.files.slice();
-
     const norm = (s) => String(s || '').trim().toLowerCase();
     const isKind = (f, kind) => norm(f.kind) === norm(kind);
 
-    // 1) "Презентация" (PDF) + ZIP-архив в ОДНУ строку
-    // 2) Отдельный блок "Презентация (архив)" НЕ показываем
-    // 3) "Творческое задание" — кнопки справа от заголовка
     const presPdf = all.find((f) => isKind(f, 'pdf') && norm(f.label) === 'презентация');
     const presZip = all.find((f) => isKind(f, 'zip') && norm(f.label).startsWith('презентация'));
     const creative = all.find((f) => ['jpg','jpeg','png','webp'].includes(norm(f.kind)) && norm(f.label).startsWith('творческое'));
@@ -723,7 +598,6 @@ function initSub1AzbukaPage() {
 
       const top = document.createElement('div');
       top.className = 'file-card__top';
-      // Чтобы не было лишнего "низа" у заголовка, когда кнопки справа
       top.style.alignItems = 'center';
       top.style.marginBottom = '0';
 
@@ -731,15 +605,12 @@ function initSub1AzbukaPage() {
       name.className = 'file-name';
       name.textContent = title;
 
-      // Используем уже существующий стиль .card-actions (как в других разделах)
       const actions = document.createElement('div');
       actions.className = 'card-actions';
-
       buttons.forEach((b) => actions.appendChild(b));
 
       top.appendChild(name);
       top.appendChild(actions);
-
       card.appendChild(top);
       filesRoot.appendChild(card);
     }
@@ -763,7 +634,6 @@ function initSub1AzbukaPage() {
       markHandled(creative);
     }
 
-    // Остальные файлы (если появятся) — рендерим по старой схеме
     all.forEach((f) => {
       if (!f || !f.path) return;
       if (handled.has(f.path)) return;
@@ -800,18 +670,15 @@ function initSub1AzbukaPage() {
       filesRoot.appendChild(card);
     });
 
-    // Описание
     if (descRoot && topic.descriptionHtml) {
       descRoot.innerHTML = topic.descriptionHtml;
       descRoot.hidden = false;
     }
   }
 
-
   function setActive(topicId) {
     activeId = topicId;
 
-    // Подсветка активной темы
     const items = topicsRoot.querySelectorAll('.topic-item');
     items.forEach((el) => {
       const id = Number(el.getAttribute('data-topic-id'));
@@ -855,8 +722,8 @@ function initSub1AzbukaPage() {
 
       const badge = document.createElement('div');
       badge.className = 'topic-badge';
-     badge.textContent = hasFiles ? '📎' : '🔒';
-badge.title = hasFiles ? 'Материалы доступны' : 'В работе';
+      badge.textContent = hasFiles ? '📎' : '🔒';
+      badge.title = hasFiles ? 'Материалы доступны' : 'В работе';
 
       item.appendChild(left);
       item.appendChild(badge);
@@ -868,7 +735,6 @@ badge.title = hasFiles ? 'Материалы доступны' : 'В работ�
       topicsRoot.appendChild(item);
     });
 
-    // Если активная тема скрылась фильтром — сбросим выбор
     if (activeId && !visible.some((t) => t.id === activeId)) {
       activeId = null;
       filesRoot.innerHTML = '';
@@ -884,63 +750,37 @@ badge.title = hasFiles ? 'Материалы доступны' : 'В работ�
   }
 
   searchInput.addEventListener('input', renderTopics);
-  renderTopics(); // стартовый рендер
+  renderTopics();
 }
 
-
-/** Автоматическое скрытие toast-уведомлений */
+// Автоматическое скрытие toast-уведомлений
 function initToastAutoHide() {
-  // Небольшая задержка, чтобы уведомления успели отобразиться
   setTimeout(() => {
     const toasts = document.querySelectorAll('.toast.show');
     toasts.forEach((toast) => {
-      // Скрываем через 5 секунд для ошибок, 4 секунды для успеха
+      if (toast.id === 'passwordSaved' || toast.id === 'passwordError') {
+        return;
+      }
+      
       const isError = toast.classList.contains('toast-error');
       const delay = isError ? 5000 : 4000;
       
-      // Для уведомлений о пароле используем больше времени, чтобы пользователь успел их увидеть
-      if (toast.id === 'passwordSaved' || toast.id === 'passwordError') {
-        const passwordDelay = isError ? 7000 : 6000; // Увеличено до 6-7 секунд
-        setTimeout(() => {
-          toast.classList.remove('show');
-          setTimeout(() => {
-            toast.hidden = true;
-            toast.style.display = 'none';
-          }, 180); // После завершения анимации
-        }, passwordDelay);
-        return;
-      }
-      
-      // Для других уведомлений (например, profileSaved) используем стандартное время
-      if (toast.id === 'profileSaved' || toast.id === 'profileError' || toast.id === 'validationErrors') {
-        setTimeout(() => {
-          toast.classList.remove('show');
-          setTimeout(() => {
-            toast.hidden = true;
-            toast.style.display = 'none';
-          }, 180); // После завершения анимации
-        }, delay);
-        return;
-      }
-      
-      // Для остальных уведомлений
       setTimeout(() => {
         toast.classList.remove('show');
         setTimeout(() => {
           toast.hidden = true;
           toast.style.display = 'none';
-        }, 180); // После завершения анимации
+        }, 180);
       }, delay);
     });
-  }, 300); // Задержка перед началом скрытия
+  }, 300);
 }
 
-/** Прокрутка к первой ошибке в форме */
+// Прокрутка к первой ошибке в форме
 function scrollToFirstError() {
   const firstError = document.querySelector('.input-error, .error-text');
   if (firstError) {
     firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    // Фокус на поле с ошибкой
     const input = firstError.closest('.field')?.querySelector('input, select, textarea');
     if (input) {
       setTimeout(() => input.focus(), 300);
@@ -948,19 +788,187 @@ function scrollToFirstError() {
   }
 }
 
+// Делегирование событий для формы смены пароля на уровне document
+document.addEventListener('submit', async function(e) {
+  const form = e.target;
+  
+  if (form && (form.id === 'passwordForm' || form.getAttribute('data-ajax-form') === 'true')) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    e.cancelBubble = true;
+    
+    const passwordForm = document.getElementById('passwordForm');
+    const passwordSaved = document.getElementById('passwordSaved');
+    const passwordError = document.getElementById('passwordError');
+    const changePasswordPanel = document.getElementById('changePasswordPanel');
+    const validationErrors = document.getElementById('validationErrors');
+    
+    if (!passwordForm) return false;
+    
+    if (passwordSaved) {
+      passwordSaved.hidden = true;
+      passwordSaved.classList.remove('show');
+    }
+    if (passwordError) {
+      passwordError.hidden = true;
+      passwordError.classList.remove('show');
+    }
+    if (validationErrors) {
+      validationErrors.hidden = true;
+      validationErrors.classList.remove('show');
+    }
+
+    const currentPassword = document.getElementById('current_password')?.value || '';
+    const newPassword = document.getElementById('new_password')?.value || '';
+    const repeatPassword = document.getElementById('repeat_password')?.value || '';
+
+    const errors = [];
+
+    if (!currentPassword) {
+      errors.push('Введите текущий пароль.');
+    }
+    if (!newPassword) {
+      errors.push('Введите новый пароль.');
+    } else if (newPassword.length < 8) {
+      errors.push('Пароль должен содержать минимум 8 символов.');
+    }
+    if (!repeatPassword) {
+      errors.push('Повторите новый пароль.');
+    } else if (newPassword && repeatPassword && newPassword !== repeatPassword) {
+      errors.push('Пароли не совпадают.');
+    }
+
+    if (errors.length > 0) {
+      if (typeof window.showPasswordErrors === 'function') {
+        window.showPasswordErrors(errors);
+      }
+      return false;
+    }
+
+    const formData = new FormData(passwordForm);
+    const submitButton = passwordForm.querySelector('button[type="submit"]');
+    const originalButtonText = submitButton?.textContent;
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'Сохранение...';
+    }
+
+    try {
+      const response = await fetch(passwordForm.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        try {
+          const errorData = await response.json();
+          throw errorData;
+        } catch (jsonError) {
+          throw new Error(`Ошибка сервера: ${response.status} ${response.statusText}`);
+        }
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        throw new Error('Сервер вернул не JSON ответ. Возможно, произошла ошибка.');
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        if (typeof window.showPasswordSuccess === 'function') {
+          window.showPasswordSuccess(data.message);
+        }
+        if (changePasswordPanel) changePasswordPanel.hidden = true;
+        ['current_password', 'new_password', 'repeat_password'].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+      } else {
+        const serverErrors = [];
+        
+        if (data.errors) {
+          Object.keys(data.errors).forEach((field) => {
+            const fieldErrors = Array.isArray(data.errors[field]) 
+              ? data.errors[field] 
+              : [data.errors[field]];
+            serverErrors.push(...fieldErrors);
+          });
+        }
+        
+        if (data.message) {
+          if (serverErrors.length > 0) {
+            serverErrors.unshift(data.message);
+          } else {
+            serverErrors.push(data.message);
+          }
+        }
+        
+        if (data.error_type === 'current_password') {
+          serverErrors.push('Неверный текущий пароль.');
+        }
+        
+        if (serverErrors.length === 0) {
+          serverErrors.push('Произошла ошибка при изменении пароля.');
+        }
+        
+        if (typeof window.showPasswordErrors === 'function') {
+          window.showPasswordErrors(serverErrors);
+        }
+      }
+    } catch (error) {
+      let errorMessage = 'Произошла ошибка при отправке запроса. Попробуйте еще раз.';
+      
+      if (error && typeof error === 'object' && error.errors) {
+        const serverErrors = [];
+        Object.keys(error.errors).forEach((field) => {
+          const fieldErrors = Array.isArray(error.errors[field]) 
+            ? error.errors[field] 
+            : [error.errors[field]];
+          serverErrors.push(...fieldErrors);
+        });
+        if (serverErrors.length > 0) {
+          if (typeof window.showPasswordErrors === 'function') {
+            window.showPasswordErrors(serverErrors);
+          }
+          return false;
+        }
+      }
+      
+      if (error && error.message) {
+        errorMessage = error.message;
+      }
+      
+      if (typeof window.showPasswordErrors === 'function') {
+        window.showPasswordErrors([errorMessage]);
+      }
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText || 'Сохранить пароль';
+      }
+    }
+    
+    return false;
+  }
+}, { capture: true, passive: false });
+
 document.addEventListener('DOMContentLoaded', function () {
   initSubmenuToggle();
   initLogoutButtons();
-
   initProfileOnboardingPage();
-  initPortfolioPage(); // также работает и для "Кладовой идей" (кнопка "Посмотреть")
+  initPortfolioPage();
   initIdeasPage();
   initSub1AzbukaPage();
-  
-  // Автоматическое скрытие toast-уведомлений
   initToastAutoHide();
   
-  // Прокрутка к ошибкам, если они есть
   if (document.querySelector('.toast-error.show, .input-error')) {
     setTimeout(scrollToFirstError, 100);
   }

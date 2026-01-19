@@ -148,11 +148,9 @@
           <div class="toast toast-success" hidden id="passwordSaved">✅ Пароль обновлён</div>
         @endif
         
-        @if (session('password_error'))
-          <div class="toast toast-error show" id="passwordError" style="display: inline-flex !important; opacity: 1 !important;">❌ {{ session('password_error') }}</div>
-        @else
-          <div class="toast toast-error" hidden id="passwordError">❌ Ошибка</div>
-        @endif
+        <div class="toast toast-error" hidden id="passwordError">
+          <div id="passwordErrorContent"></div>
+        </div>
         <div class="field">
           <div class="row-between">
             <label for="password_mask">Пароль</label>
@@ -161,18 +159,15 @@
           <input disabled id="password_mask" type="password" value="********"/>
         </div>
         <div hidden id="changePasswordPanel">
-          <form id="passwordForm" method="POST" action="{{ route('profile.change-password') }}">
+          <form id="passwordForm" method="POST" action="{{ route('profile.change-password') }}" data-ajax-form="true">
             @csrf
             <div class="form-grid" style="margin-top: 12px;">
               <div class="field full">
                 <label for="current_password">Текущий пароль</label>
                 <input autocomplete="current-password" id="current_password" name="current_password" required type="password"/>
-                @error('current_password')
-                  <div class="error-text">{{ $message }}</div>
-                @enderror
               </div>
               <div class="field">
-                <label for="new_password">Новый пароль</label>
+                <label for="new_password"><br />Новый пароль</label>
                 <input autocomplete="new-password" id="new_password" name="new_password" required type="password"/>
               </div>
               <div class="field">
@@ -181,9 +176,6 @@
               </div>
               <div class="field full">
                 <button class="btn btn-primary" type="submit">Сохранить пароль</button>
-                @error('new_password')
-                  <div class="error-text">{{ $message }}</div>
-                @enderror
               </div>
             </div>
           </form>
