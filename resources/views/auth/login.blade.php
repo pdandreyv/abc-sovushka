@@ -58,8 +58,12 @@
                     </div>
                 </div>
                 <div class="form-footer">
-                    <p><a href="{{ route('page.show', ['url' => 'politika-konfidentsialnosti']) }}" target="_blank" rel="noopener noreferrer">Политика конфиденциальности</a></p>
-                    <p><a href="{{ route('page.show', ['url' => 'polzovatelskoe-soglashenie']) }}" target="_blank" rel="noopener noreferrer">Пользовательское соглашение</a></p>
+                    @php
+                        $menuPages = \App\Models\Page::getMenuPages();
+                    @endphp
+                    @foreach($menuPages as $page)
+                        <p><a href="{{ route('page.show', ['url' => $page->url]) }}" target="_blank" rel="noopener noreferrer">{{ $page->name }}</a></p>
+                    @endforeach
                 </div>
             </div>
 

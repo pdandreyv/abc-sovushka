@@ -13,7 +13,8 @@
     @php
         $currentUrl = isset($url) ? $url : (request()->segment(1) ?? '');
         $isAuthPage = request()->routeIs('login') || request()->routeIs('register') || request()->is('login') || request()->is('register');
-        $hideFooter = in_array($currentUrl, ['politika-konfidentsialnosti', 'polzovatelskoe-soglashenie']) || $isAuthPage;
+        $menuPages = \App\Models\Page::getMenuPages();
+        $hideFooter = $menuPages->isEmpty() || $isAuthPage;
     @endphp
     @if(!$hideFooter)
     <footer class="dashboard-footer">
@@ -22,9 +23,12 @@
                 © {{ date('Y') }} Совушкина школа
             </div>
             <div class="footer-links">
-                <a href="{{ route('page.show', ['url' => 'politika-konfidentsialnosti']) }}" target="_blank" rel="noopener noreferrer">Политика конфиденциальности</a>
-                <span class="footer-separator">|</span>
-                <a href="{{ route('page.show', ['url' => 'polzovatelskoe-soglashenie']) }}" target="_blank" rel="noopener noreferrer">Пользовательское соглашение</a>
+                @foreach($menuPages as $index => $page)
+                    @if($index > 0)
+                        <span class="footer-separator">|</span>
+                    @endif
+                    <a href="{{ route('page.show', ['url' => $page->url]) }}" target="_blank" rel="noopener noreferrer">{{ $page->name }}</a>
+                @endforeach
             </div>
         </div>
     </footer>

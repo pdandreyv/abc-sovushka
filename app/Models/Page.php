@@ -22,7 +22,6 @@ class Page extends Model
         'level',
         'display',
         'menu',
-        'menu2',
         'noindex',
         'module',
         'name',
@@ -42,7 +41,6 @@ class Page extends Model
     protected $casts = [
         'display' => 'boolean',
         'menu' => 'boolean',
-        'menu2' => 'boolean',
         'noindex' => 'boolean',
         'language' => 'integer',
         'parent' => 'integer',
@@ -60,6 +58,18 @@ class Page extends Model
             ->where('language', $language)
             ->where('display', 1)
             ->first();
+    }
+
+    /**
+     * Получить страницы для меню (display=1 и menu=1)
+     */
+    public static function getMenuPages($language = 1)
+    {
+        return static::where('language', $language)
+            ->where('display', 1)
+            ->where('menu', 1)
+            ->orderBy('left_key', 'asc')
+            ->get();
     }
 
     /**

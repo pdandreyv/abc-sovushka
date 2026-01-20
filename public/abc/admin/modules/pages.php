@@ -25,8 +25,6 @@ $modules_site = array(
 	'subscribe'		=> 'Подписка'
 );
 
-$a18n['menu2'] = 'меню 2';
-
 if ($get['u']=='form') {
 	if (empty($post['module'])) $post['module'] = 'pages';
 	foreach ($modules_site as $k=>$v)
@@ -45,7 +43,6 @@ $table = array(
 	'url'		=> '',
 	'module'	=> $modules_site,
 	'menu'		=> 'boolean',
-	'menu2'		=> 'boolean',
 	'noindex'  => 'boolean',
 	'display'	=> 'display'
 );
@@ -75,7 +72,6 @@ $form[] = array('select td3','module',array(
 $form[] = array('checkbox','display');
 $form[] = array('input td7','h1');
 $form[] = array('checkbox','menu');
-$form[] = array('checkbox','menu2',array('help'=>'второе меню, обычно отображается в подвале сайта'));
 $form[] = 'clear';
 $form[] = array('parent td3 td4','parent');
 //v1.4.66 - hypertext
