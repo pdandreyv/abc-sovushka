@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\IdeaController;
+use App\Http\Controllers\SubscriptionController;
 
 // Главная страница - редирект на страницу входа
 Route::get('/', function () {
@@ -39,6 +40,9 @@ Route::middleware('auth')->group(function () {
     // Кладовая идей
     Route::get('/ideas', [IdeaController::class, 'index'])->name('ideas.index');
     Route::post('/ideas/{idea}/like', [IdeaController::class, 'like'])->name('ideas.like');
+    
+    // Подписки
+    Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');
 });
 
 // Публичные страницы (должен быть в конце, чтобы не перехватывать другие маршруты)

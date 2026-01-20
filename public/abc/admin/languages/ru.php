@@ -72,6 +72,7 @@ $a18n = array(
 	'login'			=> 'логин',
 	'logs'			=> 'логи',
 	'link'			=> 'ссылка',
+	'slug'			=> 'идентификатор',
 	'lat'           => 'широта',
 	'lng'           => 'долгота',
 	'market'		=> 'яндекс маркет',
@@ -139,6 +140,11 @@ $a18n = array(
 	'subscribe'			=> 'Подписка',
 	'subscribers'		=> 'Подписчики',
 	'subscribe_letters'	=> 'Рассылка',
+	'subscriptions'		=> 'Подписки',
+	'subscription_levels'	=> 'Уровни подписок',
+	'subscription_tariffs'	=> 'Тарифы',
+	'subscription_orders'	=> 'Заказы',
+	'subscription_payments_logs'	=> 'Логи платежей',
 	'text'			=> 'текст',
 	'template'		=> 'шаблон',
 	'template_css'		=> 'стили',
@@ -164,7 +170,26 @@ $a18n = array(
 	'upload_images' => 'загрузка картинок',
 	'values'		=> 'значения',
 	'video'         => 'видео',
-	'view'          => 'просмотр'
+	'view'          => 'просмотр',
+	// Подписки
+	'is_active'		=> 'активен',
+	'is_visible'	=> 'показывать',
+	'amount'		=> 'сумма',
+	'status'		=> 'статус',
+	'hash'			=> 'хеш',
+	'auto'			=> 'автосписание',
+	'errors'		=> 'ошибки',
+	'days'			=> 'дни',
+	'rating'		=> 'рейтинг',
+	'subscription_level_ids'	=> 'уровни подписок',
+	'date_subscription'		=> 'дата подписки',
+	'sum_subscription'		=> 'сумма подписки',
+	'date_next_pay'			=> 'дата следующего платежа',
+	'sum_next_pay'			=> 'сумма следующего платежа',
+	'payment_provider'		=> 'провайдер',
+	'transaction_id'		=> 'ID транзакции',
+	'attempted_at'			=> 'время попытки',
+	'response_data'			=> 'данные ответа'
 );
 
 ?>

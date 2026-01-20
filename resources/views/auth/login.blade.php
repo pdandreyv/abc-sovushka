@@ -3,7 +3,7 @@
 @section('title', 'Совушкина школа — Вход / Регистрация')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/auth.css') }}">
+<link rel="stylesheet" href="{{ asset_versioned('css/auth.css') }}">
 @endpush
 
 @section('content')

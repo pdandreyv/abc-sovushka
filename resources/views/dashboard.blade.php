@@ -3,7 +3,7 @@
 @section('title', 'Личный кабинет — Совушкина школа')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ asset_versioned('css/dashboard.css') }}">
 @endpush
 
 @section('content')
@@ -19,7 +19,7 @@
     <div class="menu">
       <button onclick="window.location.href='{{ route('profile.show') }}'" type="button">Личные данные</button>
       <button onclick="window.location.href='{{ route('dashboard') }}'" type="button">Портфолио</button>
-      <button onclick="window.location.href='{{ route('dashboard') }}'" type="button">Подписки</button>
+      <button onclick="window.location.href='{{ route('subscriptions.index') }}'" type="button">Подписки</button>
       <button onclick="window.location.href='{{ route('ideas.index') }}'" type="button">Кладовая идей</button>
     </div>
   </div>
@@ -60,5 +60,5 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/dashboard.js') }}"></script>
+<script src="{{ asset_versioned('js/dashboard.js') }}"></script>
 @endpush

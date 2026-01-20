@@ -3,7 +3,7 @@
 @section('title', 'Кладовая идей — Совушкина школа')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ asset_versioned('css/dashboard.css') }}">
 @endpush
 
 @section('content')
@@ -133,7 +133,7 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/dashboard.js') }}"></script>
+<script src="{{ asset_versioned('js/dashboard.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   // Инициализация поиска

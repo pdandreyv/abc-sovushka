@@ -3,7 +3,7 @@
 @section('title', 'Личные данные — Совушкина школа')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ asset_versioned('css/dashboard.css') }}">
 @endpush
 
 @section('content')
@@ -19,7 +19,7 @@
     <div class="menu">
       <button class="active" type="button" onclick="window.location.href='{{ route('profile.show') }}'">Личные данные</button>
       <button onclick="window.location.href='{{ route('dashboard') }}'" type="button">Портфолио</button>
-      <button onclick="window.location.href='{{ route('dashboard') }}'" type="button">Подписки</button>
+      <button onclick="window.location.href='{{ route('subscriptions.index') }}'" type="button">Подписки</button>
       <button onclick="window.location.href='{{ route('ideas.index') }}'" type="button">Кладовая идей</button>
     </div>
   </div>
@@ -185,7 +185,7 @@
       <div class="card">
         <h3>Подписки</h3>
         <p>У вас пока нет активных подписок. Выберите класс или направление — материалы откроются сразу после оформления.</p>
-        <button class="btn btn-primary" type="button" onclick="window.location.href='{{ route('dashboard') }}'">Оформить подписку</button>
+        <button class="btn btn-primary" type="button" onclick="window.location.href='{{ route('subscriptions.index') }}'">Оформить подписку</button>
       </div>
     </div>
   </div>
@@ -193,5 +193,5 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/dashboard.js') }}"></script>
+<script src="{{ asset_versioned('js/dashboard.js') }}"></script>
 @endpush

@@ -1,0 +1,91 @@
+<?php
+
+//Заказы подписок (subscription_orders)
+/*
+ * 2026-01-20 - создан модуль для управления заказами подписок
+ */
+
+//исключение при редактировании модуля
+if ($get['u']=='edit') {
+	$config['mysql_null'] = true;
+	if (@$post['date_next_pay']=='') $post['date_next_pay'] = null;
+	if (@$post['sum_next_pay']=='') $post['sum_next_pay'] = null;
+	if (@$post['hash']=='') $post['hash'] = null;
+	if (!isset($post['errors']) || $post['errors']=='') $post['errors'] = 0;
+	if (!isset($post['auto'])) $post['auto'] = false;
+}
+
+$a18n['user_id'] = 'Пользователь';
+$a18n['subscription_level_ids'] = 'Уровни подписок';
+$a18n['date_subscription'] = 'Дата подписки';
+$a18n['sum_subscription'] = 'Сумма подписки';
+$a18n['days'] = 'Количество дней';
+$a18n['date_next_pay'] = 'Дата следующего платежа';
+$a18n['sum_next_pay'] = 'Сумма следующего платежа';
+$a18n['hash'] = 'Хеш карты';
+$a18n['errors'] = 'Ошибки';
+$a18n['auto'] = 'Автосписание';
+
+$table = array(
+	'id'		=>	'created_at:desc id',
+	'user_id'	=>	'',
+	'subscription_level_ids'	=>	'',
+	'date_subscription'	=>	'date',
+	'sum_subscription'	=>	'',
+	'days'		=>	'',
+	'date_next_pay'	=>	'date',
+	'sum_next_pay'	=>	'',
+	'auto'		=>	'boolean',
+	'errors'	=>	'',
+	'created_at'	=>	'date_smart',
+);
+
+// Поиск
+$where = '';
+if (isset($get['search']) && $get['search']!='') {
+	$where.= "
+		AND (
+			subscription_orders.id = '".mysql_res($get['search'])."'
+			OR subscription_orders.user_id = '".mysql_res($get['search'])."'
+		)
+	";
+}
+
+$query = "
+	SELECT subscription_orders.*,
+		users.first_name,
+		users.last_name,
+		users.email
+	FROM subscription_orders
+	LEFT JOIN users ON users.id = subscription_orders.user_id
+	WHERE 1 ".$where."
+";
+
+$filter[] = array('search');
+
+$form[] = array('select td6','user_id',array(
+	'value'=>array(true, 'SELECT id, CONCAT(first_name, " ", last_name, " (", email, ")") as name FROM users ORDER BY first_name, last_name'),
+	'help'=>'Выберите пользователя'
+));
+$form[] = array('input td6','subscription_level_ids',array(
+	'help'=>'JSON массив ID уровней подписок (например: [1,2,3])'
+));
+$form[] = array('date td3','date_subscription');
+$form[] = array('input td3','sum_subscription',array(
+	'help'=>'Сумма в рублях',
+	'value'=>@$post['sum_subscription'] ? $post['sum_subscription'] : 0
+));
+$form[] = array('input td3','days',array(
+	'value'=>@$post['days'] ? $post['days'] : 0
+));
+$form[] = array('date td3','date_next_pay');
+$form[] = array('input td3','sum_next_pay',array(
+	'value'=>@$post['sum_next_pay'] ? $post['sum_next_pay'] : 0
+));
+$form[] = array('input td6','hash',array(
+	'help'=>'Хеш карты для рекуррентного платежа'
+));
+$form[] = array('input td3','errors',array(
+	'value'=>@$post['errors'] ? $post['errors'] : 0
+));
+$form[] = array('checkbox','auto');
