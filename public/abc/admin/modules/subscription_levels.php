@@ -17,7 +17,6 @@ $table = array(
 	'slug'		=>	'',
 	'is_active'	=>	'boolean',
 	'sort_order'	=>	'',
-	'created_at'	=>	'date_smart',
 );
 
 // Поиск
@@ -42,9 +41,6 @@ $filter[] = array('search');
 $form[] = array('input td8','title');
 $form[] = array('input td4','slug',array(
 	'help'=>'Уникальный идентификатор (например: grade1, grade2)'
-));
-$form[] = array('input td12','link',array(
-	'help'=>'Ссылка на страницу направления (например: sub_1.html)'
 ));
 $form[] = array('input td2','sort_order',array(
 	'value'=>@$post['sort_order'] ? $post['sort_order'] : 0

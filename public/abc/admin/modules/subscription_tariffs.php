@@ -17,10 +17,8 @@ $table = array(
 	'title'		=>	'',
 	'price'		=>	'',
 	'days'		=>	'',
-	'rating'	=>	'',
 	'is_visible'	=>	'boolean',
 	'sort_order'	=>	'',
-	'created_at'	=>	'date_smart',
 );
 
 // Поиск
@@ -49,10 +47,6 @@ $form[] = array('input td2','price',array(
 $form[] = array('input td2','days',array(
 	'help'=>'Количество дней (1 месяц = 30, 3 месяца = 91, 12 месяцев = 365)',
 	'value'=>@$post['days'] ? $post['days'] : 0
-));
-$form[] = array('input td2','rating',array(
-	'help'=>'Рейтинг тарифа',
-	'value'=>@$post['rating'] ? $post['rating'] : 0
 ));
 $form[] = array('input td2','sort_order',array(
 	'value'=>@$post['sort_order'] ? $post['sort_order'] : 0
