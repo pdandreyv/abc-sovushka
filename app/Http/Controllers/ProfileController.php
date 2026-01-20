@@ -138,16 +138,27 @@ class ProfileController extends Controller
             return back()->with('password_success', 'Вы успешно сменили пароль!');
             
         } catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->errors();
+            $firstError = '';
+            
+            // Получаем первое сообщение об ошибке для более понятного отображения
+            foreach ($errors as $fieldErrors) {
+                if (is_array($fieldErrors) && count($fieldErrors) > 0) {
+                    $firstError = $fieldErrors[0];
+                    break;
+                }
+            }
+            
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Пожалуйста, исправьте ошибки в форме.',
-                    'errors' => $e->errors()
+                    'message' => $firstError ?: 'Пожалуйста, исправьте ошибки в форме.',
+                    'errors' => $errors
                 ], 422);
             }
             return back()
-                ->withErrors($e->errors())
-                ->with('password_error', 'Пожалуйста, исправьте ошибки в форме.');
+                ->withErrors($errors)
+                ->with('password_error', $firstError ?: 'Пожалуйста, исправьте ошибки в форме.');
                 
         } catch (\Exception $e) {
             if ($request->ajax() || $request->wantsJson()) {

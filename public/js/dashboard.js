@@ -868,9 +868,33 @@ document.addEventListener('submit', async function(e) {
       if (!response.ok) {
         try {
           const errorData = await response.json();
+          // Если есть сообщение об ошибке, используем его
+          if (errorData.message) {
+            throw { message: errorData.message, errors: errorData.errors || {} };
+          }
+          // Если есть ошибки валидации, формируем понятное сообщение
+          if (errorData.errors) {
+            const validationErrors = [];
+            Object.keys(errorData.errors).forEach((field) => {
+              const fieldErrors = Array.isArray(errorData.errors[field]) 
+                ? errorData.errors[field] 
+                : [errorData.errors[field]];
+              validationErrors.push(...fieldErrors);
+            });
+            throw { message: validationErrors.length > 0 ? validationErrors[0] : 'Пожалуйста, исправьте ошибки в форме.', errors: errorData.errors };
+          }
           throw errorData;
         } catch (jsonError) {
-          throw new Error(`Ошибка сервера: ${response.status} ${response.statusText}`);
+          // Если не удалось распарсить JSON, формируем понятное сообщение
+          let userMessage = 'Произошла ошибка при изменении пароля.';
+          if (response.status === 422) {
+            userMessage = 'Текущий пароль введен неверно.';
+          } else if (response.status === 401) {
+            userMessage = 'Неверный текущий пароль.';
+          } else if (response.status === 500) {
+            userMessage = 'Произошла ошибка на сервере. Попробуйте еще раз позже.';
+          }
+          throw { message: userMessage, errors: {} };
         }
       }
 
@@ -924,30 +948,35 @@ document.addEventListener('submit', async function(e) {
         }
       }
     } catch (error) {
-      let errorMessage = 'Произошла ошибка при отправке запроса. Попробуйте еще раз.';
+      let errorMessages = [];
       
+      // Если ошибка содержит объект с errors (валидация)
       if (error && typeof error === 'object' && error.errors) {
-        const serverErrors = [];
         Object.keys(error.errors).forEach((field) => {
           const fieldErrors = Array.isArray(error.errors[field]) 
             ? error.errors[field] 
             : [error.errors[field]];
-          serverErrors.push(...fieldErrors);
+          errorMessages.push(...fieldErrors);
         });
-        if (serverErrors.length > 0) {
-          if (typeof window.showPasswordErrors === 'function') {
-            window.showPasswordErrors(serverErrors);
-          }
-          return false;
+      }
+      
+      // Если есть общее сообщение об ошибке
+      if (error && error.message) {
+        if (errorMessages.length > 0) {
+          // Добавляем общее сообщение в начало, если есть детальные ошибки
+          errorMessages.unshift(error.message);
+        } else {
+          errorMessages.push(error.message);
         }
       }
       
-      if (error && error.message) {
-        errorMessage = error.message;
+      // Если нет сообщений, используем общее
+      if (errorMessages.length === 0) {
+        errorMessages.push('Произошла ошибка при изменении пароля. Пожалуйста, проверьте правильность введенных данных и попробуйте еще раз.');
       }
       
       if (typeof window.showPasswordErrors === 'function') {
-        window.showPasswordErrors([errorMessage]);
+        window.showPasswordErrors(errorMessages);
       }
     } finally {
       if (submitButton) {
