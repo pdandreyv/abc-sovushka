@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Личный кабинет — Совушкина школа')
+@section('title', site_lang('lk_dashboard|page_title', 'Личный кабинет — Совушкина школа'))
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset_versioned('css/dashboard.css') }}">
@@ -12,25 +12,25 @@
   <div>
     <img alt="Логотип" class="logo" src="{{ asset('images/logo.png') }}"/>
     <div class="user-name">{{ strtoupper(Auth::user()->first_name . ' ' . Auth::user()->last_name) }}</div>
-    <a href="#" class="user-logout-link" data-logout>Выйти</a>
+    <a href="#" class="user-logout-link" data-logout>{{ site_lang('lk_menu|logout', 'Выйти') }}</a>
     <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: none;">
       @csrf
     </form>
     <div class="menu">
-      <button onclick="window.location.href='{{ route('profile.show') }}'" type="button">Личные данные</button>
-      <button onclick="window.location.href='{{ route('dashboard') }}'" type="button">Портфолио</button>
-      <button onclick="window.location.href='{{ route('subscriptions.index') }}'" type="button">Подписки</button>
-      <button onclick="window.location.href='{{ route('ideas.index') }}'" type="button">Кладовая идей</button>
+      <button onclick="window.location.href='{{ route('profile.show') }}'" type="button">{{ site_lang('lk_menu|profile', 'Личные данные') }}</button>
+      <button onclick="window.location.href='{{ route('dashboard') }}'" type="button">{{ site_lang('lk_menu|portfolio', 'Портфолио') }}</button>
+      <button onclick="window.location.href='{{ route('subscriptions.index') }}'" type="button">{{ site_lang('lk_menu|subscriptions', 'Подписки') }}</button>
+      <button onclick="window.location.href='{{ route('ideas.index') }}'" type="button">{{ site_lang('lk_menu|ideas', 'Кладовая идей') }}</button>
     </div>
   </div>
 </div>
 <div class="main">
   <!-- Основной контент страницы (шапка, хлебные крошки, карточки и т.д.) -->
   <div class="header">
-    <div class="breadcrumbs">Главная / Кабинет</div>
+    <div class="breadcrumbs">{{ site_lang('lk_dashboard|breadcrumbs', 'Главная / Кабинет') }}</div>
     <div class="header-icons">
       <img alt="Подписка" src="{{ asset('images/subscription_icon.png') }}"/>
-      <a class="subscription-status subscription-status-link" href="{{ route('dashboard') }}">Осталось 5 дней подписки: продлить / отменить</a>
+      <a class="subscription-status subscription-status-link" href="{{ route('dashboard') }}">{{ site_lang('lk_dashboard|status', 'Осталось 5 дней подписки: продлить / отменить') }}</a>
       <img alt="Поддержка" src="{{ asset('images/support_icon.png') }}"/>
     </div>
   </div>
@@ -40,19 +40,19 @@
         {{ session('success') }}
       </div>
     @endif
-    <h1>Добро пожаловать, {{ Auth::user()->first_name }}!</h1>
+    <h1>{{ site_lang('lk_dashboard|welcome', 'Добро пожаловать') }}, {{ Auth::user()->first_name }}!</h1>
     <div class="cards">
       <div class="card">
-        <h3>Моя подписка</h3>
-        <p>Вы подписаны на материалы для 1 класса</p>
+        <h3>{{ site_lang('lk_dashboard|card_subscription_title', 'Моя подписка') }}</h3>
+        <p>{{ site_lang('lk_dashboard|card_subscription_text', 'Вы подписаны на материалы для 1 класса') }}</p>
       </div>
       <div class="card">
-        <h3>Кладовая идей</h3>
-        <p>Материалы доступны всем пользователям</p>
+        <h3>{{ site_lang('lk_dashboard|card_ideas_title', 'Кладовая идей') }}</h3>
+        <p>{{ site_lang('lk_dashboard|card_ideas_text', 'Материалы доступны всем пользователям') }}</p>
       </div>
       <div class="card">
-        <h3>Портфолио</h3>
-        <p>Ваши награды и сертификаты</p>
+        <h3>{{ site_lang('lk_dashboard|card_portfolio_title', 'Портфолио') }}</h3>
+        <p>{{ site_lang('lk_dashboard|card_portfolio_text', 'Ваши награды и сертификаты') }}</p>
       </div>
     </div>
   </div>

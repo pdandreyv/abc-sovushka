@@ -243,6 +243,7 @@ $(document).ready(function(){
 		$('select[data-url*="/"]').each(function () {
 			var $url = $(this).data('url');
 			var $lang = $('html').attr('lang');
+			var $minInput = parseInt($(this).data('min-input'), 10);
 			var $params = {
 				//placeholder: 'Select'
 				language: $lang,
@@ -256,6 +257,9 @@ $(document).ready(function(){
 					}
 				}
 			};
+			if (!isNaN($minInput)) {
+				$params.minimumInputLength = $minInput;
+			}
 			$(this).select2($params);
 			//$(this).removeAttr('data-url');
 			//console.log('data-url'+$url);

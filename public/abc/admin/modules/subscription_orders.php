@@ -19,12 +19,13 @@ $a18n['user_id'] = 'Пользователь';
 $a18n['subscription_level_ids'] = 'Уровни подписок';
 $a18n['date_subscription'] = 'Дата подписки';
 $a18n['sum_subscription'] = 'Сумма подписки';
+$a18n['sum_without_discount'] = 'Сумма без скидки';
 $a18n['days'] = 'Количество дней';
 $a18n['date_next_pay'] = 'Дата следующего платежа';
 $a18n['sum_next_pay'] = 'Сумма следующего платежа';
 $a18n['hash'] = 'Хеш карты';
 $a18n['errors'] = 'Ошибки';
-$a18n['auto'] = 'Автосписание';
+$a18n['auto'] = 'Оплачен';
 
 $table = array(
 	'id'		=>	'created_at:desc id',
@@ -32,6 +33,7 @@ $table = array(
 	'subscription_level_ids'	=>	'',
 	'date_subscription'	=>	'date',
 	'sum_subscription'	=>	'',
+	'sum_without_discount'	=>	'',
 	'days'		=>	'',
 	'date_next_pay'	=>	'date',
 	'sum_next_pay'	=>	'',
@@ -64,16 +66,22 @@ $query = "
 $filter[] = array('search');
 
 $form[] = array('select td6','user_id',array(
-	'value'=>array(true, 'SELECT id, CONCAT(first_name, " ", last_name, " (", email, ")") as name FROM users ORDER BY first_name, last_name'),
+	'value'=>array(true, 'SELECT id, CONCAT(first_name, " ", last_name, " (", email, ")") as name FROM users WHERE id=\''.@$post['user_id'].'\''),
+	//как в модуле заказов: автозаполнение
+	'attr'=>'data-url="/admin.php?m=subscription_orders&u=get_users" data-min-input="1"',
 	'help'=>'Выберите пользователя'
 ));
 $form[] = array('input td6','subscription_level_ids',array(
-	'help'=>'JSON массив ID уровней подписок (например: [1,2,3])'
+	'help'=>'ID уровней подписок (например: 1,2,3)'
 ));
 $form[] = array('date td3','date_subscription');
 $form[] = array('input td3','sum_subscription',array(
 	'help'=>'Сумма в рублях',
 	'value'=>@$post['sum_subscription'] ? $post['sum_subscription'] : 0
+));
+$form[] = array('input td3','sum_without_discount',array(
+	'help'=>'Сумма в рублях без скидки',
+	'value'=>@$post['sum_without_discount'] ? $post['sum_without_discount'] : 0
 ));
 $form[] = array('input td3','days',array(
 	'value'=>@$post['days'] ? $post['days'] : 0

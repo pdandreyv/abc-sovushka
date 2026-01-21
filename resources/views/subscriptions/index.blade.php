@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Подписки — Совушкина школа')
+@section('title', site_lang('lk_subscriptions|page_title', 'Подписки — Совушкина школа'))
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset_versioned('css/dashboard.css') }}">
@@ -12,15 +12,15 @@
   <div>
     <img alt="Логотип" class="logo" src="{{ asset('images/logo.png') }}"/>
     <div class="user-name">{{ strtoupper(Auth::user()->first_name . ' ' . Auth::user()->last_name) }}</div>
-    <a href="#" class="user-logout-link" data-logout>Выйти</a>
+    <a href="#" class="user-logout-link" data-logout>{{ site_lang('lk_menu|logout', 'Выйти') }}</a>
     <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: none;">
       @csrf
     </form>
     <div class="menu">
-      <button onclick="window.location.href='{{ route('profile.show') }}'" type="button">Личные данные</button>
-      <button onclick="window.location.href='{{ route('dashboard') }}'" type="button">Портфолио</button>
-      <button class="active" onclick="window.location.href='{{ route('subscriptions.index') }}'" type="button">Подписки</button>
-      <button onclick="window.location.href='{{ route('ideas.index') }}'" type="button">Кладовая идей</button>
+      <button onclick="window.location.href='{{ route('profile.show') }}'" type="button">{{ site_lang('lk_menu|profile', 'Личные данные') }}</button>
+      <button onclick="window.location.href='{{ route('dashboard') }}'" type="button">{{ site_lang('lk_menu|portfolio', 'Портфолио') }}</button>
+      <button class="active" onclick="window.location.href='{{ route('subscriptions.index') }}'" type="button">{{ site_lang('lk_menu|subscriptions', 'Подписки') }}</button>
+      <button onclick="window.location.href='{{ route('ideas.index') }}'" type="button">{{ site_lang('lk_menu|ideas', 'Кладовая идей') }}</button>
     </div>
   </div>
 </div>
@@ -28,18 +28,18 @@
 <!-- ===== ПРАВАЯ ЧАСТЬ (main): контент страницы ===== -->
 <div class="main">
   <div class="header">
-    <div class="breadcrumbs">Главная / Кабинет / Подписки</div>
+    <div class="breadcrumbs">{{ site_lang('lk_subscriptions|breadcrumbs', 'Главная / Кабинет / Подписки') }}</div>
     <div class="header-icons">
       <img alt="Подписка" src="{{ asset('images/subscription_icon.png') }}"/>
-      <a class="subscription-status subscription-status-link" href="{{ route('subscriptions.index') }}">Выбор подписок и тарифа</a>
+      <a class="subscription-status subscription-status-link" href="{{ route('subscriptions.index') }}">{{ site_lang('lk_subscriptions|status', 'Выбор подписок и тарифа') }}</a>
       <img alt="Поддержка" src="{{ asset('images/support_icon.png') }}"/>
     </div>
   </div>
 
   <div class="content">
-    <h1>Подписки</h1>
+    <h1>{{ site_lang('lk_subscriptions|heading', 'Подписки') }}</h1>
     <p class="page-hint">
-      Выберите нужные подписки и тариф — итоговая сумма и скидка пересчитаются автоматически.
+      {{ site_lang('lk_subscriptions|hint', 'Выберите нужные подписки и тариф — итоговая сумма и скидка пересчитаются автоматически.') }}
     </p>
 
     <!-- ===== ТРИ ШАГА ВЫБОРА: подписки → тариф → скидка ===== -->
@@ -48,7 +48,7 @@
       <div class="step-card">
         <div class="step-title">
           <span class="step-num">1</span>
-          <span>Выберите подписки</span>
+          <span>{{ site_lang('lk_subscriptions|step1', 'Выберите подписки') }}</span>
         </div>
 
         <!-- Список подписок -->
@@ -60,14 +60,14 @@
               <span class="sub-title">{{ $level->title }}</span>
             </label>
             @if($level->link)
-            <a class="btn btn-secondary btn-sm" href="{{ $level->link }}" target="_blank">Посмотреть</a>
+            <a class="btn btn-secondary btn-sm" href="{{ $level->link }}" target="_blank">{{ site_lang('lk_subscriptions|view', 'Посмотреть') }}</a>
             @endif
           </div>
           @endforeach
         </div>
 
         <div class="step-note">
-          <small>Нажмите «Посмотреть», чтобы открыть страницу направления (заглушки для будущих разделов).</small>
+          <small>{{ site_lang('lk_subscriptions|step1_note', 'Нажмите «Посмотреть», чтобы открыть страницу направления (заглушки для будущих разделов).') }}</small>
         </div>
       </div>
 
@@ -75,7 +75,7 @@
       <div class="step-card">
         <div class="step-title">
           <span class="step-num">2</span>
-          <span>Выберите тариф</span>
+          <span>{{ site_lang('lk_subscriptions|step2', 'Выберите тариф') }}</span>
         </div>
 
         <!-- Тарифы -->
@@ -85,7 +85,9 @@
             <input class="tariff-radio" id="tariff_{{ $tariff->id }}" name="tariff" type="radio" value="{{ $tariff->id }}" data-price="{{ $tariff->price }}" data-days="{{ $tariff->days }}" {{ $loop->first ? 'checked' : '' }}/>
             <span class="tariff-main">
               <span class="tariff-title">{{ $tariff->title }}</span>
-              @if($tariff->days == 30)
+              @if(!empty($tariff->price_phrase))
+                <span class="tariff-note">({{ $tariff->price_phrase }})</span>
+              @elseif($tariff->days == 30)
                 <span class="tariff-note"></span>
               @else
                 <span class="tariff-note">(по {{ number_format($tariff->price / ($tariff->days / 30), 0, ',', ' ') }} ₽/мес.)</span>
@@ -97,7 +99,7 @@
         </div>
 
         <div class="step-note">
-          <small>Цены указаны за 1 подписку. Итог зависит от количества выбранных подписок.</small>
+          <small>{{ site_lang('lk_subscriptions|step2_note', 'Цены указаны за 1 подписку. Итог зависит от количества выбранных подписок.') }}</small>
         </div>
       </div>
 
@@ -105,28 +107,28 @@
       <div class="step-card">
         <div class="step-title">
           <span class="step-num">3</span>
-          <span>Выгодные предложения</span>
+          <span>{{ site_lang('lk_subscriptions|step3', 'Выгодные предложения') }}</span>
         </div>
 
         <!-- Скидки автоматически активируются в зависимости от количества выбранных подписок -->
         <div class="discounts-box">
           <label class="discount-row">
             <input disabled id="disc2" type="checkbox"/>
-            <span>2 подписки — <b>−10%</b></span>
+            <span>{{ site_lang('lk_subscriptions|discount_2', '2 подписки — −10%') }}</span>
           </label>
           <label class="discount-row">
             <input disabled id="disc3" type="checkbox"/>
-            <span>3+ подписки — <b>−15%</b></span>
+            <span>{{ site_lang('lk_subscriptions|discount_3', '3+ подписки — −15%') }}</span>
           </label>
           <label class="discount-row">
             <input disabled id="discAll" type="checkbox"/>
-            <span>Все подписки — <b>−20%</b></span>
+            <span>{{ site_lang('lk_subscriptions|discount_all', 'Все подписки — −20%') }}</span>
           </label>
-          <div id="discountHint" class="discount-hint">1 подписка — выгодных предложений нет</div>
+          <div id="discountHint" class="discount-hint">{{ site_lang('lk_subscriptions|discount_none', '1 подписка — выгодных предложений нет') }}</div>
         </div>
 
         <div class="step-note">
-          <small>Скидка применяется автоматически и отображается в расчёте ниже.</small>
+          <small>{{ site_lang('lk_subscriptions|step3_note', 'Скидка применяется автоматически и отображается в расчёте ниже.') }}</small>
         </div>
       </div>
     </div>
@@ -135,31 +137,31 @@
     <div class="checkout-panel">
       <div class="checkout-left">
         <div class="checkout-line">
-          <span>Выбрано подписок:</span>
+          <span>{{ site_lang('lk_subscriptions|summary_count', 'Выбрано подписок:') }}</span>
           <b id="sumCount">0</b>
         </div>
         <div class="checkout-line">
-          <span>Тариф:</span>
+          <span>{{ site_lang('lk_subscriptions|summary_tariff', 'Тариф:') }}</span>
           <b id="sumTariff">—</b>
         </div>
         <div class="checkout-line">
-          <span>Стоимость:</span>
+          <span>{{ site_lang('lk_subscriptions|summary_subtotal', 'Стоимость:') }}</span>
           <b id="sumSubtotal">0 ₽</b>
         </div>
         <div class="checkout-line">
-          <span>Скидка:</span>
+          <span>{{ site_lang('lk_subscriptions|summary_discount', 'Скидка:') }}</span>
           <b id="sumDiscount">0 ₽</b>
         </div>
         <div class="checkout-total">
-          <span>Итого:</span>
+          <span>{{ site_lang('lk_subscriptions|summary_total', 'Итого:') }}</span>
           <b id="sumTotal">0 ₽</b>
         </div>
       </div>
 
       <div class="checkout-right">
-        <button id="payBtn" class="btn btn-primary btn-pay" type="button" disabled>Оформить подписку</button>
+        <button id="payBtn" class="btn btn-primary btn-pay" type="button" disabled>{{ site_lang('lk_subscriptions|pay', 'Оформить подписку') }}</button>
         <div class="checkout-note">
-          <small>Демо: оплата будет подключена позже (через бэкенд / платёжного провайдера).</small>
+          <small>{{ site_lang('lk_subscriptions|pay_note', 'Демо: оплата будет подключена позже (через бэкенд / платёжного провайдера).') }}</small>
         </div>
       </div>
     </div>
@@ -180,6 +182,12 @@
   const SUBSCRIPTIONS = @json($subscriptionsData);
   
   const TARIFFS = @json($tariffsData);
+  const UI_TEXTS = @json([
+    'discount_none' => site_lang('lk_subscriptions|discount_none', '1 подписка — выгодных предложений нет'),
+    'discount_10' => site_lang('lk_subscriptions|discount_hint_10', 'Активирована скидка 10% за 2 подписки'),
+    'discount_15' => site_lang('lk_subscriptions|discount_hint_15', 'Активирована скидка 15% за 3+ подписки'),
+    'discount_20' => site_lang('lk_subscriptions|discount_hint_20', 'Активирована скидка 20% за все подписки'),
+  ]);
 
   // ---------- Утилиты ----------
   function formatRUB(value) {
@@ -328,10 +336,10 @@
 
     const hint = $("#discountHint");
     if (hint) {
-      if (count <= 1) hint.textContent = "1 подписка — выгодных предложений нет";
-      else if (discountPercent === 10) hint.textContent = "Активирована скидка 10% за 2 подписки";
-      else if (discountPercent === 15) hint.textContent = "Активирована скидка 15% за 3+ подписки";
-      else if (discountPercent === 20) hint.textContent = "Активирована скидка 20% за все подписки";
+      if (count <= 1) hint.textContent = UI_TEXTS.discount_none;
+      else if (discountPercent === 10) hint.textContent = UI_TEXTS.discount_10;
+      else if (discountPercent === 15) hint.textContent = UI_TEXTS.discount_15;
+      else if (discountPercent === 20) hint.textContent = UI_TEXTS.discount_20;
       else hint.textContent = "";
     }
 

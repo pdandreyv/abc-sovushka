@@ -6,15 +6,15 @@
  */
 
 $a18n['title'] = 'Название';
-$a18n['slug'] = 'Идентификатор';
+//$a18n['slug'] = 'Идентификатор';
 $a18n['link'] = 'Ссылка';
 $a18n['sort_order'] = 'Сортировка';
 $a18n['is_active'] = 'Активен';
 
 $table = array(
-	'id'		=>	'sort_order:asc id',
+	'id'		=>	'sort_order:desc id:desc',
 	'title'		=>	'',
-	'slug'		=>	'',
+	//'slug'		=>	'',
 	'is_active'	=>	'boolean',
 	'sort_order'	=>	'',
 );
@@ -39,9 +39,9 @@ $query = "
 $filter[] = array('search');
 
 $form[] = array('input td8','title');
-$form[] = array('input td4','slug',array(
+/*$form[] = array('input td4','slug',array(
 	'help'=>'Уникальный идентификатор (например: grade1, grade2)'
-));
+));*/
 $form[] = array('input td2','sort_order',array(
 	'value'=>@$post['sort_order'] ? $post['sort_order'] : 0
 ));

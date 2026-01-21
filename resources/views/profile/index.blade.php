@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Личные данные — Совушкина школа')
+@section('title', site_lang('lk_profile|page_title', 'Личные данные — Совушкина школа'))
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset_versioned('css/dashboard.css') }}">
@@ -12,59 +12,58 @@
   <div>
     <img alt="Логотип" class="logo" src="{{ asset('images/logo.png') }}"/>
     <div class="user-name">{{ strtoupper(Auth::user()->first_name . ' ' . Auth::user()->last_name) }}</div>
-    <a href="#" class="user-logout-link" data-logout>Выйти</a>
+    <a href="#" class="user-logout-link" data-logout>{{ site_lang('lk_menu|logout', 'Выйти') }}</a>
     <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: none;">
       @csrf
     </form>
     <div class="menu">
-      <button class="active" type="button" onclick="window.location.href='{{ route('profile.show') }}'">Личные данные</button>
-      <button onclick="window.location.href='{{ route('dashboard') }}'" type="button">Портфолио</button>
-      <button onclick="window.location.href='{{ route('subscriptions.index') }}'" type="button">Подписки</button>
-      <button onclick="window.location.href='{{ route('ideas.index') }}'" type="button">Кладовая идей</button>
+      <button class="active" type="button" onclick="window.location.href='{{ route('profile.show') }}'">{{ site_lang('lk_menu|profile', 'Личные данные') }}</button>
+      <button onclick="window.location.href='{{ route('dashboard') }}'" type="button">{{ site_lang('lk_menu|portfolio', 'Портфолио') }}</button>
+      <button onclick="window.location.href='{{ route('subscriptions.index') }}'" type="button">{{ site_lang('lk_menu|subscriptions', 'Подписки') }}</button>
+      <button onclick="window.location.href='{{ route('ideas.index') }}'" type="button">{{ site_lang('lk_menu|ideas', 'Кладовая идей') }}</button>
     </div>
   </div>
 </div>
 <div class="main">
   <!-- Основной контент страницы (шапка, хлебные крошки, карточки и т.д.) -->
   <div class="header">
-    <div class="breadcrumbs">Главная / Кабинет / Личные данные</div>
+    <div class="breadcrumbs">{{ site_lang('lk_profile|breadcrumbs', 'Главная / Кабинет / Личные данные') }}</div>
     <div class="header-icons">
       <img alt="Подписка" src="{{ asset('images/subscription_icon.png') }}"/>
-      <a class="subscription-status subscription-status-link" href="{{ route('dashboard') }}">Подписок нет: выбрать / оформить</a>
+      <a class="subscription-status subscription-status-link" href="{{ route('dashboard') }}">{{ site_lang('lk_profile|status', 'Подписок нет: выбрать / оформить') }}</a>
       <img alt="Поддержка" src="{{ asset('images/support_icon.png') }}"/>
     </div>
   </div>
   <div class="content">
-    <h1>Проверьте и сохраните данные профиля</h1>
+    <h1>{{ site_lang('lk_profile|heading', 'Проверьте и сохраните данные профиля') }}</h1>
     <p class="page-hint">
-      Мы создали для вас личный кабинет. Пожалуйста, проверьте данные, добавьте (при желании) дополнительную информацию и нажмите «Сохранить».
-      После сохранения вы сможете редактировать профиль в любой момент.
+      {{ site_lang('lk_profile|hint', 'Мы создали для вас личный кабинет. Пожалуйста, проверьте данные, добавьте (при желании) дополнительную информацию и нажмите «Сохранить». После сохранения вы сможете редактировать профиль в любой момент.') }}
     </p>
     <div class="cards">
       <!-- Профиль: проверка/добавление данных -->
       <div class="card" style="grid-column: 1 / -1;">
         <div class="card-header">
-          <h3>Личные данные</h3>
+          <h3>{{ site_lang('lk_profile|card_title', 'Личные данные') }}</h3>
           <div class="card-actions">
-            <button class="btn btn-secondary" id="editProfileBtn" style="display:none" type="button">Редактировать</button>
-            <button class="btn btn-primary" id="saveProfileBtn" type="button">Сохранить</button>
+            <button class="btn btn-secondary" id="editProfileBtn" style="display:none" type="button">{{ site_lang('lk_profile|edit', 'Редактировать') }}</button>
+            <button class="btn btn-primary" id="saveProfileBtn" type="button">{{ site_lang('lk_profile|save', 'Сохранить') }}</button>
           </div>
         </div>
         @if (session('success'))
           <div class="toast toast-success show" id="profileSaved">✅ {{ session('success') }}</div>
         @else
-          <div class="toast toast-success" hidden id="profileSaved">✅ Данные сохранены</div>
+          <div class="toast toast-success" hidden id="profileSaved">✅ {{ site_lang('lk_profile|saved', 'Данные сохранены') }}</div>
         @endif
         
         @if (session('error'))
           <div class="toast toast-error show" id="profileError">❌ {{ session('error') }}</div>
         @else
-          <div class="toast toast-error" hidden id="profileError">❌ Ошибка</div>
+          <div class="toast toast-error" hidden id="profileError">❌ {{ site_lang('lk_profile|error', 'Ошибка') }}</div>
         @endif
         
         @if ($errors->any())
           <div class="toast toast-error show" id="validationErrors">
-            ❌ <strong>Ошибки валидации:</strong>
+            ❌ <strong>{{ site_lang('lk_profile|validation_title', 'Ошибки валидации:') }}</strong>
             <ul style="margin: 8px 0 0 0; padding-left: 20px;">
               @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
@@ -140,7 +139,7 @@
       <!-- Безопасность -->
       <div class="card">
         <div class="card-header">
-          <h3>Безопасность</h3>
+          <h3>{{ site_lang('lk_profile|security_title', 'Безопасность') }}</h3>
         </div>
         @if (session('password_success'))
           <div class="toast toast-success show" id="passwordSaved" style="display: inline-flex !important; opacity: 1 !important;">✅ {{ session('password_success') }}</div>
@@ -153,8 +152,8 @@
         </div>
         <div class="field">
           <div class="row-between">
-            <label for="password_mask">Пароль</label>
-            <a class="link" href="#" id="changePasswordLink">Сменить пароль</a>
+            <label for="password_mask">{{ site_lang('lk_profile|password', 'Пароль') }}</label>
+            <a class="link" href="#" id="changePasswordLink">{{ site_lang('lk_profile|change_password', 'Сменить пароль') }}</a>
           </div>
           <input disabled id="password_mask" type="password" value="********"/>
         </div>
@@ -163,19 +162,19 @@
             @csrf
             <div class="form-grid" style="margin-top: 12px;">
               <div class="field full">
-                <label for="current_password">Текущий пароль</label>
+                <label for="current_password">{{ site_lang('lk_profile|current_password', 'Текущий пароль') }}</label>
                 <input autocomplete="current-password" id="current_password" name="current_password" required type="password"/>
               </div>
               <div class="field">
-                <label for="new_password">Новый пароль</label>
+                <label for="new_password">{{ site_lang('lk_profile|new_password', 'Новый пароль') }}</label>
                 <input autocomplete="new-password" id="new_password" name="new_password" required type="password"/>
               </div>
               <div class="field">
-                <label for="repeat_password">Повторите новый пароль</label>
+                <label for="repeat_password">{{ site_lang('lk_profile|repeat_password', 'Повторите новый пароль') }}</label>
                 <input autocomplete="new-password" id="repeat_password" name="new_password_confirmation" required type="password"/>
               </div>
               <div class="field full">
-                <button class="btn btn-primary" type="submit">Сохранить пароль</button>
+                <button class="btn btn-primary" type="submit">{{ site_lang('lk_profile|save_password', 'Сохранить пароль') }}</button>
               </div>
             </div>
           </form>
@@ -183,9 +182,9 @@
       </div>
       <!-- Подписки (пустое состояние) -->
       <div class="card">
-        <h3>Подписки</h3>
-        <p>У вас пока нет активных подписок. Выберите класс или направление — материалы откроются сразу после оформления.</p><br />
-        <button class="btn btn-primary" type="button" onclick="window.location.href='{{ route('subscriptions.index') }}'">Оформить подписку</button>
+        <h3>{{ site_lang('lk_profile|subscriptions_title', 'Подписки') }}</h3>
+        <p>{{ site_lang('lk_profile|subscriptions_empty', 'У вас пока нет активных подписок. Выберите класс или направление — материалы откроются сразу после оформления.') }}</p><br />
+        <button class="btn btn-primary" type="button" onclick="window.location.href='{{ route('subscriptions.index') }}'">{{ site_lang('lk_profile|subscriptions_cta', 'Оформить подписку') }}</button>
       </div>
     </div>
   </div>

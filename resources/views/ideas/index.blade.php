@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Кладовая идей — Совушкина школа')
+@section('title', site_lang('lk_ideas|page_title', 'Кладовая идей — Совушкина школа'))
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset_versioned('css/dashboard.css') }}">
@@ -12,15 +12,15 @@
   <div>
     <img alt="Логотип" class="logo" src="{{ asset('images/logo.png') }}"/>
     <div class="user-name">{{ strtoupper(Auth::user()->first_name . ' ' . Auth::user()->last_name) }}</div>
-    <a href="#" class="user-logout-link" data-logout>Выйти</a>
+    <a href="#" class="user-logout-link" data-logout>{{ site_lang('lk_menu|logout', 'Выйти') }}</a>
     <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: none;">
       @csrf
     </form>
     <div class="menu">
-      <button onclick="window.location.href='{{ route('profile.show') }}'" type="button">Личные данные</button>
-      <button onclick="window.location.href='{{ route('dashboard') }}'" type="button">Портфолио</button>
-      <button onclick="window.location.href='{{ route('dashboard') }}'" type="button">Подписки</button>
-      <button class="active" onclick="window.location.href='{{ route('ideas.index') }}'" type="button">Кладовая идей</button>
+      <button onclick="window.location.href='{{ route('profile.show') }}'" type="button">{{ site_lang('lk_menu|profile', 'Личные данные') }}</button>
+      <button onclick="window.location.href='{{ route('dashboard') }}'" type="button">{{ site_lang('lk_menu|portfolio', 'Портфолио') }}</button>
+      <button onclick="window.location.href='{{ route('dashboard') }}'" type="button">{{ site_lang('lk_menu|subscriptions', 'Подписки') }}</button>
+      <button class="active" onclick="window.location.href='{{ route('ideas.index') }}'" type="button">{{ site_lang('lk_menu|ideas', 'Кладовая идей') }}</button>
     </div>
   </div>
 </div>
@@ -28,44 +28,42 @@
 <!-- ===== ОСНОВНАЯ ЧАСТЬ (контент) ===== -->
 <div class="main">
   <div class="header">
-    <div class="breadcrumbs">Главная / Кабинет / Кладовая идей</div>
+    <div class="breadcrumbs">{{ site_lang('lk_ideas|breadcrumbs', 'Главная / Кабинет / Кладовая идей') }}</div>
     <div class="header-icons">
       <img alt="Подписка" src="{{ asset('images/subscription_icon.png') }}"/>
-      <div class="subscription-status">Подписок нет: материалы здесь доступны бесплатно</div>
+      <div class="subscription-status">{{ site_lang('lk_ideas|status', 'Подписок нет: материалы здесь доступны бесплатно') }}</div>
       <img alt="Поддержка" src="{{ asset('images/support_icon.png') }}"/>
     </div>
   </div>
 
   <div class="content">
-    <h1>Кладовая идей</h1>
+    <h1>{{ site_lang('lk_ideas|heading', 'Кладовая идей') }}</h1>
     <p class="page-hint">
-      Здесь собраны бесплатные материалы. Нажмите «Посмотреть», чтобы открыть крупный предпросмотр в новом окне,
-      «Скачать», чтобы открыть файл для скачивания в новой вкладке (эта страница останется открытой),
-      а «Описание» — чтобы прочитать подробности.
+      {{ site_lang('lk_ideas|hint', 'Здесь собраны бесплатные материалы. Нажмите «Посмотреть», чтобы открыть крупный предпросмотр в новом окне, «Скачать», чтобы открыть файл для скачивания в новой вкладке (эта страница останется открытой), а «Описание» — чтобы прочитать подробности.') }}
     </p>
 
     <!-- ===== Поиск по материалам ===== -->
     <div class="idea-search">
       <div class="field full">
-        <label for="ideasSearch">Поиск по материалам</label>
+        <label for="ideasSearch">{{ site_lang('lk_ideas|search_label', 'Поиск по материалам') }}</label>
         <input
           id="ideasSearch"
           type="search"
-          placeholder="Введите ключевое слово (например: Новый год, кубик, разговоры...)"
+          placeholder="{{ site_lang('lk_ideas|search_placeholder', 'Введите ключевое слово (например: Новый год, кубик, разговоры...)') }}"
           autocomplete="off"
         />
       </div>
     </div>
 
     <!-- Сообщение, если ничего не найдено -->
-    <div class="search-empty" id="ideasEmpty" hidden>Ничего не найдено. Попробуйте другое слово.</div>
+    <div class="search-empty" id="ideasEmpty" hidden>{{ site_lang('lk_ideas|search_empty', 'Ничего не найдено. Попробуйте другое слово.') }}</div>
 
     <!-- Сетка карточек -->
     <div class="cards portfolio-grid ideas-grid">
       @forelse($ideas as $idea)
         <div class="card award-card idea-card" data-keywords="{{ strtolower(trim($idea->title . ' ' . ($idea->description_text ?? ''))) }}">
           <div class="award-thumb">
-            <span class="award-badge badge-free">Бесплатно</span>
+            <span class="award-badge badge-free">{{ site_lang('lk_ideas|badge_free', 'Бесплатно') }}</span>
 
             <!-- Лайк -->
             <button 
@@ -92,17 +90,17 @@
                 $pdfPath = '/files/ideas/' . $idea->id . '/pdf/' . $idea->pdf_file;
                 $pdfHref = file_exists(public_path(ltrim($pdfPath, '/'))) ? $pdfPath : '/files/' . $idea->pdf_file;
               @endphp
-              <button class="btn btn-secondary" type="button" data-view-doc="{{ $pdfHref }}">Посмотреть</button>
-              <a class="btn btn-primary" href="{{ $pdfHref }}" target="_blank" rel="noopener">Скачать PDF</a>
+              <button class="btn btn-secondary" type="button" data-view-doc="{{ $pdfHref }}">{{ site_lang('lk_ideas|view', 'Посмотреть') }}</button>
+              <a class="btn btn-primary" href="{{ $pdfHref }}" target="_blank" rel="noopener">{{ site_lang('lk_ideas|download_pdf', 'Скачать PDF') }}</a>
             @endif
             @if($idea->zip_file)
               @php
                 $zipPath = '/files/ideas/' . $idea->id . '/zip/' . $idea->zip_file;
                 $zipHref = file_exists(public_path(ltrim($zipPath, '/'))) ? $zipPath : '/files/' . $idea->zip_file;
               @endphp
-              <a class="btn btn-secondary" href="{{ $zipHref }}" target="_blank" rel="noopener">Скачать ZIP</a>
+              <a class="btn btn-secondary" href="{{ $zipHref }}" target="_blank" rel="noopener">{{ site_lang('lk_ideas|download_zip', 'Скачать ZIP') }}</a>
             @endif
-            <button class="btn btn-secondary" type="button" data-open-description="idea_{{ $idea->id }}">Описание</button>
+            <button class="btn btn-secondary" type="button" data-open-description="idea_{{ $idea->id }}">{{ site_lang('lk_ideas|description', 'Описание') }}</button>
           </div>
 
           <div class="award-title">{{ $idea->title }}</div>
@@ -114,7 +112,7 @@
         </div>
       @empty
         <div class="card" style="grid-column: 1 / -1;">
-          <p>Пока нет доступных материалов.</p>
+          <p>{{ site_lang('lk_ideas|empty', 'Пока нет доступных материалов.') }}</p>
         </div>
       @endforelse
     </div>
@@ -133,8 +131,8 @@
 
     <!-- Блок кнопок подтверждения (используется для "Выйти"). Для описаний скрыт. -->
     <div class="modal-actions" id="modalActions" hidden>
-      <button type="button" class="btn btn-secondary" id="modalCancel">Остаться</button>
-      <button type="button" class="btn btn-primary" id="modalConfirm">Выйти</button>
+      <button type="button" class="btn btn-secondary" id="modalCancel">{{ site_lang('lk_ideas|modal_cancel', 'Остаться') }}</button>
+      <button type="button" class="btn btn-primary" id="modalConfirm">{{ site_lang('lk_ideas|modal_confirm', 'Выйти') }}</button>
     </div>
   </div>
 </div>

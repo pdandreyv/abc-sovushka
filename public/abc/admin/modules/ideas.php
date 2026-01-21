@@ -30,7 +30,7 @@ $a18n['rank'] = 'Сортировка';
 $a18n['display'] = 'Показывать';
 
 $table = array(
-	'id'		=>	'rank:desc created_at:desc id',
+	'id'		=>	'rank:desc created_at:desc id:desc',
 	'title'		=>	'',
 	'image'		=>	'img',
 	'rank'		=>	'',

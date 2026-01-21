@@ -12,6 +12,8 @@ $api = array(
 if (@$_GET['q']) $where.= "
 	AND (
 		LOWER(users.email) like '%".mysql_res(mb_strtolower($_GET['q'],'UTF-8'))."%'
+		OR LOWER(CONCAT(users.last_name,' ',users.first_name,' ',users.middle_name)) like '%".mysql_res(mb_strtolower($_GET['q'],'UTF-8'))."%'
+		OR LOWER(CONCAT(users.first_name,' ',users.last_name)) like '%".mysql_res(mb_strtolower($_GET['q'],'UTF-8'))."%'
 		OR LOWER(users.phone) like '%".mysql_res(mb_strtolower($_GET['q'],'UTF-8'))."%'
 	)
 ";
@@ -29,10 +31,9 @@ $query = "
 $users = mysql_select($query,'rows');
 if ($users) {
 	foreach ($users as $q) {
-		$name = $q['email'];
-		if ($q['phone']) {
-			$name.= ' ['.$q['phone'].']';
-		}
+		$full_name = trim($q['last_name'].' '.$q['first_name'].' '.$q['middle_name']);
+		$name = $full_name ? $full_name.' ('.$q['email'].')' : $q['email'];
+		if ($q['phone']) $name.= ' ['.$q['phone'].']';
 		$api['items'][] = array(
 			'id'=>$q['id'],
 			'text'=>$name,

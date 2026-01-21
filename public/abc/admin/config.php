@@ -64,12 +64,9 @@ $modules_admin = array(
 		)
 	),*/
 	array(
-		'name'=>'dictionary',
+		'module'=>'languages',
 		'image'=>'dictionary',
 		'icon'=>'book-open',
-		'module'=>array(
-			array('module'=>'languages')
-		)
 	),
 	array(
 		'module'=>'ideas',
@@ -156,7 +153,7 @@ $modules_admin = array(
 		'module'=>array(
 			array('module'=>'users',),
 			array('module'=>'user_types',),
-			array('module'=>'user_fields',),
+			//array('module'=>'user_fields',),
 			array('module'=>'user_socials',),
 		),
 	),

@@ -7,15 +7,17 @@
 
 $a18n['title'] = 'Название';
 $a18n['price'] = 'Цена';
+$a18n['price_phrase'] = 'Фраза (по 214 ₽/мес.)';
 $a18n['days'] = 'Количество дней';
 $a18n['rating'] = 'Рейтинг';
 $a18n['is_visible'] = 'Показывать';
 $a18n['sort_order'] = 'Сортировка';
 
 $table = array(
-	'id'		=>	'sort_order:asc id',
+	'id'		=>	'sort_order:desc id:desc',
 	'title'		=>	'',
 	'price'		=>	'',
+	'price_phrase'	=>	'',
 	'days'		=>	'',
 	'is_visible'	=>	'boolean',
 	'sort_order'	=>	'',
@@ -43,6 +45,9 @@ $form[] = array('input td8','title');
 $form[] = array('input td2','price',array(
 	'help'=>'Цена в рублях',
 	'value'=>@$post['price'] ? $post['price'] : 0
+));
+$form[] = array('input td4','price_phrase',array(
+	'help'=>'Например: по 214 ₽/мес.'
 ));
 $form[] = array('input td2','days',array(
 	'help'=>'Количество дней (1 месяц = 30, 3 месяца = 91, 12 месяцев = 365)',
