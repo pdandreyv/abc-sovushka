@@ -174,6 +174,14 @@
 
 @push('scripts')
 <script src="{{ asset_versioned('js/dashboard.js') }}"></script>
+@php
+  $uiTexts = [
+    'discount_none' => site_lang('lk_subscriptions|discount_none', '1 подписка — выгодных предложений нет'),
+    'discount_10' => site_lang('lk_subscriptions|discount_hint_10', 'Активирована скидка 10% за 2 подписки'),
+    'discount_15' => site_lang('lk_subscriptions|discount_hint_15', 'Активирована скидка 15% за 3+ подписки'),
+    'discount_20' => site_lang('lk_subscriptions|discount_hint_20', 'Активирована скидка 20% за все подписки'),
+  ];
+@endphp
 <script>
 (function () {
   "use strict";
@@ -182,12 +190,7 @@
   const SUBSCRIPTIONS = @json($subscriptionsData);
   
   const TARIFFS = @json($tariffsData);
-  const UI_TEXTS = @json([
-    'discount_none' => site_lang('lk_subscriptions|discount_none', '1 подписка — выгодных предложений нет'),
-    'discount_10' => site_lang('lk_subscriptions|discount_hint_10', 'Активирована скидка 10% за 2 подписки'),
-    'discount_15' => site_lang('lk_subscriptions|discount_hint_15', 'Активирована скидка 15% за 3+ подписки'),
-    'discount_20' => site_lang('lk_subscriptions|discount_hint_20', 'Активирована скидка 20% за все подписки'),
-  ]);
+  const UI_TEXTS = @json($uiTexts);
 
   // ---------- Утилиты ----------
   function formatRUB(value) {
