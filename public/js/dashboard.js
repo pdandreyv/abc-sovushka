@@ -2,7 +2,7 @@
   Совушкина школа — общий JS для страниц кабинета
   Скрипт делает:
   - модальные окна (в т.ч. подтверждение выхода)
-  - просмотр документов (через viewer.html)
+  - просмотр документов (открытие файла напрямую)
   - лайки и описание на странице ideas.html
   - переключатели/мелкие интерактивные элементы
   - AJAX отправка формы смены пароля
@@ -362,7 +362,7 @@ function initPortfolioPage() {
     btn.addEventListener('click', () => {
       const doc = btn.getAttribute('data-view-doc');
       if (!doc) return;
-      window.open(`viewer.html?doc=${encodeURIComponent(doc)}`, '_blank', 'noopener');
+      window.open(doc, '_blank', 'noopener');
     });
   });
 }
@@ -541,8 +541,7 @@ function initSub1AzbukaPage() {
   }
 
   function openViewer(path) {
-    const url = `viewer.html?doc=${encodeURIComponent(path)}`;
-    window.open(url, '_blank', 'noopener');
+    window.open(path, '_blank', 'noopener');
   }
 
   function renderFiles(topic) {
