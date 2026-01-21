@@ -727,6 +727,25 @@ function form_file ($type,$key, $param = array()) {
 				}
 				// Для PDF и ZIP файлов используем простое копирование (copy2 удаляет всю папку)
 				if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
+					// Убеждаемся, что папка назначения существует
+					if (!is_dir($root) && !mkdir($root,0755,true)) {
+						$q[$key] = '';
+						$post[$key] = $q[$key];
+						mysql_fn('update',$module['table'],$q);
+						//удаляем временный файл
+						delete_all($temp,true);
+						return html_array('form/file', array(
+							'img'=>get_img($module['table'],$q,$key),
+							'name'=>$name,
+							'type'=>$type,
+							'is_file'=>false,
+							'key'=>$key,
+							'item'=>$q,
+							'sizes'=>$param['sizes'],
+							'module'=>$module['table'],
+							'file'=>$file
+						));
+					}
 					// Удаляем только старый файл с таким же именем, если существует
 					if (file_exists($root.$file)) {
 						unlink($root.$file);
