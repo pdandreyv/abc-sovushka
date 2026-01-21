@@ -27,7 +27,12 @@
                     @if($index > 0)
                         <span class="footer-separator">|</span>
                     @endif
-                    <a href="{{ route('page.show', ['url' => $page->url]) }}" target="_blank" rel="noopener noreferrer">{{ $page->name }}</a>
+                    @php
+                        $pageUrl = (str_starts_with($page->url, 'http://') || str_starts_with($page->url, 'https://')) 
+                            ? $page->url 
+                            : route('page.show', ['url' => $page->url]);
+                    @endphp
+                    <a href="{{ $pageUrl }}" target="_blank" rel="noopener noreferrer">{{ $page->name }}</a>
                 @endforeach
             </div>
         </div>

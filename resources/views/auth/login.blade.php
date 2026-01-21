@@ -62,7 +62,12 @@
                         $menuPages = \App\Models\Page::getMenuPages();
                     @endphp
                     @foreach($menuPages as $page)
-                        <p><a href="{{ route('page.show', ['url' => $page->url]) }}" target="_blank" rel="noopener noreferrer">{{ $page->name }}</a></p>
+                        @php
+                            $pageUrl = (str_starts_with($page->url, 'http://') || str_starts_with($page->url, 'https://')) 
+                                ? $page->url 
+                                : route('page.show', ['url' => $page->url]);
+                        @endphp
+                        <p><a href="{{ $pageUrl }}" target="_blank" rel="noopener noreferrer">{{ $page->name }}</a></p>
                     @endforeach
                 </div>
             </div>
