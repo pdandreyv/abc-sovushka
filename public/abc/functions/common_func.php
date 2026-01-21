@@ -399,9 +399,18 @@ function get_img($table,$q,$key='img',$p='') {
 	$site = '';
 	//одна картинка
 	if (@$q[$key]) {
-		// Для PDF и ZIP файлов модуля ideas путь в public/files
+		// Для PDF и ZIP файлов модуля ideas путь в public/files/ideas/{id}/{field}/
 		if ($table == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
-			$img = '/files/'.$p.$q[$key];
+			$field_dir = ($key == 'pdf_file') ? 'pdf' : 'zip';
+			$new_path = '/files/'.$table.'/'.$q['id'].'/'.$field_dir.'/'.$p.$q[$key];
+			$legacy_path = '/files/'.$p.$q[$key];
+			if (defined('ROOT_DIR')) {
+				$new_fs = ROOT_DIR.'../'.ltrim($new_path,'/');
+				$legacy_fs = ROOT_DIR.'../'.ltrim($legacy_path,'/');
+				$img = is_file($new_fs) ? $new_path : (is_file($legacy_fs) ? $legacy_path : $new_path);
+			} else {
+				$img = $new_path;
+			}
 		} else {
 			$img = '/files/'.$table.'/'.$q['id'].'/'.$key.'/'.$p.$q[$key];
 		}

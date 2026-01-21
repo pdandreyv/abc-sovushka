@@ -608,9 +608,10 @@ function form_file ($type,$key, $param = array()) {
 	//загрузка с записью в БД
 	elseif ($t=='mysql') {
 		$file = isset($post[$key]) ? $post[$key] : ''; //название файла
-		// Для PDF и ZIP файлов модуля ideas сохраняем в public/files
+		// Для PDF и ZIP файлов модуля ideas сохраняем в public/files/ideas/{id}/{field}/
 		if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
-			$root = ROOT_DIR.'../files/'; //папка от корня основной папки (public/files/)
+			$field_dir = ($key == 'pdf_file') ? 'pdf' : 'zip';
+			$root = ROOT_DIR.'../files/'.$module['table'].'/'.$get['id'].'/'.$field_dir.'/'; //public/files/ideas/{id}/{field}/
 		} else {
 			$root = ROOT_DIR.'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/'; //папка от корня основной папки
 		}
@@ -685,9 +686,10 @@ function form_file ($type,$key, $param = array()) {
 	//загрузка с записью в БД (HTML5)
 	elseif ($t=='file') {
 		$file = $post[$key] = isset($post[$key]) ? $post[$key] : ''; //название файла
-		// Для PDF и ZIP файлов модуля ideas сохраняем в public/files
+		// Для PDF и ZIP файлов модуля ideas сохраняем в public/files/ideas/{id}/{field}/
 		if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
-			$root = ROOT_DIR.'../files/'; //папка от корня основной папки (public/files/)
+			$field_dir = ($key == 'pdf_file') ? 'pdf' : 'zip';
+			$root = ROOT_DIR.'../files/'.$module['table'].'/'.$get['id'].'/'.$field_dir.'/'; //public/files/ideas/{id}/{field}/
 		} else {
 			$relative = 'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/'; //v1.3.17 относительный путь папки
 			$root = ROOT_DIR.$relative; //папка от корня основной папки

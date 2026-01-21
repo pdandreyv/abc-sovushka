@@ -27,13 +27,15 @@ $a18n['pdf_file'] = 'Файл PDF';
 $a18n['zip_file'] = 'Файл ZIP';
 $a18n['likes'] = 'Лайки';
 $a18n['rank'] = 'Сортировка';
+$a18n['display'] = 'Показывать';
 
 $table = array(
 	'id'		=>	'rank:desc created_at:desc id',
 	'title'		=>	'',
+	'image'		=>	'img',
 	'rank'		=>	'',
 	'likes'		=>	'',
-	'created_at'	=>	'date_smart',
+	'display'	=>	'boolean',
 );
 
 // Поиск
@@ -57,6 +59,7 @@ $filter[] = array('search');
 
 $form[] = array('input td8','title');
 $form[] = array('input td2','rank');
+$form[] = array('checkbox','display');
 $form[] = array('input td2','likes',array(
 	'name'=>'Количество лайков',
 	'value'=>@$post['likes'] ? $post['likes'] : 0

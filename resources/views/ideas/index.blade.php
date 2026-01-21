@@ -88,11 +88,19 @@
 
           <div class="award-actions idea-actions">
             @if($idea->pdf_file)
-              <button class="btn btn-secondary" type="button" data-view-doc="/files/{{ $idea->pdf_file }}">Посмотреть</button>
-              <a class="btn btn-primary" href="/files/{{ $idea->pdf_file }}" target="_blank" rel="noopener">Скачать PDF</a>
+              @php
+                $pdfPath = '/files/ideas/' . $idea->id . '/pdf/' . $idea->pdf_file;
+                $pdfHref = file_exists(public_path(ltrim($pdfPath, '/'))) ? $pdfPath : '/files/' . $idea->pdf_file;
+              @endphp
+              <button class="btn btn-secondary" type="button" data-view-doc="{{ $pdfHref }}">Посмотреть</button>
+              <a class="btn btn-primary" href="{{ $pdfHref }}" target="_blank" rel="noopener">Скачать PDF</a>
             @endif
             @if($idea->zip_file)
-              <a class="btn btn-secondary" href="/files/{{ $idea->zip_file }}" target="_blank" rel="noopener">Скачать ZIP</a>
+              @php
+                $zipPath = '/files/ideas/' . $idea->id . '/zip/' . $idea->zip_file;
+                $zipHref = file_exists(public_path(ltrim($zipPath, '/'))) ? $zipPath : '/files/' . $idea->zip_file;
+              @endphp
+              <a class="btn btn-secondary" href="{{ $zipHref }}" target="_blank" rel="noopener">Скачать ZIP</a>
             @endif
             <button class="btn btn-secondary" type="button" data-open-description="idea_{{ $idea->id }}">Описание</button>
           </div>

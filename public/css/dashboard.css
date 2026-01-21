@@ -675,6 +675,32 @@ body {
   line-height: 1.5;
 }
 
+.modal-body p {
+  margin: 0 0 12px;
+}
+
+.modal-body p:last-child {
+  margin-bottom: 0;
+}
+
+.modal-body ul,
+.modal-body ol {
+  margin: 0 0 12px;
+  padding-left: 22px;
+}
+
+.modal-body ul {
+  list-style: disc;
+}
+
+.modal-body ol {
+  list-style: decimal;
+}
+
+.modal-body li {
+  margin: 4px 0;
+}
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;
