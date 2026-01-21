@@ -31,8 +31,13 @@
                         $pageUrl = (str_starts_with($page->url, 'http://') || str_starts_with($page->url, 'https://')) 
                             ? $page->url 
                             : route('page.show', ['url' => $page->url]);
+                        $pageHost = null;
+                        if (str_starts_with($pageUrl, 'http://') || str_starts_with($pageUrl, 'https://')) {
+                            $pageHost = parse_url($pageUrl, PHP_URL_HOST);
+                        }
+                        $isExternal = $pageHost && $pageHost !== request()->getHost();
                     @endphp
-                    <a href="{{ $pageUrl }}" target="_blank" rel="noopener noreferrer">{{ $page->name }}</a>
+                    <a href="{{ $pageUrl }}" @if($isExternal) target="_blank" rel="noopener noreferrer" @endif>{{ $page->name }}</a>
                 @endforeach
             </div>
         </div>
