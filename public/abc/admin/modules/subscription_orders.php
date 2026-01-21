@@ -39,7 +39,6 @@ $table = array(
 	'sum_next_pay'	=>	'',
 	'auto'		=>	'boolean',
 	'errors'	=>	'',
-	'created_at'	=>	'date_smart',
 );
 
 // Поиск

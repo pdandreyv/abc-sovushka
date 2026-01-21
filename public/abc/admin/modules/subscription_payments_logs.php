@@ -31,7 +31,6 @@ $table = array(
 	'payment_provider'	=>	'',
 	'transaction_id'	=>	'',
 	'attempted_at'	=>	'datetime',
-	'created_at'	=>	'date_smart',
 );
 
 // Поиск
