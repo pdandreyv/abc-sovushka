@@ -167,7 +167,7 @@
                 <input autocomplete="current-password" id="current_password" name="current_password" required type="password"/>
               </div>
               <div class="field">
-                <label for="new_password"><br />Новый пароль</label>
+                <label for="new_password">Новый пароль</label>
                 <input autocomplete="new-password" id="new_password" name="new_password" required type="password"/>
               </div>
               <div class="field">
@@ -184,7 +184,7 @@
       <!-- Подписки (пустое состояние) -->
       <div class="card">
         <h3>Подписки</h3>
-        <p>У вас пока нет активных подписок. Выберите класс или направление — материалы откроются сразу после оформления.</p>
+        <p>У вас пока нет активных подписок. Выберите класс или направление — материалы откроются сразу после оформления.</p><br />
         <button class="btn btn-primary" type="button" onclick="window.location.href='{{ route('subscriptions.index') }}'">Оформить подписку</button>
       </div>
     </div>
