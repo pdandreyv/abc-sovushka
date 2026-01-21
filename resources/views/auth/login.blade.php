@@ -11,18 +11,18 @@
     <div class="left">
         <img src="{{ asset('images/logo.png') }}" alt="Логотип" />
         <div class="welcome-text">
-            <h3>Добро пожаловать в Совушкину школу!</h3>
-            <p>Готовые уроки, рабочие листы, презентации и бонусные материалы для учителей начальных классов, воспитателей и педагогов дополнительного образования. Доступ 24/7 — экономьте время и работайте с удовольствием!</p>
+            <h3>{{ site_lang('auth|welcome_title', 'Добро пожаловать в Совушкину школу!') }}</h3>
+            <p>{{ site_lang('auth|welcome_text', 'Готовые уроки, рабочие листы, презентации и бонусные материалы для учителей начальных классов, воспитателей и педагогов дополнительного образования. Доступ 24/7 — экономьте время и работайте с удовольствием!') }}</p>
         </div>
     </div>
     <div class="right">
         <div class="form-box">
-            <div class="tab-switcher">
-                <div id="tab-login" class="active" onclick="switchTab('login')">Вход</div>
-                <div id="tab-register" onclick="switchTab('register')">Регистрация</div>
-            </div>
+                <div class="tab-switcher">
+                    <div id="tab-login" class="active" onclick="switchTab('login')">{{ site_lang('auth|tab_login', 'Вход') }}</div>
+                    <div id="tab-register" onclick="switchTab('register')">{{ site_lang('auth|tab_register', 'Регистрация') }}</div>
+                </div>
             <div id="login-box">
-                <h2>Вход в личный кабинет</h2>
+                <h2>{{ site_lang('auth|login_heading', 'Вход в личный кабинет') }}</h2>
                 @if (session('success'))
                     <div class="alert alert-success">
                         {{ session('success') }}
@@ -39,18 +39,18 @@
                             </ul>
                         </div>
                     @endif
-                    <input type="email" name="email" placeholder="Email" value="{{ old('email') }}" required autofocus class="@error('email') input-error @enderror" />
+                    <input type="email" name="email" placeholder="{{ site_lang('auth|login_email_placeholder', 'Email') }}" value="{{ old('email') }}" required autofocus class="@error('email') input-error @enderror" />
                     @error('email')
                         <div class="field-error">{{ $message }}</div>
                     @enderror
-                    <input type="password" name="password" placeholder="Пароль" required class="@error('password') input-error @enderror" />
+                    <input type="password" name="password" placeholder="{{ site_lang('auth|login_password_placeholder', 'Пароль') }}" required class="@error('password') input-error @enderror" />
                     @error('password')
                         <div class="field-error">{{ $message }}</div>
                     @enderror
-                    <button type="submit">Войти</button>
+                    <button type="submit">{{ site_lang('auth|login_button', 'Войти') }}</button>
                 </form>
                 <div class="social-login">
-                    <p>или через соцсети:</p>
+                    <p>{{ site_lang('auth|social_title', 'или через соцсети:') }}</p>
                     <div class="icons">
                         <a href="{{ route('social.redirect', ['provider' => 'vkontakte']) }}" class="icon-btn" type="button"><img src="{{ asset('images/vk-pin.png') }}" alt="VK"></a>
                         <a href="{{ route('social.redirect', ['provider' => 'yandex']) }}" class="icon-btn" type="button"><img src="{{ asset('images/yandex-pin.png') }}" alt="Yandex"></a>
@@ -78,7 +78,7 @@
             </div>
 
             <div id="register-box" style="display:none">
-                <h2>Регистрация</h2>
+                <h2>{{ site_lang('auth|register_heading', 'Регистрация') }}</h2>
                 <form id="register-form" method="POST" action="{{ route('register') }}">
                     @csrf
                     @if ($errors->any())
@@ -93,28 +93,29 @@
                     <div id="js-validation-errors" class="alert alert-danger" style="display: none;">
                         <ul id="js-validation-list"></ul>
                     </div>
-                    <input type="text" name="last_name" id="last_name" placeholder="Фамилия" value="{{ old('last_name') }}" required class="@error('last_name') input-error @enderror" />
+                    <input type="text" name="last_name" id="last_name" placeholder="{{ site_lang('auth|register_last_name', 'Фамилия') }}" value="{{ old('last_name') }}" required class="@error('last_name') input-error @enderror" />
                     @error('last_name')
                         <div class="field-error">{{ $message }}</div>
                     @enderror
-                    <input type="text" name="first_name" id="first_name" placeholder="Имя" value="{{ old('first_name') }}" required class="@error('first_name') input-error @enderror" />
+                    <input type="text" name="first_name" id="first_name" placeholder="{{ site_lang('auth|register_first_name', 'Имя') }}" value="{{ old('first_name') }}" required class="@error('first_name') input-error @enderror" />
                     @error('first_name')
                         <div class="field-error">{{ $message }}</div>
                     @enderror
-                    <input type="text" name="middle_name" id="middle_name" placeholder="Отчество" value="{{ old('middle_name') }}" class="@error('middle_name') input-error @enderror" />
+                    <input type="text" name="middle_name" id="middle_name" placeholder="{{ site_lang('auth|register_middle_name', 'Отчество') }}" value="{{ old('middle_name') }}" class="@error('middle_name') input-error @enderror" />
                     @error('middle_name')
                         <div class="field-error">{{ $message }}</div>
                     @enderror
-                    <input type="email" name="email" id="email" placeholder="Email" value="{{ old('email') }}" required class="@error('email') input-error @enderror" />
+                    <input type="email" name="email" id="email" placeholder="{{ site_lang('auth|register_email', 'Email') }}" value="{{ old('email') }}" required class="@error('email') input-error @enderror" />
                     @error('email')
                         <div class="field-error">{{ $message }}</div>
                     @enderror
-                    <input type="password" name="password" id="password" placeholder="Пароль" required class="@error('password') input-error @enderror" />
+                    <input type="password" name="password" id="password" placeholder="{{ site_lang('auth|register_password', 'Пароль') }}" required class="@error('password') input-error @enderror" />
                     @error('password')
                         <div class="field-error">{{ $message }}</div>
                     @enderror
-                    <input type="password" name="password_confirmation" id="password_confirmation" placeholder="Повторите пароль" required />
-                    <button type="submit">Зарегистрироваться</button>
+                    <input type="password" name="password_confirmation" id="password_confirmation" placeholder="{{ site_lang('auth|register_password_confirm', 'Повторите пароль') }}" required />
+                    <button type="submit">{{ site_lang('auth|register_button', 'Зарегистрироваться') }}</button>
+                    <p class="form-legal">{{ site_lang('auth|register_consent', 'Регистрируясь, я принимаю условия Пользовательского соглашения об использовании Личного кабинета Клиента и соглашаюсь с Политикой обработки персональных данных.') }}</p>
                 </form>
             </div>
         </div>
