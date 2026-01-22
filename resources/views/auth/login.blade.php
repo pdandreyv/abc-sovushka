@@ -115,7 +115,7 @@
                     @enderror
                     <input type="password" name="password_confirmation" id="password_confirmation" placeholder="{{ site_lang('auth|register_password_confirm', 'Повторите пароль') }}" required />
                     <button type="submit">{{ site_lang('auth|register_button', 'Зарегистрироваться') }}</button>
-                    <p class="form-legal">{{ site_lang('auth|register_consent', 'Регистрируясь, я принимаю условия Пользовательского соглашения об использовании Личного кабинета Клиента и соглашаюсь с Политикой обработки персональных данных.') }}</p>
+                    <p class="form-legal">{!! site_lang('auth|register_consent', 'Регистрируясь, я принимаю условия Пользовательского соглашения об использовании Личного кабинета Клиента и соглашаюсь с Политикой обработки персональных данных.') !!}</p>
                 </form>
             </div>
         </div>
