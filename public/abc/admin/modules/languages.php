@@ -264,6 +264,7 @@ function lang_form($type,$key,$name) {
 		'name'=>$name.' {'.$key[0].'|'.$key[1].'}',
 		'title'=>$key[0].'|'.$key[1],
 		//v1.4.20 - значение в поле
-		'value'=>$lang[$key[0]][$key[1]]
+		'value'=>$lang[$key[0]][$key[1]],
+		'no_escape'=>true
 	));
 }

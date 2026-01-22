@@ -31,6 +31,7 @@ $a18n = array(
 	'delete'        => 'Удалить',
 	'display'		=> 'показывать',
 	'dictionary'	=> 'Словарь',
+	'languages'		=> 'Словарь',
 	'email'			=> 'email',
 	'export'		=> 'Экспорт в файл',
 	'edit'          => 'Редактировать',
