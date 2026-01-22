@@ -11,7 +11,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\IdeaController;
 use App\Http\Controllers\SubscriptionController;
 
-// Главная страница - редирект на страницу входа или ловим callback соцсетей
+// Главная страница - форма входа или ловим callback соцсетей
 Route::get('/', function (Request $request) {
     if ($request->has('code') || $request->has('error')) {
         $provider = $request->get('provider', 'yandex');
@@ -22,11 +22,13 @@ Route::get('/', function (Request $request) {
         return app(SocialAuthController::class)->callback($provider);
     }
 
-    return redirect()->route('login');
+    return app(LoginController::class)->showLoginForm();
 });
 
 // Маршруты аутентификации
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::get('/login', function () {
+    return redirect()->to('/');
+})->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
