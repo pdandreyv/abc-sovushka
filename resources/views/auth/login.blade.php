@@ -52,10 +52,16 @@
                 <div class="social-login">
                     <p>{{ site_lang('auth|social_title', 'или через соцсети:') }}</p>
                     <div class="icons">
-                        <a href="{{ route('social.redirect', ['provider' => 'vkontakte']) }}" class="icon-btn" type="button"><img src="{{ asset('images/vk-pin.png') }}" alt="VK"></a>
                         <a href="{{ route('social.redirect', ['provider' => 'yandex']) }}" class="icon-btn" type="button"><img src="{{ asset('images/yandex-pin.png') }}" alt="Yandex"></a>
-                        <a href="{{ route('social.redirect', ['provider' => 'odnoklassniki']) }}" class="icon-btn" type="button"><img src="{{ asset('images/ok-pin.png') }}" alt="OK"></a>
                     </div>
+                    <div
+                        id="vkid-oauth-list"
+                        class="vkid-oauth-list"
+                        data-vkid-app="{{ (int) config('services.vkontakte.client_id') }}"
+                        data-vkid-redirect="{{ url('/') }}"
+                        data-vkid-callback="{{ route('social.vkid.callback') }}"
+                    ></div>
+                    <div id="vkid-error" class="alert alert-danger" style="display: none;"></div>
                 </div>
                 <div class="form-footer">
                     @php
@@ -259,4 +265,102 @@
         }
     });
 </script>
+
+@push('scripts')
+<script src="https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!('VKIDSDK' in window)) {
+            return;
+        }
+
+        const container = document.getElementById('vkid-oauth-list');
+        if (!container) {
+            return;
+        }
+
+        const appId = Number(container.dataset.vkidApp || 0);
+        const redirectUrl = container.dataset.vkidRedirect || '';
+        const callbackUrl = container.dataset.vkidCallback || '';
+
+        if (!appId || !redirectUrl || !callbackUrl) {
+            return;
+        }
+
+        const VKID = window.VKIDSDK;
+
+        VKID.Config.init({
+            app: appId,
+            redirectUrl: redirectUrl,
+            responseMode: VKID.ConfigResponseMode.Callback,
+            source: VKID.ConfigSource.LOWCODE,
+            scope: '',
+        });
+
+        const oAuth = new VKID.OAuthList();
+        const errorContainer = document.getElementById('vkid-error');
+
+        oAuth.render({
+            container: container,
+            oauthList: ['vkid', 'ok_ru', 'mail_ru'],
+        })
+        .on(VKID.WidgetEvents.ERROR, vkidOnError)
+        .on(VKID.OAuthListInternalEvents.LOGIN_SUCCESS, function(payload) {
+            const code = payload.code;
+            const deviceId = payload.device_id;
+            const provider = payload.provider || payload.auth_provider || payload.service || payload.source || null;
+
+            VKID.Auth.exchangeCode(code, deviceId)
+                .then(function(data) {
+                    return finishVkidAuth(data.access_token, provider);
+                })
+                .catch(vkidOnError);
+        });
+
+        function finishVkidAuth(accessToken, provider) {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            if (csrfToken) {
+                headers['X-CSRF-TOKEN'] = csrfToken.getAttribute('content');
+            }
+
+            return fetch(callbackUrl, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({
+                    access_token: accessToken,
+                    provider: provider,
+                }),
+            })
+            .then(function(response) {
+                return response.json().then(function(data) {
+                    return { ok: response.ok, data: data };
+                });
+            })
+            .then(function(result) {
+                if (result.ok && result.data.redirect) {
+                    window.location.href = result.data.redirect;
+                    return;
+                }
+
+                throw new Error(result.data.message || 'Ошибка авторизации через VK ID.');
+            })
+            .catch(vkidOnError);
+        }
+
+        function vkidOnError(error) {
+            if (errorContainer) {
+                errorContainer.textContent = 'Ошибка авторизации через VK/OK. Попробуйте еще раз.';
+                errorContainer.style.display = 'block';
+            }
+
+            if (window.console && console.error) {
+                console.error(error);
+            }
+        }
+    });
+</script>
+@endpush
 @endsection

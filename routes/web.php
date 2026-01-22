@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LogoutController;
@@ -10,8 +11,17 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\IdeaController;
 use App\Http\Controllers\SubscriptionController;
 
-// Главная страница - редирект на страницу входа
-Route::get('/', function () {
+// Главная страница - редирект на страницу входа или ловим callback соцсетей
+Route::get('/', function (Request $request) {
+    if ($request->has('code') || $request->has('error')) {
+        $provider = $request->get('provider', 'yandex');
+        if (!in_array($provider, ['vkontakte', 'yandex', 'odnoklassniki'], true)) {
+            $provider = 'yandex';
+        }
+
+        return app(SocialAuthController::class)->callback($provider);
+    }
+
     return redirect()->route('login');
 });
 
@@ -25,6 +35,7 @@ Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 // Социальная авторизация
 Route::get('/auth/{provider}', [SocialAuthController::class, 'redirect'])->where('provider', 'vkontakte|yandex|odnoklassniki')->name('social.redirect');
 Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])->where('provider', 'vkontakte|yandex|odnoklassniki')->name('social.callback');
+Route::post('/auth/vkid/callback', [SocialAuthController::class, 'vkidCallback'])->name('social.vkid.callback');
 
 // Защищенные маршруты
 Route::middleware('auth')->group(function () {
