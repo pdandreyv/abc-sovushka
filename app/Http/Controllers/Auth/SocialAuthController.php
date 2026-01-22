@@ -236,16 +236,33 @@ class SocialAuthController extends Controller
         ]);
 
         try {
-            $response = $client->get('https://id.vk.com/oauth2/userinfo', [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $accessToken,
-                ],
-            ]);
+            $endpoints = [
+                'https://id.vk.com/oauth2/user_info',
+                'https://id.vk.com/oauth2/userinfo',
+            ];
 
-            $body = (string) $response->getBody();
-            $decoded = json_decode($body, true);
+            foreach ($endpoints as $endpoint) {
+                $response = $client->get($endpoint, [
+                    'headers' => [
+                        'Authorization' => 'Bearer ' . $accessToken,
+                        'Accept' => 'application/json',
+                    ],
+                ]);
 
-            return is_array($decoded) ? $decoded : null;
+                $status = $response->getStatusCode();
+                $body = (string) $response->getBody();
+
+                if ($status >= 200 && $status < 300) {
+                    $decoded = json_decode($body, true);
+                    return is_array($decoded) ? $decoded : null;
+                }
+
+                Log::warning('VKID userinfo non-200', [
+                    'endpoint' => $endpoint,
+                    'status' => $status,
+                    'body' => mb_substr($body, 0, 500),
+                ]);
+            }
         } catch (\Throwable $e) {
             Log::error('VKID userinfo request error', [
                 'message' => $e->getMessage(),
