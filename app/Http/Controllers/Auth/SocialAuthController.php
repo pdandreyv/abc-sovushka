@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use GuzzleHttp\Client;
 use Laravel\Socialite\Facades\Socialite;
 
 class SocialAuthController extends Controller
@@ -230,22 +231,28 @@ class SocialAuthController extends Controller
      */
     private function fetchVkidUserInfo(string $accessToken): ?array
     {
-        $context = stream_context_create([
-            'http' => [
-                'method' => 'GET',
-                'header' => "Authorization: Bearer {$accessToken}\r\n",
-                'timeout' => 10,
-            ],
+        $client = new Client([
+            'timeout' => 10,
         ]);
 
-        $responseBody = @file_get_contents('https://id.vk.com/oauth2/userinfo', false, $context);
+        try {
+            $response = $client->get('https://id.vk.com/oauth2/userinfo', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $accessToken,
+                ],
+            ]);
 
-        if ($responseBody === false) {
-            return null;
+            $body = (string) $response->getBody();
+            $decoded = json_decode($body, true);
+
+            return is_array($decoded) ? $decoded : null;
+        } catch (\Throwable $e) {
+            Log::error('VKID userinfo request error', [
+                'message' => $e->getMessage(),
+                'token_length' => strlen($accessToken),
+            ]);
         }
 
-        $decoded = json_decode($responseBody, true);
-
-        return is_array($decoded) ? $decoded : null;
+        return null;
     }
 }
