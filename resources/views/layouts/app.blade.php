@@ -12,7 +12,11 @@
     @yield('content')
     @php
         $currentUrl = isset($url) ? $url : (request()->segment(1) ?? '');
-        $isAuthPage = request()->routeIs('login') || request()->routeIs('register') || request()->is('login') || request()->is('register');
+        $isAuthPage = request()->routeIs('login')
+            || request()->routeIs('register')
+            || request()->is('login')
+            || request()->is('register')
+            || request()->is('/');
         $menuPages = \App\Models\Page::getMenuPages();
         $hideFooter = $menuPages->isEmpty() || $isAuthPage;
     @endphp
