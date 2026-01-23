@@ -96,8 +96,8 @@ if (!empty($topics)) {
 		'value'=>array(true, $topics)
 	));
 } else {
-	$form[] = array('input td3','topic_id',array(
-		'help'=>'ID темы (если не выбран уровень/предмет)'
+	$form[] = array('select td6','topic_id',array(
+		'value'=>array(true, $topicsAll)
 	));
 }
 $form[] = array('hypertext td12','text');
