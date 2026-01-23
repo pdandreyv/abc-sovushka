@@ -6,12 +6,16 @@ if ($get['u']=='add') {
 	if (isset($get['level']) && intval($get['level'])>0) $post['subscription_level_id'] = intval($get['level']);
 	if (isset($get['subject']) && intval($get['subject'])>0) $post['subject_id'] = intval($get['subject']);
 }
+if ($get['u']=='edit') {
+	if (!isset($post['rank']) || $post['rank']==='') $post['rank'] = 0;
+}
 
 $levels = mysql_select("SELECT id, title as name FROM subscription_levels ORDER BY sort_order", 'array');
 $subjects = mysql_select("SELECT id, title as name FROM subjects ORDER BY rating DESC, title", 'array');
 
 $a18n['title'] = 'Название';
 $a18n['keywords'] = 'Ключевые слова';
+$a18n['text'] = 'Текст';
 $a18n['rank'] = 'Рейтинг';
 $a18n['display'] = 'Показывать';
 $a18n['subscription_level_id'] = 'Уровень подписки';
@@ -21,10 +25,10 @@ $table = array(
 	'id'		=>	'rank:desc id:desc',
 	'title'		=>	'',
 	'keywords'	=>	'',
-	'rank'		=>	'',
-	'display'	=>	'boolean',
 	'subscription_level_id'	=>	$levels,
 	'subject_id'	=>	$subjects,
+	'rank'		=>	'',
+	'display'	=>	'boolean',
 );
 
 // Фильтры
@@ -68,3 +72,4 @@ $form[] = array('select td2','subscription_level_id',array(
 $form[] = array('select td2','subject_id',array(
 	'value'=>array(true, $subjects)
 ));
+$form[] = array('tinymce td12','text');

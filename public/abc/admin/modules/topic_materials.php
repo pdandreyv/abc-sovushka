@@ -9,6 +9,7 @@ if ($get['u']=='edit') {
 	else $post['pdf_file'] = trim($post['pdf_file']);
 	if (@$post['zip_file']=='') $post['zip_file'] = null;
 	else $post['zip_file'] = trim($post['zip_file']);
+	if (!isset($post['rank']) || $post['rank']==='') $post['rank'] = 0;
 }
 
 if ($get['u']=='add') {
@@ -28,25 +29,23 @@ $a18n['rank'] = 'Рейтинг';
 $a18n['subscription_level_id'] = 'Уровень подписки';
 $a18n['subject_id'] = 'Предмет';
 $a18n['topic_id'] = 'Тема';
-$a18n['text'] = 'Текст';
-$a18n['pdf_file'] = 'Файл PDF';
-$a18n['zip_file'] = 'Файл ZIP';
+$a18n['pdf_file'] = 'Файл 1';
+$a18n['zip_file'] = 'Файл 2';
 
 $table = array(
 	'id'		=>	'rank:desc id:desc',
 	'title'		=>	'',
-	'is_blocked'	=>	'boolean',
-	'display'	=>	'boolean',
-	'rank'		=>	'',
 	'subscription_level_id'	=>	$levels,
 	'subject_id'	=>	$subjects,
 	'topic_id'	=>	$topicsAll,
+	'rank'		=>	'',
+	'is_blocked'	=>	'boolean',
+	'display'	=>	'boolean',
 );
 
 // Фильтры
 $filter[] = array('level', $levels, 'уровень подписки');
 $filter[] = array('subject', $subjects, 'предмет');
-$filter[] = array('search');
 
 $topics = array();
 if (isset($get['level']) && intval($get['level'])>0 && isset($get['subject']) && intval($get['subject'])>0) {
@@ -59,6 +58,7 @@ if (isset($get['level']) && intval($get['level'])>0 && isset($get['subject']) &&
 	", 'array');
 	$filter[] = array('topic', $topics, 'тема');
 }
+$filter[] = array('search');
 
 $where = '';
 if (isset($get['level']) && intval($get['level'])>0) {
@@ -105,12 +105,9 @@ if (!empty($topics)) {
 		'value'=>array(true, $topicsAll)
 	));
 }
-$form[] = array('hypertext td12','text');
 $form[] = array('file td12','pdf_file',array(
-	'name'=>'Файл PDF'
+	'name'=>'Файл 1'
 ));
 $form[] = array('file td12','zip_file',array(
-	'name'=>'Файл ZIP'
+	'name'=>'Файл 2'
 ));
-
-$content = html_array('form/hypertext_templates',array('key'=>'text'));

@@ -608,10 +608,15 @@ function form_file ($type,$key, $param = array()) {
 	//загрузка с записью в БД
 	elseif ($t=='mysql') {
 		$file = isset($post[$key]) ? $post[$key] : ''; //название файла
-		// Для PDF и ZIP файлов сохраняем в public/files/{module}/{id}/{field}/
-		if (in_array($module['table'], array('ideas', 'topic_materials')) && in_array($key, array('pdf_file', 'zip_file'))) {
+		$publicRoot = rtrim(dirname(ROOT_DIR), '/\\') . '/';
+		// Для файлов материалов сохраняем в public/files/{module}/{id}/{field}/
+		if ($module['table'] == 'topic_materials') {
+			$root = $publicRoot.'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/';
+		}
+		// Для PDF и ZIP файлов идей сохраняем в public/files/ideas/{id}/{field}/
+		elseif ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
 			$field_dir = ($key == 'pdf_file') ? 'pdf' : 'zip';
-			$root = ROOT_DIR.'../files/'.$module['table'].'/'.$get['id'].'/'.$field_dir.'/'; //public/files/ideas/{id}/{field}/
+			$root = $publicRoot.'files/'.$module['table'].'/'.$get['id'].'/'.$field_dir.'/';
 		} else {
 			$root = ROOT_DIR.'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/'; //папка от корня основной папки
 		}
@@ -623,6 +628,11 @@ function form_file ($type,$key, $param = array()) {
 		);
 		$message = '';//сообщение с ошибкой
 		if ($get['u']=='edit') {
+			if (($module['table'] == 'topic_materials' || $module['table'] == 'ideas') && !is_dir($root)) {
+				if (!mkdir($root,0755,true)) {
+					$message = 'ошибка создания каталога!';
+				}
+			}
 			if (is_uploaded_file($temp)) {//проверка записался ли файл на сервер во временную папку
 				// Для PDF и ZIP файлов модуля ideas не удаляем всю папку, только старый файл
 				if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {

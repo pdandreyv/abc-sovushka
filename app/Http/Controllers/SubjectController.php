@@ -27,10 +27,18 @@ class SubjectController extends Controller
                 $subjectSlug = $subjectBySlug->link ?: $subjectBySlug->id;
                 $subjectSlug = ltrim((string) $subjectSlug, '/');
 
-                return redirect()->route('subjects.show', [
-                    'level' => $subjectBySlug->subscription_level_id,
-                    'subject' => $subjectSlug,
-                ]);
+                $levelFromTopic = Topic::query()
+                    ->where('subject_id', $subjectBySlug->id)
+                    ->orderBy('subscription_level_id')
+                    ->orderBy('id')
+                    ->value('subscription_level_id');
+
+                if ($levelFromTopic) {
+                    return redirect()->route('subjects.show', [
+                        'level' => $levelFromTopic,
+                        'subject' => $subjectSlug,
+                    ]);
+                }
             }
 
             abort(404);
@@ -38,8 +46,12 @@ class SubjectController extends Controller
 
         $subjects = Subject::query()
             ->where('display', true)
-            ->where('subscription_level_id', $levelModel->id)
-            ->withCount('topics')
+            ->whereHas('topics', function ($query) use ($levelModel) {
+                $query->where('subscription_level_id', $levelModel->id);
+            })
+            ->withCount(['topics as topics_count' => function ($query) use ($levelModel) {
+                $query->where('subscription_level_id', $levelModel->id);
+            }])
             ->orderByDesc('rating')
             ->orderBy('title')
             ->get();
@@ -56,7 +68,7 @@ class SubjectController extends Controller
     public function show(string $level, string $subject)
     {
         $levelModel = $this->resolveLevel($level);
-        $subjectModel = $this->resolveSubject($levelModel, $subject);
+        $subjectModel = $this->resolveSubject($subject);
 
         $topics = Topic::query()
             ->where('subscription_level_id', $levelModel->id)
@@ -82,6 +94,7 @@ class SubjectController extends Controller
                 'id' => $topic->id,
                 'title' => $topic->title,
                 'keywords' => $topic->keywords,
+                'text_html' => $this->formatTopicText($topic->text),
                 'is_disabled' => $availableCount === 0,
             ];
         })->values();
@@ -101,7 +114,7 @@ class SubjectController extends Controller
             abort(404);
         }
 
-        $subjectModel = $this->resolveSubject($levelModel, $subject);
+        $subjectModel = $this->resolveSubject($subject);
         $topicModel = Topic::query()
             ->where('id', $topic)
             ->where('subscription_level_id', $levelModel->id)
@@ -124,7 +137,6 @@ class SubjectController extends Controller
                 'is_blocked' => $material->is_blocked,
                 'pdf_url' => $this->resolveFileUrl($material, 'pdf_file', 'pdf'),
                 'zip_url' => $this->resolveFileUrl($material, 'zip_file', 'zip'),
-                'text_html' => $material->formatted_text,
             ];
         })->values();
 
@@ -168,6 +180,19 @@ class SubjectController extends Controller
         return '/files/' . $file;
     }
 
+    private function formatTopicText(?string $text): string
+    {
+        if (!$text) {
+            return '';
+        }
+
+        $decoded = htmlspecialchars_decode($text, ENT_QUOTES);
+        $decoded = str_replace(['\\r', '\\n'], '', $decoded);
+        $decoded = stripslashes($decoded);
+
+        return $decoded;
+    }
+
     private function resolveLevel(string $level): ?SubscriptionLevel
     {
         $level = trim($level);
@@ -188,13 +213,12 @@ class SubjectController extends Controller
         return $byLink;
     }
 
-    private function resolveSubject(SubscriptionLevel $level, string $subject): Subject
+    private function resolveSubject(string $subject): Subject
     {
         $subject = trim($subject);
 
         $query = Subject::query()
-            ->where('display', true)
-            ->where('subscription_level_id', $level->id);
+            ->where('display', true);
 
         if (is_numeric($subject)) {
             return $query->findOrFail((int) $subject);
@@ -202,10 +226,9 @@ class SubjectController extends Controller
 
         $slug = trim($subject, '/');
 
-        $query->where(function ($q) use ($slug, $level) {
+        $query->where(function ($q) use ($slug) {
             $q->where('link', $slug)
                 ->orWhere('link', '/' . $slug)
-                ->orWhere('link', '/subjects/' . $level->id . '/' . $slug)
                 ->orWhere('link', 'like', '%/' . $slug);
         });
 

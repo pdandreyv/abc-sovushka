@@ -5,23 +5,23 @@
 $levels = mysql_select("SELECT id, title as name FROM subscription_levels ORDER BY sort_order", 'array');
 
 $a18n['title'] = 'Название';
-$a18n['subscription_level_id'] = 'Уровень подписки';
-$a18n['link'] = 'Ссылка';
+//$a18n['subscription_level_id'] = 'Уровень подписки';
+//$a18n['link'] = 'Ссылка';
 $a18n['rating'] = 'Рейтинг';
 $a18n['display'] = 'Показывать';
 
 $table = array(
 	'id'		=>	'rating:desc id:desc',
 	'title'		=>	'',
-	'subscription_level_id'	=>	$levels,
-	'link'		=>	'',
+	//'subscription_level_id'	=>	$levels,
+	//'link'		=>	'',
 	'rating'	=>	'',
 	'display'	=>	'boolean',
 );
 
 // Фильтры и поиск
 $where = '';
-$filter[] = array('level', $levels, 'уровень подписки');
+//$filter[] = array('level', $levels, 'уровень подписки');
 if (isset($get['search']) && $get['search']!='') {
 	$where.= "
 		AND (
@@ -42,12 +42,12 @@ $query = "
 $filter[] = array('search');
 
 $form[] = array('input td8','title');
-$form[] = array('select td4','subscription_level_id',array(
+/*$form[] = array('select td4','subscription_level_id',array(
 	'value'=>array(true, $levels)
-));
-$form[] = array('input td4','link',array(
+));*/
+/*$form[] = array('input td4','link',array(
 	'help'=>'Если пусто, ссылка будет через id предмета'
-));
+));*/
 $form[] = array('input td2','rating',array(
 	'value'=>@$post['rating'] ? $post['rating'] : 0
 ));

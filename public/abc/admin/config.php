@@ -89,9 +89,9 @@ $modules_admin = array(
 		'image'=>'catalog',
 		'icon'=>'folder',
 		'module'=>array(
-			array('module'=>'subjects'),
-			array('module'=>'topics'),
 			array('module'=>'topic_materials'),
+			array('module'=>'topics'),
+			array('module'=>'subjects'),
 		),
 	),
 	/*array(

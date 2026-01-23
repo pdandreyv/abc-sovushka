@@ -11,6 +11,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\IdeaController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\ViewerController;
 
 // Главная страница - форма входа или ловим callback соцсетей
 Route::get('/', function (Request $request) {
@@ -66,6 +67,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/subjects/{level}', [SubjectController::class, 'index'])->name('subjects.index');
     Route::get('/subjects/{level}/{subject}', [SubjectController::class, 'show'])->name('subjects.show');
     Route::get('/subjects/{level}/{subject}/materials/{topic}', [SubjectController::class, 'materials'])->name('subjects.materials');
+
+    // Просмотр файлов
+    Route::get('/viewer', [ViewerController::class, 'show'])->name('viewer.show');
 });
 
 // Публичные страницы (должен быть в конце, чтобы не перехватывать другие маршруты)

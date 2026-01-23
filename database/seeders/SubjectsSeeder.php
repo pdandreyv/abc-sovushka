@@ -116,6 +116,11 @@ class SubjectsSeeder extends Seeder
             . '<div style="margin-top:10px;"><b>Соответствие страниц учебника прописям:</b></div>'
             . '<div>Прописи № 1, с. 3–6.</div>';
 
+        DB::table('topics')->where('id', $firstTopic->id)->update([
+            'text' => $lessonText,
+            'updated_at' => now(),
+        ]);
+
         DB::table('topic_materials')->updateOrInsert(
             [
                 'title' => 'Презентация',
@@ -128,7 +133,6 @@ class SubjectsSeeder extends Seeder
                 'display' => true,
                 'pdf_file' => '/demo/files/sub_1/RUS_A/1/presentation.pdf',
                 'zip_file' => '/demo/files/sub_1/RUS_A/1/presentation.zip',
-                'text' => json_encode([['type' => 'html', 'content' => $lessonText]], JSON_UNESCAPED_UNICODE),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]

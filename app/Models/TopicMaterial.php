@@ -15,7 +15,6 @@ class TopicMaterial extends Model
         'subscription_level_id',
         'subject_id',
         'topic_id',
-        'text',
         'pdf_file',
         'zip_file',
     ];
@@ -24,7 +23,6 @@ class TopicMaterial extends Model
         'is_blocked' => 'boolean',
         'display' => 'boolean',
         'rank' => 'integer',
-        'text' => 'array',
     ];
 
     public function topic(): BelongsTo

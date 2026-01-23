@@ -150,7 +150,9 @@
         hintEl.textContent = 'Загрузка материалов...';
         filesEl.innerHTML = '';
 
-        fetchMaterials(topic.id).then(renderMaterials);
+        fetchMaterials(topic.id).then(function(items) {
+          renderMaterials(items, topic);
+        });
       });
 
       listEl.appendChild(btn);
@@ -175,21 +177,27 @@
       .catch(() => []);
   }
 
-  function renderMaterials(items) {
+  function renderMaterials(items, topic) {
     filesEl.innerHTML = '';
 
     if (!items.length) {
       hintEl.textContent = 'К этой теме пока нет загруженных файлов.';
       hintEl.hidden = false;
-      if (descEl) descEl.hidden = true;
+      if (descEl) {
+        descEl.innerHTML = topic && topic.text_html ? topic.text_html : '';
+        descEl.hidden = !topic || !topic.text_html;
+      }
       return;
     }
 
     hintEl.hidden = true;
-    if (descEl) descEl.hidden = true;
+    if (descEl) {
+      descEl.innerHTML = topic && topic.text_html ? topic.text_html : '';
+      descEl.hidden = !topic || !topic.text_html;
+    }
 
     function viewerUrl(path) {
-      return '/demo/viewer.html?doc=' + encodeURIComponent(path);
+      return '{{ route('viewer.show') }}?doc=' + encodeURIComponent(path);
     }
 
     items.forEach((item) => {
@@ -201,29 +209,48 @@
         actions.push('<span class="topic-badge">Закрыто</span>');
       }
 
-      if (!item.is_blocked && item.pdf_url) {
-        actions.push('<a class="btn btn-secondary" target="_blank" rel="noopener" href="' + viewerUrl(item.pdf_url) + '">Посмотреть</a>');
-        actions.push('<a class="btn btn-secondary" target="_blank" rel="noopener" href="' + item.pdf_url + '">Смотреть PDF</a>');
-        actions.push('<a class="btn btn-primary" target="_blank" rel="noopener" href="' + item.pdf_url + '" download>Скачать PDF</a>');
+      function getExtension(path) {
+        if (!path) return '';
+        const clean = path.split('?')[0].split('#')[0];
+        const parts = clean.split('.');
+        return parts.length > 1 ? parts.pop().toLowerCase() : '';
       }
-      if (!item.is_blocked && item.zip_url) {
-        actions.push('<a class="btn btn-secondary" target="_blank" rel="noopener" href="' + item.zip_url + '" download>Скачать ZIP</a>');
+
+      function isPreviewable(ext) {
+        return ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext);
       }
+
+      function buildFileActions(fileUrl) {
+        if (!fileUrl || item.is_blocked) return;
+
+        const ext = getExtension(fileUrl);
+        const label = ext ? ext.toUpperCase() : 'Файл';
+        const group = [];
+
+        if (isPreviewable(ext)) {
+          group.push(
+            '<a class="btn btn-secondary btn-icon" target="_blank" rel="noopener" href="' + viewerUrl(fileUrl) + '" title="Посмотреть">👁</a>'
+          );
+        }
+
+        group.push(
+          '<a class="btn btn-primary" target="_blank" rel="noopener" href="' + fileUrl + '" download>Скачать ' + label + '</a>'
+        );
+
+        actions.push('<div class="file-action-group">' + group.join('') + '</div>');
+      }
+
+      buildFileActions(item.pdf_url);
+      buildFileActions(item.zip_url);
 
       card.innerHTML =
         '<div class="file-card__top">' +
           '<div class="file-name">' + item.title + '</div>' +
-          '<div class="card-actions">' + actions.join(' ') + '</div>' +
+          '<div class="card-actions file-actions">' + actions.join('') + '</div>' +
         '</div>';
 
       filesEl.appendChild(card);
 
-      if (item.text_html) {
-        const textBlock = document.createElement('div');
-        textBlock.className = 'lesson-description';
-        textBlock.innerHTML = item.text_html;
-        filesEl.appendChild(textBlock);
-      }
     });
   }
 

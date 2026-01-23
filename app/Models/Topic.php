@@ -11,6 +11,7 @@ class Topic extends Model
     protected $fillable = [
         'title',
         'keywords',
+        'text',
         'display',
         'rank',
         'subscription_level_id',

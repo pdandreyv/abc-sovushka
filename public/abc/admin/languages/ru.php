@@ -150,7 +150,7 @@ $a18n = array(
 	'subscription_payments_logs'	=> 'Логи платежей',
 	'subscription_level_id'	=> 'уровень подписки',
 	'topics'			=> 'Темы',
-	'topic_materials'	=> 'Материалы к темам',
+	'topic_materials'	=> 'Материалы',
 	'topic_id'		=> 'тема',
 	'text'			=> 'текст',
 	'template'		=> 'шаблон',
@@ -199,8 +199,8 @@ $a18n = array(
 	'transaction_id'		=> 'ID транзакции',
 	'attempted_at'			=> 'время попытки',
 	'response_data'			=> 'данные ответа',
-	'pdf_file'			=> 'Файл PDF',
-	'zip_file'			=> 'Файл ZIP'
+	'pdf_file'			=> 'Файл 1',
+	'zip_file'			=> 'Файл 2'
 );
 
 ?>
