@@ -522,6 +522,7 @@ function form ($class,$key,$param=array()) {
  */
 function form_file ($type,$key, $param = array()) {
 	global $get,$config,$post,$module;
+	$publicRoot = rtrim(dirname(ROOT_DIR), '/\\') . '/';
 	//имя поля
 	$name = isset($param['name']) ? $param['name'] : a18n($key);
 	//размеры картинок
@@ -608,7 +609,6 @@ function form_file ($type,$key, $param = array()) {
 	//загрузка с записью в БД
 	elseif ($t=='mysql') {
 		$file = isset($post[$key]) ? $post[$key] : ''; //название файла
-		$publicRoot = rtrim(dirname(ROOT_DIR), '/\\') . '/';
 		// Для файлов материалов сохраняем в public/files/{module}/{id}/{field}/
 		if ($module['table'] == 'topic_materials') {
 			$root = $publicRoot.'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/';
@@ -628,35 +628,11 @@ function form_file ($type,$key, $param = array()) {
 		);
 		$message = '';//сообщение с ошибкой
 		if ($get['u']=='edit') {
-			$debugUpload = ($module['table'] == 'topic_materials');
-			$debugLogDir = ROOT_DIR.'logs/';
-			$debugLogFile = $debugLogDir.'topic_materials_upload.log';
-			if ($debugUpload && (!is_dir($debugLogDir))) {
-				@mkdir($debugLogDir,0755,true);
-			}
-			if ($debugUpload) {
-				@file_put_contents($debugLogFile,
-					'['.date('Y-m-d H:i:s').'] init key='.$key.' id='.$get['id'].' temp='.$temp.' root='.$root.PHP_EOL,
-					FILE_APPEND
-				);
-			}
 			if (is_uploaded_file($temp)) {//проверка записался ли файл на сервер во временную папку
-				if ($debugUpload) {
-					@file_put_contents($debugLogFile,
-						'['.date('Y-m-d H:i:s').'] is_uploaded_file=1 temp='.$temp.PHP_EOL,
-						FILE_APPEND
-					);
-				}
 				if (($module['table'] == 'topic_materials' || $module['table'] == 'ideas') && !is_dir($root)) {
 					if (!mkdir($root,0755,true)) {
 						$message = 'ошибка создания каталога!';
 					}
-				}
-				if ($debugUpload) {
-					@file_put_contents($debugLogFile,
-						'['.date('Y-m-d H:i:s').'] mkdir root='.$root.' exists='.(is_dir($root)?'1':'0').PHP_EOL,
-						FILE_APPEND
-					);
 				}
 				// Для PDF и ZIP файлов модуля ideas не удаляем всю папку, только старый файл
 				if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
@@ -669,12 +645,6 @@ function form_file ($type,$key, $param = array()) {
 				}
 				if (is_dir($root) || mkdir ($root,0755,true)) { //создание папок для файла
 					$file = strtolower(trunslit($_FILES[$key]['name'])); //название файла
-					if ($debugUpload) {
-						@file_put_contents($debugLogFile,
-							'['.date('Y-m-d H:i:s').'] filename='.$file.' root='.$root.PHP_EOL,
-							FILE_APPEND
-						);
-					}
 					// Для PDF и ZIP файлов используем простое копирование (copy2 удаляет всю папку)
 					if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
 						// Удаляем только старый файл с таким же именем, если существует
@@ -699,23 +669,9 @@ function form_file ($type,$key, $param = array()) {
 							$message = 'ошибка загрузки!';
 						}
 					}
-					if ($debugUpload) {
-						@file_put_contents($debugLogFile,
-							'['.date('Y-m-d H:i:s').'] saved key='.$key.' result='.$message.' file='.$q[$key].PHP_EOL,
-							FILE_APPEND
-						);
-					}
 					mysql_fn('update',$module['table'],$q);
 				}
 				else $message = 'ошибка создания каталога!';
-			}
-			else {
-				if ($debugUpload) {
-					@file_put_contents($debugLogFile,
-						'['.date('Y-m-d H:i:s').'] is_uploaded_file=0 temp='.$temp.PHP_EOL,
-						FILE_APPEND
-					);
-				}
 			}
 		}
 		//шаблон
@@ -740,10 +696,14 @@ function form_file ($type,$key, $param = array()) {
 	//загрузка с записью в БД (HTML5)
 	elseif ($t=='file') {
 		$file = $post[$key] = isset($post[$key]) ? $post[$key] : ''; //название файла
+		// Для файлов материалов сохраняем в public/files/{module}/{id}/{field}/
+		if ($module['table'] == 'topic_materials') {
+			$root = $publicRoot.'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/';
+		}
 		// Для PDF и ZIP файлов модуля ideas сохраняем в public/files/ideas/{id}/{field}/
-		if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
+		elseif ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
 			$field_dir = ($key == 'pdf_file') ? 'pdf' : 'zip';
-			$root = ROOT_DIR.'../files/'.$module['table'].'/'.$get['id'].'/'.$field_dir.'/'; //public/files/ideas/{id}/{field}/
+			$root = $publicRoot.'files/'.$module['table'].'/'.$get['id'].'/'.$field_dir.'/'; //public/files/ideas/{id}/{field}/
 		} else {
 			$relative = 'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/'; //v1.3.17 относительный путь папки
 			$root = ROOT_DIR.$relative; //папка от корня основной папки
