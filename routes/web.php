@@ -10,9 +10,14 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\IdeaController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\SubjectController;
 
 // Главная страница - форма входа или ловим callback соцсетей
 Route::get('/', function (Request $request) {
+    if (\Illuminate\Support\Facades\Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+
     if ($request->has('code') || $request->has('error')) {
         $provider = $request->get('provider', 'yandex');
         if (!in_array($provider, ['vkontakte', 'yandex', 'odnoklassniki'], true)) {
@@ -56,6 +61,10 @@ Route::middleware('auth')->group(function () {
     
     // Подписки
     Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');
+
+    // Предметы и темы (без проверки подписки)
+    Route::get('/subjects/{level}', [SubjectController::class, 'index'])->name('subjects.index');
+    Route::get('/subjects/{level}/{subject}', [SubjectController::class, 'show'])->name('subjects.show');
 });
 
 // Публичные страницы (должен быть в конце, чтобы не перехватывать другие маршруты)

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class SubscriptionLevelsSeeder extends Seeder
 {
@@ -12,14 +13,28 @@ class SubscriptionLevelsSeeder extends Seeder
      */
     public function run(): void
     {
-        \DB::table('subscription_levels')->insert([
-            ['title' => '1 класс', 'slug' => 'grade1', 'link' => 'sub_1.html', 'sort_order' => 1, 'is_active' => true, 'created_at' => now(), 'updated_at' => now()],
-            ['title' => '2 класс', 'slug' => 'grade2', 'link' => 'sub_2.html', 'sort_order' => 2, 'is_active' => true, 'created_at' => now(), 'updated_at' => now()],
-            ['title' => '3 класс', 'slug' => 'grade3', 'link' => 'sub_3.html', 'sort_order' => 3, 'is_active' => true, 'created_at' => now(), 'updated_at' => now()],
-            ['title' => '4 класс', 'slug' => 'grade4', 'link' => 'sub_4.html', 'sort_order' => 4, 'is_active' => true, 'created_at' => now(), 'updated_at' => now()],
-            ['title' => 'Дошкольники', 'slug' => 'pre', 'link' => 'sub_preschool.html', 'sort_order' => 5, 'is_active' => true, 'created_at' => now(), 'updated_at' => now()],
-            ['title' => 'Внеурочная деятельность', 'slug' => 'extra', 'link' => 'sub_extracurricular.html', 'sort_order' => 6, 'is_active' => true, 'created_at' => now(), 'updated_at' => now()],
-            ['title' => 'Обучение', 'slug' => 'train', 'link' => 'sub_training.html', 'sort_order' => 7, 'is_active' => true, 'created_at' => now(), 'updated_at' => now()],
-        ]);
+        $rows = [
+            ['title' => '1 класс', 'link' => null, 'sort_order' => 1, 'is_active' => true],
+            ['title' => '2 класс', 'link' => null, 'sort_order' => 2, 'is_active' => true],
+            ['title' => '3 класс', 'link' => null, 'sort_order' => 3, 'is_active' => true],
+            ['title' => '4 класс', 'link' => null, 'sort_order' => 4, 'is_active' => true],
+            ['title' => 'Дошкольники', 'link' => null, 'sort_order' => 5, 'is_active' => true],
+            ['title' => 'Внеурочная деятельность', 'link' => null, 'sort_order' => 6, 'is_active' => true],
+            ['title' => 'Обучение', 'link' => null, 'sort_order' => 7, 'is_active' => true],
+        ];
+
+        foreach ($rows as $row) {
+            DB::table('subscription_levels')->updateOrInsert(
+                ['title' => $row['title']],
+                array_merge($row, ['created_at' => now(), 'updated_at' => now()])
+            );
+        }
+
+        $levels = DB::table('subscription_levels')->select('id')->orderBy('sort_order')->get();
+        foreach ($levels as $level) {
+            DB::table('subscription_levels')
+                ->where('id', $level->id)
+                ->update(['link' => '/subjects/' . $level->id]);
+        }
     }
 }

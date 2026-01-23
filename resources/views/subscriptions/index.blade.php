@@ -54,13 +54,20 @@
         <!-- Список подписок -->
         <div id="subsList" class="subs-list">
           @foreach($levels as $level)
-          <div class="sub-option" data-sub-id="{{ $level->slug }}">
-            <label class="sub-left" for="sub_{{ $level->slug }}">
-              <input class="sub-checkbox" id="sub_{{ $level->slug }}" type="checkbox" value="{{ $level->id }}"/>
+          @php
+            $levelLink = $level->link;
+            $isDemoLink = $levelLink && (str_ends_with($levelLink, '.html') || str_contains($levelLink, 'demo/sub_'));
+            if (!$levelLink || $isDemoLink) {
+              $levelLink = route('subjects.index', ['level' => $level->id]);
+            }
+          @endphp
+          <div class="sub-option" data-sub-id="{{ $level->id }}">
+            <label class="sub-left" for="sub_{{ $level->id }}">
+              <input class="sub-checkbox" id="sub_{{ $level->id }}" type="checkbox" value="{{ $level->id }}"/>
               <span class="sub-title">{{ $level->title }}</span>
             </label>
-            @if($level->link)
-            <a class="btn btn-secondary btn-sm" href="{{ $level->link }}" target="_blank">{{ site_lang('lk_subscriptions|view', 'Посмотреть') }}</a>
+            @if($levelLink)
+            <a class="btn btn-secondary btn-sm" href="{{ $levelLink }}">{{ site_lang('lk_subscriptions|view', 'Посмотреть') }}</a>
             @endif
           </div>
           @endforeach

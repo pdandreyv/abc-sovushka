@@ -25,7 +25,7 @@ class SubscriptionController extends Controller
         // Подготовка данных для JavaScript
         $subscriptionsData = $levels->map(function($level) {
             return [
-                'id' => $level->slug,
+                'id' => $level->id,
                 'title' => $level->title,
                 'link' => $level->link,
             ];

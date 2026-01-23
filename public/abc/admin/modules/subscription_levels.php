@@ -25,7 +25,6 @@ if (isset($get['search']) && $get['search']!='') {
 	$where.= "
 		AND (
 			LOWER(subscription_levels.title) like '%".mysql_res(mb_strtolower($get['search'],'UTF-8'))."%'
-			OR LOWER(subscription_levels.slug) like '%".mysql_res(mb_strtolower($get['search'],'UTF-8'))."%'
 		)
 	";
 }

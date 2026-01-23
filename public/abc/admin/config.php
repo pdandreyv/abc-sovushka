@@ -84,6 +84,16 @@ $modules_admin = array(
 			array('module'=>'subscription_payments_logs'),
 		),
 	),
+	array(
+		'name'=>'subjects',
+		'image'=>'catalog',
+		'icon'=>'folder',
+		'module'=>array(
+			array('module'=>'subjects'),
+			array('module'=>'topics'),
+			array('module'=>'topic_materials'),
+		),
+	),
 	/*array(
 		'module'=>'feedback',
 		'image'=>'feedback',

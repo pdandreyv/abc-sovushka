@@ -8,7 +8,6 @@ class SubscriptionLevel extends Model
 {
     protected $fillable = [
         'title',
-        'slug',
         'link',
         'sort_order',
         'is_active',
