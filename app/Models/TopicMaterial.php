@@ -9,7 +9,6 @@ class TopicMaterial extends Model
 {
     protected $fillable = [
         'title',
-        'is_blocked',
         'display',
         'rank',
         'subscription_level_id',
@@ -20,7 +19,6 @@ class TopicMaterial extends Model
     ];
 
     protected $casts = [
-        'is_blocked' => 'boolean',
         'display' => 'boolean',
         'rank' => 'integer',
     ];

@@ -16,6 +16,7 @@ $subjects = mysql_select("SELECT id, title as name FROM subjects ORDER BY rating
 $a18n['title'] = 'Название';
 $a18n['text'] = 'Текст';
 $a18n['rank'] = 'Рейтинг';
+$a18n['is_blocked'] = 'Заблокирован';
 $a18n['display'] = 'Показывать';
 $a18n['subscription_level_id'] = 'Уровень подписки';
 $a18n['subject_id'] = 'Предмет';
@@ -26,6 +27,7 @@ $table = array(
 	'subscription_level_id'	=>	$levels,
 	'subject_id'	=>	$subjects,
 	'rank'		=>	'',
+	'is_blocked'	=>	'boolean',
 	'display'	=>	'boolean',
 );
 
@@ -56,11 +58,12 @@ $query = "
 	WHERE 1 ".$where."
 ";
 
-$form[] = array('input td8','title');
+$form[] = array('input td6','title');
 $form[] = array('input td2','rank',array(
 	'value'=>@$post['rank'] ? $post['rank'] : 0
 ));
 $form[] = array('checkbox td2','display');
+$form[] = array('checkbox td2','is_blocked');
 $form[] = array('select td2','subscription_level_id',array(
 	'value'=>array(true, $levels)
 ));

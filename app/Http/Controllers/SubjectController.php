@@ -6,7 +6,6 @@ use App\Models\Subject;
 use App\Models\SubscriptionLevel;
 use App\Models\Topic;
 use App\Models\TopicMaterial;
-use Illuminate\Support\Facades\DB;
 
 class SubjectController extends Controller
 {
@@ -78,24 +77,12 @@ class SubjectController extends Controller
             ->orderBy('id')
             ->get();
 
-        $materialsStats = TopicMaterial::query()
-            ->select('topic_id', DB::raw('SUM(CASE WHEN is_blocked = 0 THEN 1 ELSE 0 END) as available_count'))
-            ->where('subscription_level_id', $levelModel->id)
-            ->where('subject_id', $subjectModel->id)
-            ->where('display', true)
-            ->groupBy('topic_id')
-            ->get()
-            ->keyBy('topic_id');
-
-        $topicsData = $topics->map(function (Topic $topic) use ($materialsStats) {
-            $availableCount = (int) data_get($materialsStats, $topic->id . '.available_count', 0);
-
+        $topicsData = $topics->map(function (Topic $topic) {
             return [
                 'id' => $topic->id,
                 'title' => $topic->title,
-                'keywords' => $topic->keywords,
                 'text_html' => $this->formatTopicText($topic->text),
-                'is_disabled' => $availableCount === 0,
+                'is_blocked' => (bool) $topic->is_blocked,
             ];
         })->values();
 
@@ -134,7 +121,6 @@ class SubjectController extends Controller
             return [
                 'id' => $material->id,
                 'title' => $material->title,
-                'is_blocked' => $material->is_blocked,
                 'pdf_url' => $this->resolveFileUrl($material, 'pdf_file', 'pdf'),
                 'zip_url' => $this->resolveFileUrl($material, 'zip_file', 'zip'),
             ];

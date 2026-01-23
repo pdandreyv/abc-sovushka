@@ -129,7 +129,6 @@ class SubjectsSeeder extends Seeder
                 'topic_id' => $firstTopic->id,
             ],
             [
-                'is_blocked' => false,
                 'display' => true,
                 'pdf_file' => '/demo/files/sub_1/RUS_A/1/presentation.pdf',
                 'zip_file' => '/demo/files/sub_1/RUS_A/1/presentation.zip',
@@ -146,7 +145,6 @@ class SubjectsSeeder extends Seeder
                 'topic_id' => $firstTopic->id,
             ],
             [
-                'is_blocked' => false,
                 'display' => true,
                 'created_at' => now(),
                 'updated_at' => now(),

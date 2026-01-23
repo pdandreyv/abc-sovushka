@@ -14,6 +14,7 @@ class Topic extends Model
         'text',
         'display',
         'rank',
+        'is_blocked',
         'subscription_level_id',
         'subject_id',
     ];
@@ -21,6 +22,7 @@ class Topic extends Model
     protected $casts = [
         'display' => 'boolean',
         'rank' => 'integer',
+        'is_blocked' => 'boolean',
     ];
 
     public function subject(): BelongsTo

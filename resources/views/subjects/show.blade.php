@@ -113,7 +113,7 @@
     const keyword = normalize(filterValue);
     const filtered = TOPICS.filter((topic) => {
       if (!keyword) return true;
-      return normalize(topic.number + ' ' + topic.title + ' ' + (topic.keywords || '')).includes(keyword);
+      return normalize(topic.number + ' ' + topic.title).includes(keyword);
     });
 
     listEl.innerHTML = '';
@@ -125,15 +125,15 @@
       btn.className = 'topic-item';
       btn.dataset.topicId = topic.id;
 
-      if (topic.is_disabled) {
+      if (topic.is_blocked) {
         btn.classList.add('is-disabled');
       }
       if (topic.id === activeTopicId) {
         btn.classList.add('is-active');
       }
 
-      const badge = topic.is_disabled
-        ? '<span class="topic-badge" title="В работе">🔒</span>'
+      const badge = topic.is_blocked
+        ? '<span class="topic-badge" title="Закрыто">🔒</span>'
         : '<span class="topic-badge" title="Материалы доступны">📎</span>';
 
       btn.innerHTML =
@@ -142,7 +142,7 @@
         badge;
 
       btn.addEventListener('click', function() {
-        if (topic.is_disabled) return;
+        if (topic.is_blocked) return;
         activeTopicId = topic.id;
         renderTopics(searchInput ? searchInput.value : '');
 
@@ -205,7 +205,7 @@
       card.className = 'file-card';
 
       const actions = [];
-      if (item.is_blocked) {
+      if (topic && topic.is_blocked) {
         actions.push('<span class="topic-badge">Закрыто</span>');
       }
 
@@ -221,7 +221,7 @@
       }
 
       function buildFileActions(fileUrl) {
-        if (!fileUrl || item.is_blocked) return;
+        if (!fileUrl || (topic && topic.is_blocked)) return;
 
         const ext = getExtension(fileUrl);
         const label = ext ? ext.toUpperCase() : 'Файл';

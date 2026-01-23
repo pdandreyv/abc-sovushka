@@ -13,7 +13,6 @@ $subjects = mysql_select("SELECT id, title as name FROM subjects ORDER BY rating
 $topicsAll = mysql_select("SELECT id, title as name FROM topics ORDER BY title", 'array');
 
 $a18n['title'] = 'Название';
-$a18n['is_blocked'] = 'Заблокирован';
 $a18n['display'] = 'Показывать';
 $a18n['rank'] = 'Рейтинг';
 $a18n['subscription_level_id'] = 'Уровень подписки';
@@ -29,7 +28,6 @@ $table = array(
 	'subject_id'	=>	$subjects,
 	'topic_id'	=>	$topicsAll,
 	'rank'		=>	'',
-	'is_blocked'	=>	'boolean',
 	'display'	=>	'boolean',
 );
 
@@ -78,7 +76,6 @@ $form[] = array('input td6','title');
 $form[] = array('input td2','rank',array(
 	'value'=>@$post['rank'] ? $post['rank'] : 0
 ));
-$form[] = array('checkbox','is_blocked');
 $form[] = array('checkbox','display');
 $form[] = array('select td3','subscription_level_id',array(
 	'value'=>array(true, $levels)
