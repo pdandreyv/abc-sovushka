@@ -628,11 +628,30 @@ function form_file ($type,$key, $param = array()) {
 		);
 		$message = '';//сообщение с ошибкой
 		if ($get['u']=='edit') {
+			$debugUpload = ($module['table'] == 'topic_materials');
+			if ($debugUpload) {
+				@file_put_contents(ROOT_DIR.'logs/topic_materials_upload.log',
+					'['.date('Y-m-d H:i:s').'] init key='.$key.' id='.$get['id'].' temp='.$temp.' root='.$root.PHP_EOL,
+					FILE_APPEND
+				);
+			}
 			if (is_uploaded_file($temp)) {//проверка записался ли файл на сервер во временную папку
+				if ($debugUpload) {
+					@file_put_contents(ROOT_DIR.'logs/topic_materials_upload.log',
+						'['.date('Y-m-d H:i:s').'] is_uploaded_file=1 temp='.$temp.PHP_EOL,
+						FILE_APPEND
+					);
+				}
 				if (($module['table'] == 'topic_materials' || $module['table'] == 'ideas') && !is_dir($root)) {
 					if (!mkdir($root,0755,true)) {
 						$message = 'ошибка создания каталога!';
 					}
+				}
+				if ($debugUpload) {
+					@file_put_contents(ROOT_DIR.'logs/topic_materials_upload.log',
+						'['.date('Y-m-d H:i:s').'] mkdir root='.$root.' exists='.(is_dir($root)?'1':'0').PHP_EOL,
+						FILE_APPEND
+					);
 				}
 				// Для PDF и ZIP файлов модуля ideas не удаляем всю папку, только старый файл
 				if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
@@ -645,6 +664,12 @@ function form_file ($type,$key, $param = array()) {
 				}
 				if (is_dir($root) || mkdir ($root,0755,true)) { //создание папок для файла
 					$file = strtolower(trunslit($_FILES[$key]['name'])); //название файла
+					if ($debugUpload) {
+						@file_put_contents(ROOT_DIR.'logs/topic_materials_upload.log',
+							'['.date('Y-m-d H:i:s').'] filename='.$file.' root='.$root.PHP_EOL,
+							FILE_APPEND
+						);
+					}
 					// Для PDF и ZIP файлов используем простое копирование (copy2 удаляет всю папку)
 					if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
 						// Удаляем только старый файл с таким же именем, если существует
@@ -669,9 +694,23 @@ function form_file ($type,$key, $param = array()) {
 							$message = 'ошибка загрузки!';
 						}
 					}
+					if ($debugUpload) {
+						@file_put_contents(ROOT_DIR.'logs/topic_materials_upload.log',
+							'['.date('Y-m-d H:i:s').'] saved key='.$key.' result='.$message.' file='.$q[$key].PHP_EOL,
+							FILE_APPEND
+						);
+					}
 					mysql_fn('update',$module['table'],$q);
 				}
 				else $message = 'ошибка создания каталога!';
+			}
+			else {
+				if ($debugUpload) {
+					@file_put_contents(ROOT_DIR.'logs/topic_materials_upload.log',
+						'['.date('Y-m-d H:i:s').'] is_uploaded_file=0 temp='.$temp.PHP_EOL,
+						FILE_APPEND
+					);
+				}
 			}
 		}
 		//шаблон
