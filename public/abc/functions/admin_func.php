@@ -629,15 +629,20 @@ function form_file ($type,$key, $param = array()) {
 		$message = '';//сообщение с ошибкой
 		if ($get['u']=='edit') {
 			$debugUpload = ($module['table'] == 'topic_materials');
+			$debugLogDir = ROOT_DIR.'logs/';
+			$debugLogFile = $debugLogDir.'topic_materials_upload.log';
+			if ($debugUpload && (!is_dir($debugLogDir))) {
+				@mkdir($debugLogDir,0755,true);
+			}
 			if ($debugUpload) {
-				@file_put_contents(ROOT_DIR.'logs/topic_materials_upload.log',
+				@file_put_contents($debugLogFile,
 					'['.date('Y-m-d H:i:s').'] init key='.$key.' id='.$get['id'].' temp='.$temp.' root='.$root.PHP_EOL,
 					FILE_APPEND
 				);
 			}
 			if (is_uploaded_file($temp)) {//проверка записался ли файл на сервер во временную папку
 				if ($debugUpload) {
-					@file_put_contents(ROOT_DIR.'logs/topic_materials_upload.log',
+					@file_put_contents($debugLogFile,
 						'['.date('Y-m-d H:i:s').'] is_uploaded_file=1 temp='.$temp.PHP_EOL,
 						FILE_APPEND
 					);
@@ -648,7 +653,7 @@ function form_file ($type,$key, $param = array()) {
 					}
 				}
 				if ($debugUpload) {
-					@file_put_contents(ROOT_DIR.'logs/topic_materials_upload.log',
+					@file_put_contents($debugLogFile,
 						'['.date('Y-m-d H:i:s').'] mkdir root='.$root.' exists='.(is_dir($root)?'1':'0').PHP_EOL,
 						FILE_APPEND
 					);
@@ -665,7 +670,7 @@ function form_file ($type,$key, $param = array()) {
 				if (is_dir($root) || mkdir ($root,0755,true)) { //создание папок для файла
 					$file = strtolower(trunslit($_FILES[$key]['name'])); //название файла
 					if ($debugUpload) {
-						@file_put_contents(ROOT_DIR.'logs/topic_materials_upload.log',
+						@file_put_contents($debugLogFile,
 							'['.date('Y-m-d H:i:s').'] filename='.$file.' root='.$root.PHP_EOL,
 							FILE_APPEND
 						);
@@ -695,7 +700,7 @@ function form_file ($type,$key, $param = array()) {
 						}
 					}
 					if ($debugUpload) {
-						@file_put_contents(ROOT_DIR.'logs/topic_materials_upload.log',
+						@file_put_contents($debugLogFile,
 							'['.date('Y-m-d H:i:s').'] saved key='.$key.' result='.$message.' file='.$q[$key].PHP_EOL,
 							FILE_APPEND
 						);
@@ -706,7 +711,7 @@ function form_file ($type,$key, $param = array()) {
 			}
 			else {
 				if ($debugUpload) {
-					@file_put_contents(ROOT_DIR.'logs/topic_materials_upload.log',
+					@file_put_contents($debugLogFile,
 						'['.date('Y-m-d H:i:s').'] is_uploaded_file=0 temp='.$temp.PHP_EOL,
 						FILE_APPEND
 					);
