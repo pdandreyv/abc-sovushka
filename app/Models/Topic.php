@@ -11,8 +11,15 @@ class Topic extends Model
     protected $fillable = [
         'title',
         'keywords',
+        'display',
+        'rank',
         'subscription_level_id',
         'subject_id',
+    ];
+
+    protected $casts = [
+        'display' => 'boolean',
+        'rank' => 'integer',
     ];
 
     public function subject(): BelongsTo

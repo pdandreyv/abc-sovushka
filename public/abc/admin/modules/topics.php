@@ -12,13 +12,17 @@ $subjects = mysql_select("SELECT id, title as name FROM subjects ORDER BY rating
 
 $a18n['title'] = 'Название';
 $a18n['keywords'] = 'Ключевые слова';
+$a18n['rank'] = 'Рейтинг';
+$a18n['display'] = 'Показывать';
 $a18n['subscription_level_id'] = 'Уровень подписки';
 $a18n['subject_id'] = 'Предмет';
 
 $table = array(
-	'id'		=>	'id:desc',
+	'id'		=>	'rank:desc id:desc',
 	'title'		=>	'',
 	'keywords'	=>	'',
+	'rank'		=>	'',
+	'display'	=>	'boolean',
 	'subscription_level_id'	=>	$levels,
 	'subject_id'	=>	$subjects,
 );
@@ -54,6 +58,10 @@ $form[] = array('input td8','title');
 $form[] = array('input td12','keywords',array(
 	'help'=>'Поиск по ключевым словам (например: школа, речь, предложение)'
 ));
+$form[] = array('input td2','rank',array(
+	'value'=>@$post['rank'] ? $post['rank'] : 0
+));
+$form[] = array('checkbox','display');
 $form[] = array('select td2','subscription_level_id',array(
 	'value'=>array(true, $levels)
 ));

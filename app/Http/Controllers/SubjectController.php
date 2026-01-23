@@ -61,6 +61,8 @@ class SubjectController extends Controller
         $topics = Topic::query()
             ->where('subscription_level_id', $levelModel->id)
             ->where('subject_id', $subjectModel->id)
+            ->where('display', true)
+            ->orderByDesc('rank')
             ->orderBy('id')
             ->get();
 
@@ -111,6 +113,7 @@ class SubjectController extends Controller
             ->where('subject_id', $subjectModel->id)
             ->where('topic_id', $topicModel->id)
             ->where('display', true)
+            ->orderByDesc('rank')
             ->orderBy('id')
             ->get();
 

@@ -11,6 +11,7 @@ class TopicMaterial extends Model
         'title',
         'is_blocked',
         'display',
+        'rank',
         'subscription_level_id',
         'subject_id',
         'topic_id',
@@ -22,6 +23,7 @@ class TopicMaterial extends Model
     protected $casts = [
         'is_blocked' => 'boolean',
         'display' => 'boolean',
+        'rank' => 'integer',
         'text' => 'array',
     ];
 
