@@ -153,6 +153,9 @@ class SubjectController extends Controller
         }
 
         if (str_starts_with($file, '/') || str_contains($file, '/')) {
+            if (str_starts_with($file, '/abc/files/')) {
+                return str_replace('/abc/files/', '/files/', $file);
+            }
             return $file;
         }
 
