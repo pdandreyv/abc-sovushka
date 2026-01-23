@@ -74,12 +74,12 @@ $query = "
 	WHERE 1 ".$where."
 ";
 
-$form[] = array('input td8','title');
-$form[] = array('checkbox','is_blocked');
-$form[] = array('checkbox','display');
+$form[] = array('input td6','title');
 $form[] = array('input td2','rank',array(
 	'value'=>@$post['rank'] ? $post['rank'] : 0
 ));
+$form[] = array('checkbox','is_blocked');
+$form[] = array('checkbox','display');
 $form[] = array('select td3','subscription_level_id',array(
 	'value'=>array(true, $levels)
 ));

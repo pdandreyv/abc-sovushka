@@ -62,7 +62,6 @@ $a18n = array(
 	'imgm-'			=> 'средняя',
 	'import'		=> 'Импорт из файла',
 	'index'         => 'Главная',
-	'keywords'		=> 'keywords',
 	'landing'       => 'Лендинг',
 	'landing_items' => 'Страницы лендинга',
 	'language'      => 'язык',
