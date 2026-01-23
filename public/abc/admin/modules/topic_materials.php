@@ -2,22 +2,6 @@
 
 // Материалы к темам
 
-// исключение при редактировании модуля
-if ($get['u']=='edit') {
-	$config['mysql_null'] = true;
-	if (@$post['pdf_file']=='') $post['pdf_file'] = null;
-	else $post['pdf_file'] = trim($post['pdf_file']);
-	if (@$post['zip_file']=='') $post['zip_file'] = null;
-	else $post['zip_file'] = trim($post['zip_file']);
-	if (!isset($post['rank']) || $post['rank']==='') $post['rank'] = 0;
-}
-
-if ($get['u']=='add') {
-	if (isset($get['level']) && intval($get['level'])>0) $post['subscription_level_id'] = intval($get['level']);
-	if (isset($get['subject']) && intval($get['subject'])>0) $post['subject_id'] = intval($get['subject']);
-	if (isset($get['topic']) && intval($get['topic'])>0) $post['topic_id'] = intval($get['topic']);
-}
-
 $levels = mysql_select("SELECT id, title as name FROM subscription_levels ORDER BY sort_order", 'array');
 $subjects = mysql_select("SELECT id, title as name FROM subjects ORDER BY rating DESC, title", 'array');
 $topicsAll = mysql_select("SELECT id, title as name FROM topics ORDER BY title", 'array');
