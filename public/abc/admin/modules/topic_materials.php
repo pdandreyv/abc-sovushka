@@ -35,13 +35,16 @@ $table = array(
 $filter[] = array('level', $levels, 'уровень подписки');
 $filter[] = array('subject', $subjects, 'предмет');
 
+$selectedLevel = isset($get['level']) ? intval($get['level']) : (isset($post['subscription_level_id']) ? intval($post['subscription_level_id']) : 0);
+$selectedSubject = isset($get['subject']) ? intval($get['subject']) : (isset($post['subject_id']) ? intval($post['subject_id']) : 0);
+
 $topics = array();
-if (isset($get['level']) && intval($get['level'])>0 && isset($get['subject']) && intval($get['subject'])>0) {
+if ($selectedLevel > 0 && $selectedSubject > 0) {
 	$topics = mysql_select("
 		SELECT id, title as name
 		FROM topics
-		WHERE subscription_level_id = '".intval($get['level'])."'
-			AND subject_id = '".intval($get['subject'])."'
+		WHERE subscription_level_id = '".$selectedLevel."'
+			AND subject_id = '".$selectedSubject."'
 		ORDER BY title
 	", 'array');
 	$filter[] = array('topic', $topics, 'тема');
@@ -78,23 +81,37 @@ $form[] = array('input td2','rank',array(
 ));
 $form[] = array('checkbox','display');
 $form[] = array('select td3','subscription_level_id',array(
-	'value'=>array(true, $levels)
+	'value'=>array(true, $levels),
+	'attr'=>'data-topic-filter="level"'
 ));
 $form[] = array('select td3','subject_id',array(
-	'value'=>array(true, $subjects)
+	'value'=>array(true, $subjects),
+	'attr'=>'data-topic-filter="subject"'
 ));
-if (!empty($topics)) {
-	$form[] = array('select td6','topic_id',array(
-		'value'=>array(true, $topics)
-	));
-} else {
-	$form[] = array('select td6','topic_id',array(
-		'value'=>array(true, $topicsAll)
-	));
-}
+$form[] = array('select td6','topic_id',array(
+	'value'=>array(true, $topics)
+));
 $form[] = array('file td12','pdf_file',array(
 	'name'=>'Файл 1'
 ));
 $form[] = array('file td12','zip_file',array(
 	'name'=>'Файл 2'
 ));
+$form[] = '
+<script>
+(function() {
+  var level = document.querySelector(\'select[name="subscription_level_id"][data-topic-filter="level"]\');
+  var subject = document.querySelector(\'select[name="subject_id"][data-topic-filter="subject"]\');
+  if (!level || !subject) return;
+  function reload() {
+    var params = new URLSearchParams(window.location.search);
+    if (level.value) params.set("level", level.value); else params.delete("level");
+    if (subject.value) params.set("subject", subject.value); else params.delete("subject");
+    params.delete("topic");
+    params.set("id", "new");
+    window.location.search = params.toString();
+  }
+  level.addEventListener("change", reload);
+  subject.addEventListener("change", reload);
+})();
+</script>';
