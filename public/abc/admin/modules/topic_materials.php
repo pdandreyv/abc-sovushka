@@ -9,8 +9,6 @@ if ($get['u']=='edit') {
 	else $post['pdf_file'] = trim($post['pdf_file']);
 	if (@$post['zip_file']=='') $post['zip_file'] = null;
 	else $post['zip_file'] = trim($post['zip_file']);
-	if (@$post['image_file']=='') $post['image_file'] = null;
-	else $post['image_file'] = trim($post['image_file']);
 }
 
 if ($get['u']=='add') {
@@ -32,7 +30,6 @@ $a18n['topic_id'] = 'Тема';
 $a18n['text'] = 'Текст';
 $a18n['pdf_file'] = 'Файл PDF';
 $a18n['zip_file'] = 'Файл ZIP';
-$a18n['image_file'] = 'Файл изображения';
 
 $table = array(
 	'id'		=>	'id:desc',
@@ -109,9 +106,6 @@ $form[] = array('file td12','pdf_file',array(
 ));
 $form[] = array('file td12','zip_file',array(
 	'name'=>'Файл ZIP'
-));
-$form[] = array('file td12','image_file',array(
-	'name'=>'Файл изображения'
 ));
 
 $content = html_array('form/hypertext_templates',array('key'=>'text'));

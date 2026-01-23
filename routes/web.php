@@ -65,6 +65,7 @@ Route::middleware('auth')->group(function () {
     // Предметы и темы (без проверки подписки)
     Route::get('/subjects/{level}', [SubjectController::class, 'index'])->name('subjects.index');
     Route::get('/subjects/{level}/{subject}', [SubjectController::class, 'show'])->name('subjects.show');
+    Route::get('/subjects/{level}/{subject}/materials/{topic}', [SubjectController::class, 'materials'])->name('subjects.materials');
 });
 
 // Публичные страницы (должен быть в конце, чтобы не перехватывать другие маршруты)

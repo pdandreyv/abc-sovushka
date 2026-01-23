@@ -54,10 +54,14 @@
         @forelse($subjects as $subject)
           @php
             $subjectLink = $subject->link;
+            $isAbsolute = $subjectLink && (str_starts_with($subjectLink, 'http://') || str_starts_with($subjectLink, 'https://') || str_starts_with($subjectLink, '/'));
+
             if (!$subjectLink) {
               $subjectLink = $subject->topics_count > 0
                 ? route('subjects.show', ['level' => $level->id, 'subject' => $subject->id])
                 : '/demo/sub_2.html';
+            } elseif (!$isAbsolute) {
+              $subjectLink = route('subjects.show', ['level' => $level->id, 'subject' => $subjectLink]);
             }
           @endphp
           <a class="folder-item" href="{{ $subjectLink }}">

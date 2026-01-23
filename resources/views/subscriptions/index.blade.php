@@ -57,8 +57,12 @@
           @php
             $levelLink = $level->link;
             $isDemoLink = $levelLink && (str_ends_with($levelLink, '.html') || str_contains($levelLink, 'demo/sub_'));
+            $isAbsolute = $levelLink && (str_starts_with($levelLink, 'http://') || str_starts_with($levelLink, 'https://') || str_starts_with($levelLink, '/'));
+
             if (!$levelLink || $isDemoLink) {
               $levelLink = route('subjects.index', ['level' => $level->id]);
+            } elseif (!$isAbsolute) {
+              $levelLink = route('subjects.index', ['level' => $levelLink]);
             }
           @endphp
           <div class="sub-option" data-sub-id="{{ $level->id }}">

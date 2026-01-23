@@ -144,7 +144,6 @@ class SubjectsSeeder extends Seeder
             [
                 'is_blocked' => false,
                 'display' => true,
-                'image_file' => '/demo/files/sub_1/RUS_A/1/creative_task.jpg',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]

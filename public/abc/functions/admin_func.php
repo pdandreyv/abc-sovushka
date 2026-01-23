@@ -608,8 +608,8 @@ function form_file ($type,$key, $param = array()) {
 	//загрузка с записью в БД
 	elseif ($t=='mysql') {
 		$file = isset($post[$key]) ? $post[$key] : ''; //название файла
-		// Для PDF и ZIP файлов модуля ideas сохраняем в public/files/ideas/{id}/{field}/
-		if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
+		// Для PDF и ZIP файлов сохраняем в public/files/{module}/{id}/{field}/
+		if (in_array($module['table'], array('ideas', 'topic_materials')) && in_array($key, array('pdf_file', 'zip_file'))) {
 			$field_dir = ($key == 'pdf_file') ? 'pdf' : 'zip';
 			$root = ROOT_DIR.'../files/'.$module['table'].'/'.$get['id'].'/'.$field_dir.'/'; //public/files/ideas/{id}/{field}/
 		} else {

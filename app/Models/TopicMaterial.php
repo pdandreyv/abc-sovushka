@@ -17,7 +17,6 @@ class TopicMaterial extends Model
         'text',
         'pdf_file',
         'zip_file',
-        'image_file',
     ];
 
     protected $casts = [

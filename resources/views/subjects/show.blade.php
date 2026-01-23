@@ -31,6 +31,16 @@
     <div class="header-title">{{ $subject->title }}</div>
   </div>
 
+  @php
+    $levelLink = $level->link ?: (string) $level->id;
+    $levelPath = trim(parse_url($levelLink, PHP_URL_PATH) ?? $levelLink, '/');
+    $levelSlug = basename($levelPath);
+
+    $subjectLink = $subject->link ?: (string) $subject->id;
+    $subjectPath = trim(parse_url($subjectLink, PHP_URL_PATH) ?? $subjectLink, '/');
+    $subjectSlug = basename($subjectPath);
+  @endphp
+
   <div class="content">
     <div class="card">
       <div class="subpage-top">
@@ -51,7 +61,7 @@
         <input id="topicsSearch" type="search" placeholder="Например: 1, школа, речь, предложение..." autocomplete="off"/>
       </div>
 
-      <div class="topics-layout">
+      <div class="topics-layout" data-materials-url="{{ route('subjects.materials', ['level' => $levelSlug, 'subject' => $subjectSlug, 'topic' => '__topic__']) }}">
         <div class="topics-panel">
           <div class="panel-title">Темы</div>
           <div id="topicsList" class="topic-list" aria-label="Список тем"></div>
@@ -74,7 +84,6 @@
 <script src="{{ asset_versioned('js/dashboard.js') }}"></script>
 @php
   $topicsPayload = $topicsData ?? collect();
-  $materialsPayload = $materialsData ?? collect();
 @endphp
 <script>
 (function() {
@@ -84,7 +93,6 @@
     ...topic,
     number: index + 1,
   }));
-  const MATERIALS = @json($materialsPayload);
 
   const listEl = document.getElementById('topicsList');
   const emptyEl = document.getElementById('topicsEmpty');
@@ -92,6 +100,8 @@
   const filesEl = document.getElementById('topicFiles');
   const hintEl = document.getElementById('topicHint');
   const descEl = document.getElementById('topicDescription');
+  const layoutEl = document.querySelector('.topics-layout');
+  const materialsUrlTemplate = layoutEl ? layoutEl.dataset.materialsUrl : '';
 
   let activeTopicId = null;
 
@@ -135,26 +145,48 @@
         if (topic.is_disabled) return;
         activeTopicId = topic.id;
         renderTopics(searchInput ? searchInput.value : '');
-        renderMaterials(topic.id);
+
+        hintEl.hidden = false;
+        hintEl.textContent = 'Загрузка материалов...';
+        filesEl.innerHTML = '';
+
+        fetchMaterials(topic.id).then(renderMaterials);
       });
 
       listEl.appendChild(btn);
     });
   }
 
-  function renderMaterials(topicId) {
-    const items = MATERIALS[String(topicId)] || [];
+  function buildMaterialsUrl(topicId) {
+    if (!materialsUrlTemplate) return null;
+    return materialsUrlTemplate.replace('__topic__', String(topicId));
+  }
+
+  function fetchMaterials(topicId) {
+    const url = buildMaterialsUrl(topicId);
+    if (!url) return Promise.resolve([]);
+    return fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => data.materials || [])
+      .catch(() => []);
+  }
+
+  function renderMaterials(items) {
     filesEl.innerHTML = '';
 
     if (!items.length) {
       hintEl.textContent = 'К этой теме пока нет загруженных файлов.';
       hintEl.hidden = false;
-      descEl.hidden = true;
+      if (descEl) descEl.hidden = true;
       return;
     }
 
     hintEl.hidden = true;
-    let descriptionHtml = '';
+    if (descEl) descEl.hidden = true;
 
     function viewerUrl(path) {
       return '/demo/viewer.html?doc=' + encodeURIComponent(path);
@@ -177,10 +209,6 @@
       if (!item.is_blocked && item.zip_url) {
         actions.push('<a class="btn btn-secondary" target="_blank" rel="noopener" href="' + item.zip_url + '" download>Скачать ZIP</a>');
       }
-      if (!item.is_blocked && item.image_url) {
-        actions.push('<a class="btn btn-secondary" target="_blank" rel="noopener" href="' + viewerUrl(item.image_url) + '">Посмотреть</a>');
-        actions.push('<a class="btn btn-primary" target="_blank" rel="noopener" href="' + item.image_url + '" download>Скачать JPG</a>');
-      }
 
       card.innerHTML =
         '<div class="file-card__top">' +
@@ -191,16 +219,12 @@
       filesEl.appendChild(card);
 
       if (item.text_html) {
-        descriptionHtml += item.text_html;
+        const textBlock = document.createElement('div');
+        textBlock.className = 'lesson-description';
+        textBlock.innerHTML = item.text_html;
+        filesEl.appendChild(textBlock);
       }
     });
-
-    if (descriptionHtml) {
-      descEl.innerHTML = descriptionHtml;
-      descEl.hidden = false;
-    } else {
-      descEl.hidden = true;
-    }
   }
 
   function init() {

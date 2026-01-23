@@ -6,15 +6,35 @@ use App\Models\Subject;
 use App\Models\SubscriptionLevel;
 use App\Models\Topic;
 use App\Models\TopicMaterial;
+use Illuminate\Support\Facades\DB;
 
 class SubjectController extends Controller
 {
     /**
      * Список предметов для уровня подписки
      */
-    public function index(int $level)
+    public function index(string $level)
     {
-        $levelModel = SubscriptionLevel::findOrFail($level);
+        $levelModel = $this->resolveLevel($level);
+        if (!$levelModel) {
+            $subjectBySlug = Subject::query()
+                ->where('display', true)
+                ->where('link', $level)
+                ->orWhere('link', '/' . $level)
+                ->first();
+
+            if ($subjectBySlug) {
+                $subjectSlug = $subjectBySlug->link ?: $subjectBySlug->id;
+                $subjectSlug = ltrim((string) $subjectSlug, '/');
+
+                return redirect()->route('subjects.show', [
+                    'level' => $subjectBySlug->subscription_level_id,
+                    'subject' => $subjectSlug,
+                ]);
+            }
+
+            abort(404);
+        }
 
         $subjects = Subject::query()
             ->where('display', true)
@@ -33,12 +53,10 @@ class SubjectController extends Controller
     /**
      * Темы и материалы для выбранного предмета
      */
-    public function show(int $level, int $subject)
+    public function show(string $level, string $subject)
     {
-        $levelModel = SubscriptionLevel::findOrFail($level);
-        $subjectModel = Subject::where('display', true)
-            ->where('subscription_level_id', $levelModel->id)
-            ->findOrFail($subject);
+        $levelModel = $this->resolveLevel($level);
+        $subjectModel = $this->resolveSubject($levelModel, $subject);
 
         $topics = Topic::query()
             ->where('subscription_level_id', $levelModel->id)
@@ -46,49 +64,69 @@ class SubjectController extends Controller
             ->orderBy('id')
             ->get();
 
-        $materials = TopicMaterial::query()
+        $materialsStats = TopicMaterial::query()
+            ->select('topic_id', DB::raw('SUM(CASE WHEN is_blocked = 0 THEN 1 ELSE 0 END) as available_count'))
             ->where('subscription_level_id', $levelModel->id)
             ->where('subject_id', $subjectModel->id)
             ->where('display', true)
-            ->orderBy('id')
-            ->get();
+            ->groupBy('topic_id')
+            ->get()
+            ->keyBy('topic_id');
 
-        $materialsByTopic = $materials->groupBy('topic_id');
-
-        $topicsData = $topics->map(function (Topic $topic) use ($materialsByTopic) {
-            $topicMaterials = $materialsByTopic->get($topic->id, collect());
-            $hasVisible = $topicMaterials->contains(function (TopicMaterial $material) {
-                return !$material->is_blocked;
-            });
+        $topicsData = $topics->map(function (Topic $topic) use ($materialsStats) {
+            $availableCount = (int) data_get($materialsStats, $topic->id . '.available_count', 0);
 
             return [
                 'id' => $topic->id,
                 'title' => $topic->title,
                 'keywords' => $topic->keywords,
-                'is_disabled' => $topicMaterials->isEmpty() || !$hasVisible,
+                'is_disabled' => $availableCount === 0,
             ];
         })->values();
-
-        $materialsData = $materialsByTopic->map(function ($items) {
-            return $items->map(function (TopicMaterial $material) {
-                return [
-                    'id' => $material->id,
-                    'title' => $material->title,
-                    'is_blocked' => $material->is_blocked,
-                    'pdf_url' => $this->resolveFileUrl($material, 'pdf_file', 'pdf'),
-                    'zip_url' => $this->resolveFileUrl($material, 'zip_file', 'zip'),
-                    'image_url' => $this->resolveFileUrl($material, 'image_file', 'image'),
-                    'text_html' => $material->formatted_text,
-                ];
-            })->values();
-        });
 
         return view('subjects.show', [
             'level' => $levelModel,
             'subject' => $subjectModel,
             'topics' => $topics,
             'topicsData' => $topicsData,
-            'materialsData' => $materialsData,
+        ]);
+    }
+
+    public function materials(string $level, string $subject, int $topic)
+    {
+        $levelModel = $this->resolveLevel($level);
+        if (!$levelModel) {
+            abort(404);
+        }
+
+        $subjectModel = $this->resolveSubject($levelModel, $subject);
+        $topicModel = Topic::query()
+            ->where('id', $topic)
+            ->where('subscription_level_id', $levelModel->id)
+            ->where('subject_id', $subjectModel->id)
+            ->firstOrFail();
+
+        $materials = TopicMaterial::query()
+            ->where('subscription_level_id', $levelModel->id)
+            ->where('subject_id', $subjectModel->id)
+            ->where('topic_id', $topicModel->id)
+            ->where('display', true)
+            ->orderBy('id')
+            ->get();
+
+        $payload = $materials->map(function (TopicMaterial $material) {
+            return [
+                'id' => $material->id,
+                'title' => $material->title,
+                'is_blocked' => $material->is_blocked,
+                'pdf_url' => $this->resolveFileUrl($material, 'pdf_file', 'pdf'),
+                'zip_url' => $this->resolveFileUrl($material, 'zip_file', 'zip'),
+                'text_html' => $material->formatted_text,
+            ];
+        })->values();
+
+        return response()->json([
+            'materials' => $payload,
         ]);
     }
 
@@ -110,6 +148,64 @@ class SubjectController extends Controller
             return $path;
         }
 
+        $legacyPath = '/files/topic_materials/' . $material->id . '/' . $field . '/' . $file;
+        $legacyFullPath = public_path(ltrim($legacyPath, '/'));
+
+        if (file_exists($legacyFullPath)) {
+            return $legacyPath;
+        }
+
+        $adminPath = '/abc/files/topic_materials/' . $material->id . '/' . $field . '/' . $file;
+        $adminFullPath = public_path(ltrim($adminPath, '/'));
+
+        if (file_exists($adminFullPath)) {
+            return $adminPath;
+        }
+
         return '/files/' . $file;
+    }
+
+    private function resolveLevel(string $level): ?SubscriptionLevel
+    {
+        $level = trim($level);
+
+        if (is_numeric($level)) {
+            return SubscriptionLevel::find((int) $level);
+        }
+
+        $slug = trim($level, '/');
+
+        $byLink = SubscriptionLevel::query()
+            ->where('link', $slug)
+            ->orWhere('link', '/' . $slug)
+            ->orWhere('link', '/subjects/' . $slug)
+            ->orWhere('link', 'like', '%/subjects/' . $slug)
+            ->first();
+
+        return $byLink;
+    }
+
+    private function resolveSubject(SubscriptionLevel $level, string $subject): Subject
+    {
+        $subject = trim($subject);
+
+        $query = Subject::query()
+            ->where('display', true)
+            ->where('subscription_level_id', $level->id);
+
+        if (is_numeric($subject)) {
+            return $query->findOrFail((int) $subject);
+        }
+
+        $slug = trim($subject, '/');
+
+        $query->where(function ($q) use ($slug, $level) {
+            $q->where('link', $slug)
+                ->orWhere('link', '/' . $slug)
+                ->orWhere('link', '/subjects/' . $level->id . '/' . $slug)
+                ->orWhere('link', 'like', '%/' . $slug);
+        });
+
+        return $query->firstOrFail();
     }
 }

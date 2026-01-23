@@ -46,7 +46,7 @@ $form[] = array('select td4','subscription_level_id',array(
 	'value'=>array(true, $levels)
 ));
 $form[] = array('input td4','link',array(
-	'help'=>'Если пусто, откроется внутренняя страница предмета'
+	'help'=>'Если пусто, ссылка будет через id предмета'
 ));
 $form[] = array('input td2','rating',array(
 	'value'=>@$post['rating'] ? $post['rating'] : 0
