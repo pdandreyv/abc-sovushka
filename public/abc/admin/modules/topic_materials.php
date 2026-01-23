@@ -2,10 +2,10 @@
 
 // Материалы к темам
 
-if ($get['u']=='add') {
-	if (isset($get['level']) && intval($get['level'])>0) $post['subscription_level_id'] = intval($get['level']);
-	if (isset($get['subject']) && intval($get['subject'])>0) $post['subject_id'] = intval($get['subject']);
-	if (isset($get['topic']) && intval($get['topic'])>0) $post['topic_id'] = intval($get['topic']);
+if (@$get['id']=='new' || @$get['u']=='add') {
+	if (!isset($post['subscription_level_id']) && isset($get['level']) && intval($get['level'])>0) $post['subscription_level_id'] = intval($get['level']);
+	if (!isset($post['subject_id']) && isset($get['subject']) && intval($get['subject'])>0) $post['subject_id'] = intval($get['subject']);
+	if (!isset($post['topic_id']) && isset($get['topic']) && intval($get['topic'])>0) $post['topic_id'] = intval($get['topic']);
 }
 
 $levels = mysql_select("SELECT id, title as name FROM subscription_levels ORDER BY sort_order", 'array');
