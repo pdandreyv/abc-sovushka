@@ -30,7 +30,7 @@ var uploaderObject = function(params) {
 
     var self = this;
 
-    self.reader.onload = function() {
+    function bindUploadEvents() {
         self.xhr.upload.addEventListener("progress", function(e) {
             if (e.lengthComputable) {
                 self.progress = (e.loaded * 100) / e.total;
@@ -77,7 +77,26 @@ var uploaderObject = function(params) {
                 }
             }
         };
+    }
 
+    // Современный путь: FormData без чтения файла в память
+    if (window.FormData) {
+        bindUploadEvents();
+        self.xhr.open("POST", params.url);
+        var formData = new FormData();
+        var safeName = translite_js(params.file.name);
+        try {
+            formData.append(params.fieldName || 'file', params.file, safeName);
+        } catch (e) {
+            formData.append(params.fieldName || 'file', params.file);
+        }
+        self.xhr.send(formData);
+        return;
+    }
+
+    // Фолбэк для старых браузеров
+    self.reader.onload = function() {
+        bindUploadEvents();
         self.xhr.open("POST", params.url);
 
         var boundary = "xxxxxxxxx";
@@ -112,7 +131,6 @@ var uploaderObject = function(params) {
             // chrome (W3C spec.)
             self.xhr.send(body);
         }
-
     };
 
     self.reader.readAsBinaryString(params.file);
