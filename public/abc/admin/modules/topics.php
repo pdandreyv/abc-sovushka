@@ -14,6 +14,7 @@ $levels = mysql_select("SELECT id, title as name FROM subscription_levels ORDER 
 $subjects = mysql_select("SELECT id, title as name FROM subjects ORDER BY rating DESC, title", 'array');
 
 $a18n['title'] = 'Название';
+$a18n['topic_number'] = 'Номер темы';
 $a18n['text'] = 'Текст';
 $a18n['rank'] = 'Рейтинг';
 $a18n['is_blocked'] = 'Заблокирован';
@@ -23,6 +24,7 @@ $a18n['subject_id'] = 'Предмет';
 
 $table = array(
 	'id'		=>	'rank:desc id:desc',
+	'topic_number'	=>	'',
 	'title'		=>	'',
 	'subscription_level_id'	=>	$levels,
 	'subject_id'	=>	$subjects,
@@ -58,7 +60,8 @@ $query = "
 	WHERE 1 ".$where."
 ";
 
-$form[] = array('input td6','title');
+$form[] = array('input td2','topic_number');
+$form[] = array('input td4','title');
 $form[] = array('input td2','rank',array(
 	'value'=>@$post['rank'] ? $post['rank'] : 0
 ));

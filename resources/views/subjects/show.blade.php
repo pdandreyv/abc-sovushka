@@ -90,10 +90,7 @@
 (function() {
   "use strict";
 
-  const TOPICS = @json($topicsPayload).map((topic, index) => ({
-    ...topic,
-    number: index + 1,
-  }));
+  const TOPICS = @json($topicsPayload);
 
   const listEl = document.getElementById('topicsList');
   const emptyEl = document.getElementById('topicsEmpty');
@@ -137,8 +134,9 @@
         ? '<span class="topic-badge" title="Закрыто">🔒</span>'
         : '<span class="topic-badge" title="Материалы доступны">📎</span>';
 
+      const numberHtml = topic.number ? ('<span class="topic-number">' + topic.number + '</span>') : '';
       btn.innerHTML =
-        '<span class="topic-number">' + topic.number + '</span>' +
+        numberHtml +
         '<span class="topic-title">' + topic.title + '</span>' +
         badge;
 

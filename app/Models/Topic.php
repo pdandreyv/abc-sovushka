@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Topic extends Model
 {
     protected $fillable = [
+        'topic_number',
         'title',
         'keywords',
         'text',

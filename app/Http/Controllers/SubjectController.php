@@ -80,6 +80,7 @@ class SubjectController extends Controller
         $topicsData = $topics->map(function (Topic $topic) {
             return [
                 'id' => $topic->id,
+                'number' => $topic->topic_number,
                 'title' => $topic->title,
                 'text_html' => $this->formatTopicText($topic->text),
                 'is_blocked' => (bool) $topic->is_blocked,
