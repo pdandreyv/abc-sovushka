@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+
+<!--
+  Совушкина школа — Страница 404 (не найдено)
+
+  Зачем нужна эта страница:
+  - Когда пользователь открывает несуществующий адрес (ошибка 404), хостинг может показать этот файл.
+
+  Подсказка новичкам (для программистов, которые впервые видят проект):
+  1) Этот сайт — статический макет (HTML/CSS/JS).
+  2) На реальном хостинге нужно настроить отдачу 404.html как страницы ошибки.
+     - GitHub Pages: файл 404.html в корне проекта.
+     - Nginx/Apache: отдельная настройка error_page / ErrorDocument.
+  3) Мы используем общий стиль кабинета: CSS/dashboard_styles.css.
+-->
+
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 — Ой… этой страницы нет</title>
+
+  <!-- Шрифт как на остальных страницах кабинета -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!-- Общий стиль кабинета -->
+  <link href="CSS/dashboard_styles.css" rel="stylesheet" />
+
+  <!-- Общая логика кабинета.
+       Важно: скрипт НЕ показывает модальные окна сам по себе.
+       Он запускает окно выхода только по клику на ссылку "Выйти". -->
+  <script src="JS/dashboard_script.js"></script>
+</head>
+
+<body>
+  <!-- ===== ЛЕВАЯ ПАНЕЛЬ (sidebar) ===== -->
+  <div class="sidebar">
+    <div>
+      <img alt="Логотип" class="logo" src="images/logo.png" />
+
+      <!-- Имя пользователя в макете фиксированное (демо).
+           Позже можно подставлять из БД/API. -->
+      <div class="user-name">ЮЛИЯ ДОЛЖЕНКО</div>
+
+      <!-- Ссылка выхода: по клику появится подтверждение (модалка) и при "Выйти" вернёт на index.html -->
+      <a href="index.html" class="user-logout-link" data-logout>Выйти</a>
+
+      <!-- Меню кабинета. Здесь оставляем основные разделы, чтобы пользователь мог быстро вернуться. -->
+      <div class="menu">
+        <button type="button" onclick="window.location.href='main_dashboard.html'">Главная</button>
+        <button type="button" onclick="window.location.href='dashboard_new_user.html'">Личные данные</button>
+        <button type="button" onclick="window.location.href='portfolio.html'">Портфолио</button>
+        <button type="button" onclick="window.location.href='subscriptions.html'">Подписки</button>
+        <button type="button" onclick="window.location.href='ideas.html'">Кладовая идей</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
+  <div class="main">
+    <div class="header">
+      <div class="breadcrumbs">Ошибка / 404</div>
+
+      <!-- Иконки в шапке — как на других страницах (можно расширять) -->
+      <div class="header-icons">
+        <img alt="Поддержка" src="images/support_icon.png" />
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Карточка-герой: используем общие классы .card и .btn, чтобы сохранить стиль сайта -->
+      <div class="card error-card">
+        <div class="error-hero" style="align-items: center;">
+          <!-- Рисунок -->
+          <img
+            src="images/404-page.png"
+            alt="Совушка ищет страницу"
+            style="max-width: 260px; width: 100%; margin-right: 20px;"
+          />
+
+          <!-- Текст -->
+          <div>
+            <h1 class="error-title">Ой… этой страницы нет</h1>
+
+            <p class="error-text">
+              Совушка уже ищет: заглянула в папки, проверила полки — а тут пусто.<br />
+              Проверьте ссылку, вернитесь на главную или напишите в службу заботы.
+            </p>
+
+            <div class="card-actions" style="margin-top: 16px;">
+              <a class="btn btn-primary" href="main_dashboard.html">Главная</a>
+              <a
+                class="btn btn-secondary"
+                href="https://vk.com/im/convo/-93773680?entrypoint=community_page&tab=all"
+                target="_blank"
+                rel="noopener"
+              >Служба заботы</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="error-links" style="margin-top: 16px;">
+          <a href="subscriptions.html">Подписки</a>
+          <span class="dot">•</span>
+          <a href="ideas.html">Кладовая идей</a>
+          <span class="dot">•</span>
+          <a href="portfolio.html">Портфолио</a>
+        </div>
+      </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>

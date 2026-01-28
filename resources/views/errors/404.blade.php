@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 — Ой… этой страницы нет</title>
+  <link rel="stylesheet" href="{{ asset_versioned('css/dashboard.css') }}">
+</head>
+<body>
+  <div class="sidebar">
+    <div>
+      <img alt="Логотип" class="logo" src="{{ asset('images/logo.png') }}" />
+      <div class="user-name">Совушкина школа</div>
+      <a class="user-logout-link" href="{{ url('/') }}">На главную</a>
+      <div class="menu">
+        <a class="menu-link" href="{{ url('/') }}">Главная</a>
+        <a class="menu-link" href="{{ url('/login') }}">Войти</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="header">
+      <div class="breadcrumbs">Ошибка / 404</div>
+      <div class="header-icons">
+        <img alt="Поддержка" src="{{ asset('images/support_icon.png') }}" />
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="card error-card">
+        <div class="error-hero">
+          <img
+            src="{{ asset('images/404-page.png') }}"
+            alt="Совушка ищет страницу"
+            style="max-width: 260px; width: 100%; margin-right: 20px;"
+          />
+
+          <div>
+            <h1 class="error-title">Ой… этой страницы нет</h1>
+            <p class="error-text">
+              Совушка уже ищет: заглянула в папки, проверила полки — а тут пусто.<br />
+              Проверьте ссылку, вернитесь на главную или напишите в службу заботы.
+            </p>
+
+            <div class="card-actions" style="margin-top: 16px;">
+              <a class="btn btn-primary" href="{{ url('/') }}">Главная</a>
+              <a
+                class="btn btn-secondary"
+                href="https://vk.com/im/convo/-93773680?entrypoint=community_page&tab=all"
+                target="_blank"
+                rel="noopener"
+              >Служба заботы</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="error-links" style="margin-top: 16px;">
+          <a href="{{ url('/subscriptions') }}">Подписки</a>
+          <span class="dot">•</span>
+          <a href="{{ url('/ideas') }}">Кладовая идей</a>
+          <span class="dot">•</span>
+          <a href="{{ url('/dashboard') }}">Портфолио</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

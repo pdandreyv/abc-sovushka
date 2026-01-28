@@ -1155,6 +1155,57 @@ body {
   margin: 10px 0 0 18px;
 }
 
+
+/* =============================================================
+   404 PAGE (404.html)
+   Нужна для страницы «Страница не найдена».
+   Здесь минимальные стили поверх общих .card/.btn.
+   ============================================================= */
+
+.error-card {
+  max-width: 860px;
+}
+
+.error-hero {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.error-code {
+  font-size: 72px;
+  line-height: 1;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: 2px;
+}
+
+.error-title {
+  margin: 0 0 10px 0;
+  font-size: 28px;
+  color: var(--blue);
+}
+
+.error-text {
+  margin: 0 0 14px 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.error-hints {
+  margin: 0 0 18px 0;
+  padding-left: 18px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 /* Адаптив: на телефонах колонки становятся вертикальными */
 @media (max-width: 920px) {
   .topics-layout {

@@ -111,7 +111,26 @@ body {
   justify-content: space-between;
   align-items: center;
 }
+.menu .menu-link {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  color: var(--blue);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 12px;
+  text-decoration: none;
+  text-align: left;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 .menu button:hover {
+  background-color: var(--accent);
+  color: white;
+}
+.menu .menu-link:hover {
   background-color: var(--accent);
   color: white;
 }
@@ -1398,5 +1417,59 @@ body {
   .footer-links {
     flex-wrap: wrap;
     justify-content: center;
+  }
+}
+
+/* =============================================================
+   404 PAGE (Laravel)
+   ============================================================= */
+.error-card {
+  max-width: 860px;
+}
+
+.error-hero {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.error-title {
+  margin: 0 0 10px 0;
+  font-size: 28px;
+  color: var(--blue);
+}
+
+.error-text {
+  margin: 0 0 14px 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.error-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 14px;
+}
+
+.error-links a {
+  color: var(--blue);
+  text-decoration: none;
+}
+
+.error-links a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.error-links .dot {
+  color: #999;
+}
+
+@media (max-width: 920px) {
+  .error-hero {
+    flex-direction: column;
   }
 }
