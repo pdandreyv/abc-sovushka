@@ -21,6 +21,7 @@ class User extends Authenticatable
         'last_name',
         'first_name',
         'middle_name',
+        'user_code',
         'email',
         'password',
         'phone',
@@ -62,6 +63,29 @@ class User extends Authenticatable
     {
         $parts = array_filter([$this->last_name, $this->first_name, $this->middle_name]);
         return implode(' ', $parts);
+    }
+
+    /**
+     * Идентификатор пользователя в формате YYYYMMDD + id
+     */
+    public function getUserCodeAttribute(): string
+    {
+        if (!$this->id || !$this->created_at) {
+            return '';
+        }
+
+        return $this->created_at->format('Ymd') . $this->id;
+    }
+
+    protected static function booted(): void
+    {
+        static::created(function (User $user) {
+            if (!$user->user_code) {
+                $user->updateQuietly([
+                    'user_code' => $user->created_at->format('Ymd') . $user->id,
+                ]);
+            }
+        });
     }
 
     /**

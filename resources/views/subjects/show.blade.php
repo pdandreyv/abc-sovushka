@@ -12,6 +12,7 @@
   <div>
     <img alt="Логотип" class="logo" src="{{ asset('images/logo.png') }}"/>
     <div class="user-name">{{ strtoupper(Auth::user()->first_name . ' ' . Auth::user()->last_name) }}</div>
+    <div class="user-code">ID: {{ Auth::user()->user_code }}</div>
     <a href="#" class="user-logout-link" data-logout>{{ site_lang('lk_menu|logout', 'Выйти') }}</a>
     <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: none;">
       @csrf

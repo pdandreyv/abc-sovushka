@@ -12,6 +12,7 @@
   <div>
     <img alt="Логотип" class="logo" src="{{ asset('images/logo.png') }}"/>
     <div class="user-name">{{ strtoupper(Auth::user()->first_name . ' ' . Auth::user()->last_name) }}</div>
+    <div class="user-code">ID: {{ Auth::user()->user_code }}</div>
     <a href="#" class="user-logout-link" data-logout>{{ site_lang('lk_menu|logout', 'Выйти') }}</a>
     <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: none;">
       @csrf
@@ -43,7 +44,7 @@
       <!-- Профиль: проверка/добавление данных -->
       <div class="card" style="grid-column: 1 / -1;">
         <div class="card-header">
-          <h3>{{ site_lang('lk_profile|card_title', 'Личные данные') }}</h3>
+          <h3>{{ site_lang('lk_profile|card_title', 'Личные данные') }} <span class="user-code-inline">ID: {{ Auth::user()->user_code }}</span></h3>
           <div class="card-actions">
             <button class="btn btn-secondary" id="editProfileBtn" style="display:none" type="button">{{ site_lang('lk_profile|edit', 'Редактировать') }}</button>
             <button class="btn btn-primary" id="saveProfileBtn" type="button">{{ site_lang('lk_profile|save', 'Сохранить') }}</button>

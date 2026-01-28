@@ -67,9 +67,11 @@ $a18n['role']	= 'Роль';
 $a18n['city']	= 'Город';
 $a18n['organization']	= 'Школа/сад';
 $a18n['about']	= 'Дополнительная информация';
+$a18n['user_code'] = 'ID пользователя';
 
 $table = array(
 	'id'		=>	'id:desc created_at last_visit email',
+	'user_code'	=>	'',
 	'email'		=>	'::table_login',
 	'phone'		=>  '::table_login',
 	'type'		=>	$user_types,
@@ -100,6 +102,7 @@ if (isset($get['search']) && $get['search']!='') $where.= "
 		OR LOWER(users.city) like '%".mysql_res(mb_strtolower($get['search'],'UTF-8'))."%'
 		OR LOWER(users.organization) like '%".mysql_res(mb_strtolower($get['search'],'UTF-8'))."%'
 		OR LOWER(users.fields) like '%".mysql_res(mb_strtolower($get['search'],'UTF-8'))."%'
+		OR LOWER(users.user_code) like '%".mysql_res(mb_strtolower($get['search'],'UTF-8'))."%'
 	)
 ";
 //v1.2.28 другие пользователи не видят суперадмина
