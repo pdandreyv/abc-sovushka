@@ -91,7 +91,7 @@
                 $pdfPath = '/files/ideas/' . $idea->id . '/pdf/' . $idea->pdf_file;
                 $pdfHref = file_exists(public_path(ltrim($pdfPath, '/'))) ? $pdfPath : '/files/' . $idea->pdf_file;
               @endphp
-              <button class="btn btn-secondary" type="button" data-view-doc="{{ $pdfHref }}">{{ site_lang('lk_ideas|view', 'Посмотреть') }}</button>
+              <a class="btn btn-secondary" href="{{ $pdfHref }}" target="_blank" rel="noopener">{{ site_lang('lk_ideas|view', 'Посмотреть') }}</a>
               <a class="btn btn-primary" href="{{ $pdfHref }}" target="_blank" rel="noopener">{{ site_lang('lk_ideas|download_pdf', 'Скачать PDF') }}</a>
             @endif
             @if($idea->zip_file)
