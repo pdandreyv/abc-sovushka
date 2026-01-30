@@ -18,10 +18,10 @@
       @csrf
     </form>
     <div class="menu">
-      <button class="active" type="button" onclick="window.location.href='{{ route('profile.show') }}'">{{ site_lang('lk_menu|profile', 'Личные данные') }}</button>
-      <button onclick="window.location.href='{{ route('dashboard') }}'" type="button">{{ site_lang('lk_menu|portfolio', 'Портфолио') }}</button>
-      <button onclick="window.location.href='{{ route('subscriptions.index') }}'" type="button">{{ site_lang('lk_menu|subscriptions', 'Подписки') }}</button>
-      <button onclick="window.location.href='{{ route('ideas.index') }}'" type="button">{{ site_lang('lk_menu|ideas', 'Кладовая идей') }}</button>
+      <button class="active" type="button" data-href="{{ route('profile.show') }}">{{ site_lang('lk_menu|profile', 'Личные данные') }}</button>
+      <button type="button" data-href="{{ route('dashboard') }}">{{ site_lang('lk_menu|portfolio', 'Портфолио') }}</button>
+      <button type="button" data-href="{{ route('subscriptions.index') }}">{{ site_lang('lk_menu|subscriptions', 'Подписки') }}</button>
+      <button type="button" data-href="{{ route('ideas.index') }}">{{ site_lang('lk_menu|ideas', 'Кладовая идей') }}</button>
     </div>
   </div>
 </div>
@@ -185,7 +185,37 @@
       <div class="card">
         <h3>{{ site_lang('lk_profile|subscriptions_title', 'Подписки') }}</h3>
         <p>{{ site_lang('lk_profile|subscriptions_empty', 'У вас пока нет активных подписок. Выберите класс или направление — материалы откроются сразу после оформления.') }}</p><br />
-        <button class="btn btn-primary" type="button" onclick="window.location.href='{{ route('subscriptions.index') }}'">{{ site_lang('lk_profile|subscriptions_cta', 'Оформить подписку') }}</button>
+        <button class="btn btn-primary" type="button" data-href="{{ route('subscriptions.index') }}">{{ site_lang('lk_profile|subscriptions_cta', 'Оформить подписку') }}</button>
+      </div>
+      <!-- Привязанные соцсети -->
+      <div class="card">
+        <h3>Привязанные соцсети</h3>
+        <div class="social-bindings">
+          <div class="social-row">
+            <div class="social-name">Яндекс</div>
+            @if(in_array('yandex', $linkedProviders ?? [], true))
+              <span class="social-status is-linked">Привязана</span>
+            @else
+              <a class="btn btn-secondary btn-sm" href="{{ route('social.redirect', ['provider' => 'yandex', 'link' => 1]) }}">Привязать</a>
+            @endif
+          </div>
+          <div class="social-row">
+            <div class="social-name">VK ID</div>
+            @if(in_array('vkontakte', $linkedProviders ?? [], true) || in_array('ok_ru', $linkedProviders ?? [], true) || in_array('mail_ru', $linkedProviders ?? [], true))
+              <span class="social-status is-linked">Привязана</span>
+            @else
+              <a class="btn btn-secondary btn-sm" href="{{ route('social.redirect', ['provider' => 'vkontakte', 'link' => 1]) }}">Привязать</a>
+            @endif
+          </div>
+          <div class="social-row">
+            <div class="social-name">Telegram</div>
+            @if(in_array('telegram', $linkedProviders ?? [], true))
+              <span class="social-status is-linked">Привязана</span>
+            @else
+              <a class="btn btn-secondary btn-sm" href="{{ route('social.telegram.redirect', ['link' => 1]) }}">Привязать</a>
+            @endif
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -194,4 +224,11 @@
 
 @push('scripts')
 <script src="{{ asset_versioned('js/dashboard.js') }}"></script>
+<script>
+  document.querySelectorAll('[data-href]').forEach(function(button) {
+    button.addEventListener('click', function() {
+      window.location.href = this.dataset.href;
+    });
+  });
+</script>
 @endpush

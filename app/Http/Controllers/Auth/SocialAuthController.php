@@ -17,6 +17,10 @@ class SocialAuthController extends Controller
      */
     public function redirect(Request $request, $provider)
     {
+        if ($request->boolean('link') && Auth::check()) {
+            $request->session()->put('social_link_user_id', Auth::id());
+        }
+
         Log::channel('social_auth')->info('Social auth redirect', [
             'provider' => $provider,
             'ip' => $request->ip(),
@@ -70,6 +74,14 @@ class SocialAuthController extends Controller
             ->where('social_provider', $provider)
             ->first();
 
+        $linkUser = $this->resolveLinkingUser($request);
+        if ($linkUser) {
+            $this->storeUserSocial($linkUser, $provider, $socialUser->getId(), $socialUser->getEmail());
+            $this->clearLinkingSession($request);
+
+            return redirect()->route('profile.show')->with('success', 'Соцсеть успешно привязана.');
+        }
+
         if (!$user) {
             // Проверяем, есть ли пользователь с таким email
             $user = User::where('email', $socialUser->getEmail())->first();
@@ -96,6 +108,8 @@ class SocialAuthController extends Controller
 
         // Авторизуем пользователя
         Auth::login($user, true);
+
+        $this->storeUserSocial($user, $provider, $socialUser->getId(), $socialUser->getEmail());
 
         Log::channel('social_auth')->info('Social auth success', [
             'provider' => $provider,
@@ -148,6 +162,8 @@ class SocialAuthController extends Controller
             ?? data_get($userData, 'sub')
             ?? data_get($userInfo, 'user_id');
 
+        $linkUser = $this->resolveLinkingUser($request);
+
         if (!$socialId) {
             Log::channel('social_auth')->error('VKID userinfo missing social id', [
                 'provider' => $provider,
@@ -181,6 +197,15 @@ class SocialAuthController extends Controller
             $user = User::where('email', $email)->first();
         }
 
+        if ($linkUser) {
+            $this->storeUserSocial($linkUser, $provider, $socialId, $email);
+            $this->clearLinkingSession($request);
+
+            return response()->json([
+                'redirect' => route('profile.show'),
+            ]);
+        }
+
         if ($user) {
             $user->social_id = $socialId;
             $user->social_provider = $provider;
@@ -197,6 +222,8 @@ class SocialAuthController extends Controller
         }
 
         Auth::login($user, true);
+
+        $this->storeUserSocial($user, $provider, $socialId, $email);
 
         Log::channel('social_auth')->info('VKID auth success', [
             'provider' => $provider,
@@ -215,9 +242,14 @@ class SocialAuthController extends Controller
      */
     public function telegramRedirect()
     {
+        $request = request();
+        if ($request->boolean('link') && Auth::check()) {
+            $request->session()->put('social_link_user_id', Auth::id());
+        }
+
         Log::channel('social_auth')->info('Telegram auth page opened', [
-            'ip' => request()->ip(),
-            'user_agent' => request()->userAgent(),
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
         ]);
         return view('auth.telegram');
     }
@@ -235,6 +267,8 @@ class SocialAuthController extends Controller
             'telegram_id' => $payload['id'] ?? null,
             'auth_date' => $payload['auth_date'] ?? null,
         ]);
+
+        $linkUser = $this->resolveLinkingUser($request);
 
         if (!$this->isTelegramAuthValid($payload)) {
             Log::channel('social_auth')->warning('Telegram auth validation failed', [
@@ -264,6 +298,13 @@ class SocialAuthController extends Controller
             $user = User::where('email', $email)->first();
         }
 
+        if ($linkUser) {
+            $this->storeUserSocial($linkUser, 'telegram', $telegramId, $payload['username'] ?? null);
+            $this->clearLinkingSession($request);
+
+            return redirect()->route('profile.show')->with('success', 'Соцсеть успешно привязана.');
+        }
+
         if ($user) {
             $user->social_id = $telegramId;
             $user->social_provider = 'telegram';
@@ -280,6 +321,8 @@ class SocialAuthController extends Controller
         }
 
         Auth::login($user, true);
+
+        $this->storeUserSocial($user, 'telegram', $telegramId, $payload['username'] ?? null);
 
         Log::channel('social_auth')->info('Telegram auth success', [
             'user_id' => $user->id,
@@ -437,5 +480,70 @@ class SocialAuthController extends Controller
         }
 
         return null;
+    }
+
+    private function storeUserSocial(User $user, string $provider, string $socialId, ?string $email = null): void
+    {
+        $provider = strtolower(trim($provider));
+
+        $typeMap = [
+            'vkontakte' => 1,
+            'vk' => 1,
+            'vkid' => 1,
+            'yandex' => 4,
+            'mail_ru' => 5,
+            'mailru' => 5,
+            'ok_ru' => 6,
+            'telegram' => 7,
+        ];
+
+        $type = $typeMap[$provider] ?? 0;
+        if ($type === 0) {
+            return;
+        }
+
+        $now = now();
+        $firstName = $user->first_name ?? '';
+        $lastName = $user->last_name ?? '';
+
+        \Illuminate\Support\Facades\DB::table('user_socials')->updateOrInsert(
+            [
+                'type' => $type,
+                'uid' => (string) $socialId,
+            ],
+            [
+                'user' => $user->id,
+                'email' => $email ?? $user->email ?? '',
+                'login' => $email ?? $user->email ?? '',
+                'gender' => 0,
+                'name' => $firstName,
+                'surname' => $lastName,
+                'birthday' => '1970-01-01',
+                'avatar' => '',
+                'link' => '',
+                'last_visit' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]
+        );
+    }
+
+    private function resolveLinkingUser(Request $request): ?User
+    {
+        $linkUserId = $request->session()->get('social_link_user_id');
+        if (!$linkUserId) {
+            return null;
+        }
+
+        if (!Auth::check() || Auth::id() !== (int) $linkUserId) {
+            return null;
+        }
+
+        return Auth::user();
+    }
+
+    private function clearLinkingSession(Request $request): void
+    {
+        $request->session()->forget('social_link_user_id');
     }
 }

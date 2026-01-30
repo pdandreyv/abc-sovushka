@@ -14,7 +14,28 @@ class ProfileController extends Controller
      */
     public function show()
     {
-        return view('profile.index');
+        $user = Auth::user();
+        $typeToProvider = [
+            1 => 'vkontakte',
+            4 => 'yandex',
+            5 => 'mail_ru',
+            6 => 'ok_ru',
+            7 => 'telegram',
+        ];
+        $linkedProviders = $user->socials()
+            ->pluck('type')
+            ->map(fn ($type) => $typeToProvider[$type] ?? null)
+            ->filter()
+            ->values()
+            ->toArray();
+        if ($user->social_provider && $user->social_id) {
+            $linkedProviders[] = strtolower($user->social_provider);
+        }
+        $linkedProviders = array_values(array_unique($linkedProviders));
+
+        return view('profile.index', [
+            'linkedProviders' => $linkedProviders,
+        ]);
     }
 
     /**

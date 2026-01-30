@@ -605,6 +605,37 @@ body {
 /* Метка "Бесплатно" */
 .badge-free { background: var(--green); }
 
+/* --- Привязанные соцсети (Профиль) --- */
+.social-bindings {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+.social-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.social-name {
+  font-weight: 600;
+  color: #333;
+}
+.social-status {
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #e2e2e2;
+  background: #f6f7fb;
+  color: #555;
+}
+.social-status.is-linked {
+  border-color: rgba(0, 191, 99, 0.35);
+  background: rgba(0, 191, 99, 0.12);
+  color: #0b3b25;
+}
+
 /* --- Просмотр документа (новое окно) --- */
 .viewer-page {
   min-height: 100vh;

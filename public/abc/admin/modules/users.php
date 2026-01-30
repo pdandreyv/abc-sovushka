@@ -161,9 +161,35 @@ $form[] = array('select td3','type',array(
 //$form[] = array('input td3','date',array('name'=>'дата регистрации'));
 //$form[] = array('input td3','last_visit');
 //$form[] = array('checkbox td3','remember_me');
-
-
 $form[] = 'clear';
+if ($get['u']=='form' OR $get['id']>0) {
+	$user_id = (int) ($post['id'] ?? $get['id']);
+	$linked = array();
+	if ($user_id > 0) {
+		$linked = mysql_select("
+			SELECT type
+			FROM user_socials
+			WHERE user=".$user_id."
+			GROUP BY type
+		", 'rows');
+	}
+	$types = $config['user_socials']['types'] ?? array();
+	$labels = array();
+	if ($linked) {
+		foreach ($linked as $row) {
+			$type = (int) $row['type'];
+			if (isset($types[$type])) $labels[] = $types[$type];
+		}
+	}
+	$label = $labels ? implode(', ', $labels) : 'Не привязано';
+	$form[] = '<h2>Привязанные соцсети</h2>';
+	$form[] = array('input td12','_socials',array(
+		'value'=>$label,
+		'attr'=>'readonly="readonly"',
+		'name'=>'Соцсети'
+	));
+}
+
 if ($get['u']=='form' OR $get['id']>0) {
 	$fields = @$post['fields'] ? (@unserialize($post['fields']) ?: []) : [];
 	if ($parameters = mysql_select("
