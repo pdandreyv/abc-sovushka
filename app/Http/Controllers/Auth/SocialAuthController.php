@@ -177,6 +177,66 @@ class SocialAuthController extends Controller
     }
 
     /**
+     * Страница входа через Telegram
+     */
+    public function telegramRedirect()
+    {
+        return view('auth.telegram');
+    }
+
+    /**
+     * Обработка callback от Telegram
+     */
+    public function telegramCallback(Request $request)
+    {
+        $payload = $request->all();
+
+        if (!$this->isTelegramAuthValid($payload)) {
+            return redirect()->route('login')->withErrors([
+                'email' => 'Ошибка авторизации через Telegram. Попробуйте еще раз.',
+            ]);
+        }
+
+        $telegramId = $payload['id'] ?? null;
+        if (!$telegramId) {
+            return redirect()->route('login')->withErrors([
+                'email' => 'Ошибка авторизации через Telegram. Не удалось определить пользователя.',
+            ]);
+        }
+
+        $firstName = $payload['first_name'] ?? '';
+        $lastName = $payload['last_name'] ?? '';
+        $email = $telegramId . '@telegram.local';
+
+        $user = User::where('social_id', $telegramId)
+            ->where('social_provider', 'telegram')
+            ->first();
+
+        if (!$user) {
+            $user = User::where('email', $email)->first();
+        }
+
+        if ($user) {
+            $user->social_id = $telegramId;
+            $user->social_provider = 'telegram';
+            $user->save();
+        } else {
+            $user = User::create([
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'email' => $email,
+                'social_id' => $telegramId,
+                'social_provider' => 'telegram',
+                'password' => bcrypt(str()->random(32)),
+            ]);
+        }
+
+        Auth::login($user, true);
+
+        return redirect()->intended('/dashboard')->with('success', 'Вы успешно вошли через Telegram!');
+    }
+
+    /**
      * Парсинг имени пользователя
      */
     private function parseName($fullName)
@@ -199,9 +259,45 @@ class SocialAuthController extends Controller
             'yandex' => 'Яндекс',
             'odnoklassniki' => 'Одноклассники',
             'mail_ru' => 'Mail.ru',
+            'telegram' => 'Telegram',
         ];
 
         return $names[$provider] ?? $provider;
+    }
+
+    /**
+     * Проверка подписи Telegram Login Widget
+     */
+    private function isTelegramAuthValid(array $data): bool
+    {
+        $botToken = config('services.telegram.bot_token');
+        if (!$botToken || !isset($data['hash'])) {
+            return false;
+        }
+
+        $hash = $data['hash'];
+        unset($data['hash']);
+
+        $pairs = [];
+        foreach ($data as $key => $value) {
+            $pairs[] = $key . '=' . $value;
+        }
+        sort($pairs);
+        $checkString = implode("\n", $pairs);
+
+        $secret = hash('sha256', $botToken, true);
+        $calculated = hash_hmac('sha256', $checkString, $secret);
+
+        if (!hash_equals($calculated, $hash)) {
+            return false;
+        }
+
+        $authDate = isset($data['auth_date']) ? (int) $data['auth_date'] : 0;
+        if ($authDate > 0 && (time() - $authDate) > 86400) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

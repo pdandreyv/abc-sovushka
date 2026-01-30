@@ -10,7 +10,7 @@ if ($get['u']=='edit') {
 	if (!isset($post['rank']) || $post['rank']==='') $post['rank'] = 0;
 }
 
-$levels = mysql_select("SELECT id, title as name FROM subscription_levels ORDER BY sort_order", 'array');
+$levels = mysql_select("SELECT id, title as name FROM subscription_levels ORDER BY sort_order DESC", 'array');
 $subjects = mysql_select("SELECT id, title as name FROM subjects ORDER BY rating DESC, title", 'array');
 
 $a18n['title'] = 'Название';

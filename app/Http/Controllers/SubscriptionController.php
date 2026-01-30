@@ -15,11 +15,11 @@ class SubscriptionController extends Controller
     public function index()
     {
         $levels = SubscriptionLevel::where('is_active', true)
-            ->orderBy('sort_order')
+            ->orderByDesc('sort_order')
             ->get();
         
         $tariffs = SubscriptionTariff::where('is_visible', true)
-            ->orderBy('sort_order')
+            ->orderByDesc('sort_order')
             ->get();
 
         // Подготовка данных для JavaScript

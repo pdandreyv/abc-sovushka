@@ -53,6 +53,7 @@
                     <p>{{ site_lang('auth|social_title', 'или через соцсети:') }}</p>
                     <div class="icons">
                         <a href="{{ route('social.redirect', ['provider' => 'yandex']) }}" class="icon-btn" type="button"><img src="{{ asset('images/yandex-pin.png') }}" alt="Yandex"></a>
+                        <!--a href="{{ route('social.telegram.redirect') }}" class="icon-btn" type="button"><img src="{{ asset('images/telegram-pin.png') }}" alt="Telegram"></a-->
                     </div>
                     <div
                         id="vkid-oauth-list"

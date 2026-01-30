@@ -54,4 +54,9 @@ return [
         'public_key' => env('ODNOKLASSNIKI_PUBLIC_KEY'),
     ],
 
+    'telegram' => [
+        'bot_name' => env('TELEGRAM_BOT_NAME'),
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+    ],
+
 ];
