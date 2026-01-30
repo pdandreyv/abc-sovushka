@@ -13,19 +13,10 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\ViewerController;
 
-// Главная страница - форма входа или ловим callback соцсетей
+// Главная страница - форма входа
 Route::get('/', function (Request $request) {
     if (\Illuminate\Support\Facades\Auth::check()) {
         return redirect()->route('dashboard');
-    }
-
-    if ($request->has('code') || $request->has('error')) {
-        $provider = $request->get('provider', 'yandex');
-        if (!in_array($provider, ['vkontakte', 'yandex', 'odnoklassniki'], true)) {
-            $provider = 'yandex';
-        }
-
-        return app(SocialAuthController::class)->callback($provider);
     }
 
     return app(LoginController::class)->showLoginForm();
