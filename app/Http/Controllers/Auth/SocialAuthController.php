@@ -386,73 +386,49 @@ class SocialAuthController extends Controller
         ]);
 
         try {
-            $endpoints = [
-                'https://id.vk.com/oauth2/user_info',
-                'https://id.vk.com/oauth2/userinfo',
-            ];
-
-            foreach ($endpoints as $endpoint) {
-                $attempts = [
-                    [
-                        'method' => 'GET',
-                        'options' => [
-                            'headers' => [
-                                'Authorization' => 'Bearer ' . $accessToken,
-                                'Accept' => 'application/json',
-                            ],
-                        ],
-                    ],
-                    [
-                        'method' => 'POST',
-                        'options' => [
-                            'form_params' => [
-                                'access_token' => $accessToken,
-                            ],
-                        ],
-                    ],
-                    [
-                        'method' => 'GET',
-                        'options' => [
-                            'query' => [
-                                'access_token' => $accessToken,
-                            ],
-                        ],
-                    ],
-                ];
-
-                foreach ($attempts as $attempt) {
-                    $response = $client->request($attempt['method'], $endpoint, array_merge([
-                        'http_errors' => false,
-                    ], $attempt['options']));
-
-                    $status = $response->getStatusCode();
-                    $body = (string) $response->getBody();
-
-                    if ($status >= 200 && $status < 300) {
-                        $decoded = json_decode($body, true);
-                        if (!is_array($decoded)) {
-                            continue;
-                        }
-                        if (isset($decoded['error'])) {
-                            Log::channel('social_auth')->warning('VKID userinfo error payload', [
-                                'endpoint' => $endpoint,
-                                'method' => $attempt['method'],
-                                'error' => $decoded['error'],
-                                'error_description' => $decoded['error_description'] ?? null,
-                            ]);
-                            continue;
-                        }
-                        return $decoded;
-                    }
-
-                    Log::channel('social_auth')->warning('VKID userinfo non-200', [
-                        'endpoint' => $endpoint,
-                        'method' => $attempt['method'],
-                        'status' => $status,
-                        'body' => mb_substr($body, 0, 500),
-                    ]);
-                }
+            $clientId = config('services.vkontakte.client_id');
+            if (!$clientId) {
+                Log::channel('social_auth')->error('VKID userinfo missing client_id');
+                return null;
             }
+
+            $endpoint = 'https://id.vk.com/oauth2/user_info';
+
+            $response = $client->get($endpoint, [
+                'http_errors' => false,
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $accessToken,
+                    'Accept' => 'application/json',
+                ],
+                'query' => [
+                    'client_id' => $clientId,
+                ],
+            ]);
+
+            $status = $response->getStatusCode();
+            $body = (string) $response->getBody();
+
+            if ($status >= 200 && $status < 300) {
+                $decoded = json_decode($body, true);
+                if (!is_array($decoded)) {
+                    return null;
+                }
+                if (isset($decoded['error'])) {
+                    Log::channel('social_auth')->warning('VKID userinfo error payload', [
+                        'endpoint' => $endpoint,
+                        'error' => $decoded['error'],
+                        'error_description' => $decoded['error_description'] ?? null,
+                    ]);
+                    return null;
+                }
+                return $decoded;
+            }
+
+            Log::channel('social_auth')->warning('VKID userinfo non-200', [
+                'endpoint' => $endpoint,
+                'status' => $status,
+                'body' => mb_substr($body, 0, 500),
+            ]);
         } catch (\Throwable $e) {
             Log::channel('social_auth')->error('VKID userinfo request error', [
                 'message' => $e->getMessage(),
