@@ -1,52 +1,57 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Совушкина школа — Вход через Telegram</title>
+  <link rel="stylesheet" href="{{ asset_versioned('css/auth.css') }}">
+  <style>
+    html, body {
+      height: 100%;
+    }
+    body {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f6f7fb;
+    }
+    .telegram-card {
+      text-align: center;
+      max-width: 420px;
+      width: 100%;
+      border: 1px solid #e6e6e6;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      border-radius: 16px;
+      background: #fff;
+      padding: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="telegram-card">
+    <h2>Вход через Telegram</h2>
+    <p>Нажмите кнопку ниже и подтвердите вход в Telegram.</p>
 
-@section('title', 'Совушкина школа — Вход через Telegram')
-
-@push('styles')
-<link rel="stylesheet" href="{{ asset_versioned('css/auth.css') }}">
-@endpush
-
-@section('content')
-<div class="container">
-  <div class="left">
-    <img src="{{ asset('images/logo.png') }}" alt="Логотип" />
-    <div class="welcome-text">
-      <h3>Вход через Telegram</h3>
-      <p>Подключите Telegram и входите в личный кабинет в один клик.</p>
-    </div>
-  </div>
-
-  <div class="right">
-    <div class="form-box" style="text-align: center;">
-      <h2>Вход через Telegram</h2>
-      <p>Нажмите кнопку ниже и подтвердите вход в Telegram.</p>
-
-      @if(config('services.telegram.bot_name') && config('services.telegram.bot_token'))
-        <div style="margin: 16px 0;">
-          <script
-            async
-            src="https://telegram.org/js/telegram-widget.js?22"
-            data-telegram-login="{{ config('services.telegram.bot_name') }}"
-            data-size="large"
-            data-userpic="false"
-            data-auth-url="{{ route('social.telegram.callback') }}"
-            data-request-access="write"
-          ></script>
-        </div>
-      @else
-        <div class="alert alert-danger" style="margin-top: 16px;">
-          Не настроены параметры Telegram. Проверьте `.env`.
-        </div>
-      @endif
-
-      <div class="helper-text" style="margin-top: 12px;">
-        Если видите ошибку <strong>Bot domain invalid</strong>, задайте домен в @BotFather:
-        <br />
-        <span style="font-weight: 600;">{{ request()->getHost() }}</span>
+    @if(config('services.telegram.bot_name') && config('services.telegram.bot_token'))
+      <div style="margin: 16px 0;">
+        <script
+          async
+          src="https://telegram.org/js/telegram-widget.js?22"
+          data-telegram-login="{{ config('services.telegram.bot_name') }}"
+          data-size="large"
+          data-userpic="false"
+          data-auth-url="{{ route('social.telegram.callback') }}"
+          data-request-access="write"
+        ></script>
       </div>
+    @else
+      <div class="alert alert-danger" style="margin-top: 16px;">
+        Не настроены параметры Telegram. Проверьте `.env`.
+      </div>
+    @endif
 
-      <a href="{{ url('/') }}" class="link" style="margin-top: 16px; display: inline-block;">Вернуться к входу</a>
-    </div>
+    <a href="{{ url('/') }}" class="link" style="margin-top: 16px; display: inline-block;">Вернуться к входу</a>
   </div>
-</div>
-@endsection
+</body>
+</html>
