@@ -204,7 +204,7 @@
             @if(in_array('vkontakte', $linkedProviders ?? [], true) || in_array('ok_ru', $linkedProviders ?? [], true) || in_array('mail_ru', $linkedProviders ?? [], true))
               <span class="social-status is-linked">Привязана</span>
             @else
-              <a class="btn btn-secondary btn-sm" href="{{ route('social.redirect', ['provider' => 'vkontakte', 'link' => 1]) }}">Привязать</a>
+              <a class="btn btn-secondary btn-sm" href="{{ route('social.vkid.link') }}">Привязать</a>
             @endif
           </div>
           <div class="social-row">

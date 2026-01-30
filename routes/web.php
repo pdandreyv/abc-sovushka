@@ -36,6 +36,7 @@ Route::get('/auth/{provider}', [SocialAuthController::class, 'redirect'])->where
 Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])->where('provider', 'vkontakte|yandex|odnoklassniki')->name('social.callback');
 Route::get('/auth/telegram', [SocialAuthController::class, 'telegramRedirect'])->name('social.telegram.redirect');
 Route::match(['get', 'post'], '/auth/telegram/callback', [SocialAuthController::class, 'telegramCallback'])->name('social.telegram.callback');
+Route::get('/auth/vkid/link', [SocialAuthController::class, 'vkidLink'])->name('social.vkid.link');
 Route::post('/auth/vkid/callback', [SocialAuthController::class, 'vkidCallback'])->name('social.vkid.callback');
 
 // Защищенные маршруты

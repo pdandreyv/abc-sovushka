@@ -41,7 +41,7 @@
           data-telegram-login="{{ config('services.telegram.bot_name') }}"
           data-size="large"
           data-userpic="false"
-          data-auth-url="{{ route('social.telegram.callback', request()->boolean('link') ? ['link' => 1] : []) }}"
+          data-auth-url="{{ route('social.telegram.callback') }}{{ $linkToken ? ('?link_token=' . $linkToken) : '' }}"
           data-request-access="write"
         ></script>
       </div>

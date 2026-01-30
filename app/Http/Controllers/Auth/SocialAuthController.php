@@ -243,15 +243,34 @@ class SocialAuthController extends Controller
     public function telegramRedirect()
     {
         $request = request();
+        $linkToken = null;
         if ($request->boolean('link') && Auth::check()) {
             $request->session()->put('social_link_user_id', Auth::id());
+            $linkToken = $this->makeLinkToken(Auth::id());
         }
 
         Log::channel('social_auth')->info('Telegram auth page opened', [
             'ip' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
-        return view('auth.telegram');
+        return view('auth.telegram', [
+            'linkToken' => $linkToken,
+        ]);
+    }
+
+    /**
+     * Страница привязки VK ID
+     */
+    public function vkidLink(Request $request)
+    {
+        if (Auth::check()) {
+            $request->session()->put('social_link_user_id', Auth::id());
+        }
+
+        return view('auth.vkid-link', [
+            'vkidAppId' => config('services.vkontakte.client_id'),
+            'vkidRedirectUrl' => url('/auth/vkontakte/callback'),
+        ]);
     }
 
     /**
@@ -269,6 +288,9 @@ class SocialAuthController extends Controller
         ]);
 
         $linkUser = $this->resolveLinkingUser($request);
+        if (!$linkUser) {
+            $linkUser = $this->resolveLinkingUserFromToken($request);
+        }
 
         if (!$this->isTelegramAuthValid($payload)) {
             Log::channel('social_auth')->warning('Telegram auth validation failed', [
@@ -545,5 +567,48 @@ class SocialAuthController extends Controller
     private function clearLinkingSession(Request $request): void
     {
         $request->session()->forget('social_link_user_id');
+    }
+
+    private function makeLinkToken(int $userId): string
+    {
+        $timestamp = time();
+        $payload = $userId . '|' . $timestamp;
+        $signature = hash_hmac('sha256', $payload, config('app.key'));
+        return base64_encode($payload . '|' . $signature);
+    }
+
+    private function resolveLinkingUserFromToken(Request $request): ?User
+    {
+        $token = $request->query('link_token');
+        if (!$token) {
+            return null;
+        }
+
+        $decoded = base64_decode($token, true);
+        if (!$decoded) {
+            return null;
+        }
+
+        $parts = explode('|', $decoded);
+        if (count($parts) !== 3) {
+            return null;
+        }
+
+        [$userId, $timestamp, $signature] = $parts;
+        if (!ctype_digit($userId) || !ctype_digit($timestamp)) {
+            return null;
+        }
+
+        $payload = $userId . '|' . $timestamp;
+        $expected = hash_hmac('sha256', $payload, config('app.key'));
+        if (!hash_equals($expected, $signature)) {
+            return null;
+        }
+
+        if ((time() - (int) $timestamp) > 600) {
+            return null;
+        }
+
+        return User::find((int) $userId);
     }
 }
