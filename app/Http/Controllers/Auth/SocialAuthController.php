@@ -389,28 +389,61 @@ class SocialAuthController extends Controller
                 'https://id.vk.com/oauth2/user_info',
                 'https://id.vk.com/oauth2/userinfo',
             ];
+            $clientId = config('services.vkontakte.client_id');
 
             foreach ($endpoints as $endpoint) {
-                $response = $client->get($endpoint, [
-                    'headers' => [
-                        'Authorization' => 'Bearer ' . $accessToken,
-                        'Accept' => 'application/json',
+                $attempts = [
+                    [
+                        'method' => 'GET',
+                        'options' => [
+                            'headers' => [
+                                'Authorization' => 'Bearer ' . $accessToken,
+                                'Accept' => 'application/json',
+                            ],
+                        ],
                     ],
-                ]);
+                    [
+                        'method' => 'POST',
+                        'options' => [
+                            'form_params' => [
+                                'access_token' => $accessToken,
+                            ],
+                            'query' => array_filter([
+                                'client_id' => $clientId,
+                            ]),
+                        ],
+                    ],
+                    [
+                        'method' => 'GET',
+                        'options' => [
+                            'query' => array_filter([
+                                'access_token' => $accessToken,
+                                'client_id' => $clientId,
+                            ]),
+                        ],
+                    ],
+                ];
 
-                $status = $response->getStatusCode();
-                $body = (string) $response->getBody();
+                foreach ($attempts as $attempt) {
+                    $response = $client->request($attempt['method'], $endpoint, array_merge([
+                        'http_errors' => false,
+                    ], $attempt['options']));
 
-                if ($status >= 200 && $status < 300) {
-                    $decoded = json_decode($body, true);
-                    return is_array($decoded) ? $decoded : null;
+                    $status = $response->getStatusCode();
+                    $body = (string) $response->getBody();
+
+                    if ($status >= 200 && $status < 300) {
+                        $decoded = json_decode($body, true);
+                        return is_array($decoded) ? $decoded : null;
+                    }
+
+                    Log::channel('social_auth')->warning('VKID userinfo non-200', [
+                        'endpoint' => $endpoint,
+                        'method' => $attempt['method'],
+                        'status' => $status,
+                        'body' => mb_substr($body, 0, 500),
+                    ]);
                 }
-
-                Log::channel('social_auth')->warning('VKID userinfo non-200', [
-                    'endpoint' => $endpoint,
-                    'status' => $status,
-                    'body' => mb_substr($body, 0, 500),
-                ]);
             }
         } catch (\Throwable $e) {
             Log::channel('social_auth')->error('VKID userinfo request error', [
