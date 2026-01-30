@@ -285,12 +285,19 @@ class SocialAuthController extends Controller
             'payload_keys' => array_keys($payload),
             'telegram_id' => $payload['id'] ?? null,
             'auth_date' => $payload['auth_date'] ?? null,
+            'link_token_query' => (bool) $request->query('link_token'),
+            'link_token_body' => (bool) $request->input('link_token'),
+            'session_link_user_id' => $request->session()->get('social_link_user_id'),
+            'auth_user_id' => Auth::id(),
         ]);
 
         $linkUser = $this->resolveLinkingUser($request);
         if (!$linkUser) {
             $linkUser = $this->resolveLinkingUserFromToken($request);
         }
+        Log::channel('social_auth')->info('Telegram link resolution', [
+            'resolved_user_id' => $linkUser?->id,
+        ]);
 
         if (!$this->isTelegramAuthValid($payload)) {
             Log::channel('social_auth')->warning('Telegram auth validation failed', [
