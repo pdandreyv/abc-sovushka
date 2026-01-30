@@ -52,8 +52,12 @@
                 <div class="social-login">
                     <p>{{ site_lang('auth|social_title', 'или через соцсети:') }}</p>
                     <div class="icons">
-                        <a href="{{ route('social.redirect', ['provider' => 'yandex']) }}" class="icon-btn" type="button"><img src="{{ asset('images/yandex-pin.png') }}" alt="Yandex"></a>
-                        <!--a href="{{ route('social.telegram.redirect') }}" class="icon-btn" type="button"><img src="{{ asset('images/telegram-pin.png') }}" alt="Telegram"></a-->
+                        <a href="{{ route('social.redirect', ['provider' => 'yandex']) }}" class="icon-btn" type="button">
+                            <img src="{{ asset('images/yandex-pin.png') }}" alt="Yandex">
+                        </a>
+                        <a href="{{ route('social.telegram.redirect') }}" class="icon-btn" type="button">
+                            <img src="{{ asset('images/telegram-pin.png') }}" alt="Telegram">
+                        </a>
                     </div>
                     <div>
                       <script nonce="csp_nonce" src="https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js"></script>
