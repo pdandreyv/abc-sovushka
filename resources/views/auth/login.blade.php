@@ -59,7 +59,7 @@
                         id="vkid-oauth-list"
                         class="vkid-oauth-list"
                         data-vkid-app="{{ (int) config('services.vkontakte.client_id') }}"
-                        data-vkid-redirect="{{ url('/') }}"
+                        data-vkid-redirect="{{ url('/auth/vkontakte/callback') }}"
                         data-vkid-callback="{{ route('social.vkid.callback') }}"
                     ></div>
                     <div id="vkid-error" class="alert alert-danger" style="display: none;"></div>
