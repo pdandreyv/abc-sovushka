@@ -70,6 +70,7 @@
           </div>
         </div>
 
+        @if(\Illuminate\Support\Facades\Auth::check())
         <div class="error-links" style="margin-top: 16px;">
           <a href="{{ url('/subscriptions') }}">Подписки</a>
           <span class="dot">•</span>
@@ -77,6 +78,8 @@
           <span class="dot">•</span>
           <a href="{{ url('/dashboard') }}">Портфолио</a>
         </div>
+        @endif
+        
       </div>
     </div>
   </div>
