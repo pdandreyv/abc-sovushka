@@ -15,8 +15,13 @@ class SocialAuthController extends Controller
     /**
      * Перенаправление на провайдера для авторизации
      */
-    public function redirect($provider)
+    public function redirect(Request $request, $provider)
     {
+        Log::channel('social_auth')->info('Social auth redirect', [
+            'provider' => $provider,
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
         return Socialite::driver($provider)->redirect();
     }
 
@@ -25,17 +30,25 @@ class SocialAuthController extends Controller
      */
     public function callback($provider)
     {
+        $request = request();
+        Log::channel('social_auth')->info('Social auth callback start', [
+            'provider' => $provider,
+            'ip' => $request->ip(),
+            'has_code' => $request->has('code'),
+            'has_error' => $request->has('error'),
+            'error' => $request->get('error'),
+        ]);
         try {
             $socialUser = Socialite::driver($provider)->user();
         } catch (\Laravel\Socialite\Two\InvalidStateException $e) {
-            Log::warning('Social auth invalid state', [
+            Log::channel('social_auth')->warning('Social auth invalid state', [
                 'provider' => $provider,
                 'error' => $e->getMessage(),
             ]);
             try {
                 $socialUser = Socialite::driver($provider)->stateless()->user();
             } catch (\Exception $inner) {
-                Log::error('Social auth failed after stateless', [
+                Log::channel('social_auth')->error('Social auth failed after stateless', [
                     'provider' => $provider,
                     'error' => $inner->getMessage(),
                 ]);
@@ -44,7 +57,7 @@ class SocialAuthController extends Controller
                 ]);
             }
         } catch (\Exception $e) {
-            Log::error('Social auth failed', [
+            Log::channel('social_auth')->error('Social auth failed', [
                 'provider' => $provider,
                 'error' => $e->getMessage(),
             ]);
@@ -84,6 +97,13 @@ class SocialAuthController extends Controller
         // Авторизуем пользователя
         Auth::login($user, true);
 
+        Log::channel('social_auth')->info('Social auth success', [
+            'provider' => $provider,
+            'user_id' => $user->id,
+            'social_id' => $socialUser->getId(),
+            'email' => $user->email,
+        ]);
+
         return redirect()->intended('/dashboard')->with('success', 'Вы успешно вошли через ' . $this->getProviderName($provider) . '!');
     }
 
@@ -92,6 +112,12 @@ class SocialAuthController extends Controller
      */
     public function vkidCallback(Request $request)
     {
+        Log::channel('social_auth')->info('VKID callback start', [
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'provider_payload' => $request->input('provider'),
+            'token_length' => strlen((string) $request->input('access_token')),
+        ]);
         $payload = $request->validate([
             'access_token' => ['required', 'string'],
             'provider' => ['nullable', 'string'],
@@ -102,7 +128,7 @@ class SocialAuthController extends Controller
         $userInfoResponse = $this->fetchVkidUserInfo($payload['access_token']);
 
         if (!$userInfoResponse) {
-            Log::error('VKID userinfo failed', [
+            Log::channel('social_auth')->error('VKID userinfo failed', [
                 'provider' => $provider,
                 'payload_provider' => $payload['provider'] ?? null,
             ]);
@@ -122,7 +148,7 @@ class SocialAuthController extends Controller
             ?? data_get($userInfo, 'user_id');
 
         if (!$socialId) {
-            Log::error('VKID userinfo missing social id', [
+            Log::channel('social_auth')->error('VKID userinfo missing social id', [
                 'provider' => $provider,
                 'user_info' => $userInfo,
             ]);
@@ -171,6 +197,13 @@ class SocialAuthController extends Controller
 
         Auth::login($user, true);
 
+        Log::channel('social_auth')->info('VKID auth success', [
+            'provider' => $provider,
+            'user_id' => $user->id,
+            'social_id' => $socialId,
+            'email' => $user->email,
+        ]);
+
         return response()->json([
             'redirect' => url('/dashboard'),
         ]);
@@ -181,6 +214,10 @@ class SocialAuthController extends Controller
      */
     public function telegramRedirect()
     {
+        Log::channel('social_auth')->info('Telegram auth page opened', [
+            'ip' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
         return view('auth.telegram');
     }
 
@@ -190,8 +227,18 @@ class SocialAuthController extends Controller
     public function telegramCallback(Request $request)
     {
         $payload = $request->all();
+        Log::channel('social_auth')->info('Telegram callback start', [
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'payload_keys' => array_keys($payload),
+            'telegram_id' => $payload['id'] ?? null,
+            'auth_date' => $payload['auth_date'] ?? null,
+        ]);
 
         if (!$this->isTelegramAuthValid($payload)) {
+            Log::channel('social_auth')->warning('Telegram auth validation failed', [
+                'telegram_id' => $payload['id'] ?? null,
+            ]);
             return redirect()->route('login')->withErrors([
                 'email' => 'Ошибка авторизации через Telegram. Попробуйте еще раз.',
             ]);
@@ -232,6 +279,12 @@ class SocialAuthController extends Controller
         }
 
         Auth::login($user, true);
+
+        Log::channel('social_auth')->info('Telegram auth success', [
+            'user_id' => $user->id,
+            'telegram_id' => $telegramId,
+            'email' => $user->email,
+        ]);
 
         return redirect()->intended('/dashboard')->with('success', 'Вы успешно вошли через Telegram!');
     }
@@ -353,14 +406,14 @@ class SocialAuthController extends Controller
                     return is_array($decoded) ? $decoded : null;
                 }
 
-                Log::warning('VKID userinfo non-200', [
+                Log::channel('social_auth')->warning('VKID userinfo non-200', [
                     'endpoint' => $endpoint,
                     'status' => $status,
                     'body' => mb_substr($body, 0, 500),
                 ]);
             }
         } catch (\Throwable $e) {
-            Log::error('VKID userinfo request error', [
+            Log::channel('social_auth')->error('VKID userinfo request error', [
                 'message' => $e->getMessage(),
                 'token_length' => strlen($accessToken),
             ]);
