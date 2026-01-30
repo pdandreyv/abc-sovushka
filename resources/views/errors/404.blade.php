@@ -62,7 +62,7 @@
               <a class="btn btn-primary" href="{{ url('/') }}">Главная</a>
               <a
                 class="btn btn-secondary"
-                href="https://vk.com/im/convo/-93773680?entrypoint=community_page&tab=all"
+                href="{{ site_lang('common|support_vk_url', 'https://vk.com/im/convo/-93773680?entrypoint=community_page&tab=all') }}"
                 target="_blank"
                 rel="noopener"
               >Служба заботы</a>
@@ -79,7 +79,7 @@
           <a href="{{ url('/dashboard') }}">Портфолио</a>
         </div>
         @endif
-        
+
       </div>
     </div>
   </div>

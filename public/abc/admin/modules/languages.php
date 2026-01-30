@@ -172,6 +172,7 @@ $form[0][] = lang_form('input td6','auth|login_email_placeholder','Email');
 $form[0][] = lang_form('input td6','auth|login_password_placeholder','Пароль');
 $form[0][] = lang_form('input td6','auth|login_button','Войти');
 $form[0][] = lang_form('input td6','auth|social_title','или через соцсети:');
+$form[0][] = lang_form('input td12','common|support_vk_url','Ссылка на поддержку (ВК)');
 $form[0][] = lang_form('input td12','auth|register_heading','Регистрация');
 $form[0][] = lang_form('input td6','auth|register_last_name','Фамилия');
 $form[0][] = lang_form('input td6','auth|register_first_name','Имя');
