@@ -83,22 +83,61 @@
                           .on(VKID.OAuthListInternalEvents.LOGIN_SUCCESS, function (payload) {
                             const code = payload.code;
                             const deviceId = payload.device_id;
+                            const provider = payload.provider || payload.auth_provider || payload.service || payload.source || null;
 
                             VKID.Auth.exchangeCode(code, deviceId)
-                              .then(vkidOnSuccess)
+                              .then(function(data) {
+                                return vkidOnSuccess(data, provider);
+                              })
                               .catch(vkidOnError);
                           });
                         
-                          function vkidOnSuccess(data) {
-                            // Обработка полученного результата
+                          function vkidOnSuccess(data, provider) {
+                            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+                            const headers = {
+                              'Content-Type': 'application/json',
+                            };
+                            if (csrfToken) {
+                              headers['X-CSRF-TOKEN'] = csrfToken.getAttribute('content');
+                            }
+
+                            return fetch("{{ route('social.vkid.callback') }}", {
+                              method: 'POST',
+                              headers: headers,
+                              body: JSON.stringify({
+                                access_token: data.access_token,
+                                provider: provider,
+                              }),
+                            })
+                            .then(function(response) {
+                              return response.json().then(function(payload) {
+                                return { ok: response.ok, data: payload };
+                              });
+                            })
+                            .then(function(result) {
+                              if (result.ok && result.data.redirect) {
+                                window.location.href = result.data.redirect;
+                                return;
+                              }
+                              throw new Error(result.data.message || 'Ошибка авторизации через VK ID.');
+                            })
+                            .catch(vkidOnError);
                           }
                         
                           function vkidOnError(error) {
-                            // Обработка ошибки
+                            const errorContainer = document.getElementById('vkid-error');
+                            if (errorContainer) {
+                              errorContainer.textContent = 'Ошибка авторизации через VK/OK. Попробуйте еще раз.';
+                              errorContainer.style.display = 'block';
+                            }
+                            if (window.console && console.error) {
+                              console.error(error);
+                            }
                           }
                         }
                       </script>
                     </div>
+                    <div id="vkid-error" class="alert alert-danger" style="display: none;"></div>
                 </div>
                 <div class="form-footer">
                     @php
