@@ -50,7 +50,7 @@ class RegisterController extends Controller
             'remind' => DB::raw('CURRENT_TIMESTAMP')
         ]);
 
-        Auth::login($user);
+        Auth::login($user, true);
 
         return redirect('/profile')->with('success', 'Регистрация прошла успешно! Добро пожаловать! Пожалуйста, проверьте и сохраните данные профиля.');
     }

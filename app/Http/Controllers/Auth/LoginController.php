@@ -31,7 +31,7 @@ class LoginController extends Controller
             'password.required' => 'Поле Пароль обязательно для заполнения.',
         ]);
 
-        if (Auth::attempt($credentials, $request->filled('remember'))) {
+        if (Auth::attempt($credentials, true)) {
             $request->session()->regenerate();
             
             return redirect()->intended('/dashboard')->with('success', 'Вы успешно вошли в систему!');
