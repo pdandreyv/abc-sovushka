@@ -579,7 +579,7 @@ class SocialAuthController extends Controller
 
     private function resolveLinkingUserFromToken(Request $request): ?User
     {
-        $token = $request->query('link_token');
+        $token = $request->query('link_token') ?: $request->input('link_token');
         if (!$token) {
             return null;
         }
