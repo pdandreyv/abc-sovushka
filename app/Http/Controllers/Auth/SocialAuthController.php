@@ -403,6 +403,7 @@ class SocialAuthController extends Controller
 
         $hash = $data['hash'];
         unset($data['hash']);
+        unset($data['link_token']);
 
         $pairs = [];
         foreach ($data as $key => $value) {
