@@ -11,7 +11,7 @@ $a18n['name'] = 'Имя';
 $a18n['type'] = 'Сайт';
 
 $table = array(
-	'id'		=>	'date:desc name url user title id',
+	'id'		=>	'last_visit:desc created_at:desc name url user title id',
 	'avatar'    =>  '::table_img',
 	'email'     =>  '',
 	'name'		=>	'',
