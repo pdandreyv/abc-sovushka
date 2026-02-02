@@ -109,6 +109,7 @@ class SocialAuthController extends Controller
         // Авторизуем пользователя
         Auth::login($user, true);
 
+        $this->ensureUserCode($user);
         $this->storeUserSocial($user, $provider, $socialUser->getId(), $socialUser->getEmail());
 
         Log::channel('social_auth')->info('Social auth success', [
@@ -223,6 +224,7 @@ class SocialAuthController extends Controller
 
         Auth::login($user, true);
 
+        $this->ensureUserCode($user);
         $this->storeUserSocial($user, $provider, $socialId, $email);
 
         Log::channel('social_auth')->info('VKID auth success', [
@@ -350,6 +352,7 @@ class SocialAuthController extends Controller
 
         Auth::login($user, true);
 
+        $this->ensureUserCode($user);
         $this->storeUserSocial($user, 'telegram', $telegramId, $payload['username'] ?? null);
 
         Log::channel('social_auth')->info('Telegram auth success', [
@@ -574,6 +577,22 @@ class SocialAuthController extends Controller
     private function clearLinkingSession(Request $request): void
     {
         $request->session()->forget('social_link_user_id');
+    }
+
+    private function ensureUserCode(User $user): void
+    {
+        if ($user->user_code) {
+            return;
+        }
+
+        $createdAt = $user->created_at ?: now();
+        if (!$user->created_at) {
+            $user->forceFill(['created_at' => $createdAt])->save();
+        }
+
+        $user->updateQuietly([
+            'user_code' => $createdAt->format('Ymd') . $user->id,
+        ]);
     }
 
     private function makeLinkToken(int $userId): string

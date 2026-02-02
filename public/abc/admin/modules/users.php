@@ -75,8 +75,8 @@ $table = array(
 	'email'		=>	'::table_login',
 	'phone'		=>  '::table_login',
 	'type'		=>	$user_types,
-	'last_visit'	=> 'date_smart',
-	'created_at'		=>	'date_smart',
+	'last_visit'	=> 'date',
+	'created_at'		=>	'date',
 );
 
 function table_login($q,$k) {
