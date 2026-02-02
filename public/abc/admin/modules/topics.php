@@ -2,7 +2,7 @@
 
 // Темы
 
-if ($get['u']=='add') {
+if ($get['u']=='add' || @$get['id']=='new') {
 	if (isset($get['level']) && intval($get['level'])>0) $post['subscription_level_id'] = intval($get['level']);
 	if (isset($get['subject']) && intval($get['subject'])>0) $post['subject_id'] = intval($get['subject']);
 }
