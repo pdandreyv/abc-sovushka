@@ -143,24 +143,7 @@
                     </div>
                     <div id="vkid-error" class="alert alert-danger" style="display: none;"></div>
                 </div>
-                <div class="form-footer">
-                    @php
-                        $menuPages = \App\Models\Page::getMenuPages();
-                    @endphp
-                    @foreach($menuPages as $page)
-                        @php
-                            $pageUrl = (str_starts_with($page->url, 'http://') || str_starts_with($page->url, 'https://')) 
-                                ? $page->url 
-                                : route('page.show', ['url' => $page->url]);
-                            $pageHost = null;
-                            if (str_starts_with($pageUrl, 'http://') || str_starts_with($pageUrl, 'https://')) {
-                                $pageHost = parse_url($pageUrl, PHP_URL_HOST);
-                            }
-                            $isExternal = $pageHost && $pageHost !== request()->getHost();
-                        @endphp
-                        <p><a href="{{ $pageUrl }}" @if($isExternal) target="_blank" rel="noopener noreferrer" @endif>{{ $page->name }}</a></p>
-                    @endforeach
-                </div>
+                <p class="form-legal">{!! site_lang('auth|register_consent', 'Регистрируясь, я принимаю условия Пользовательского соглашения об использовании Личного кабинета Клиента и соглашаюсь с Политикой обработки персональных данных.') !!}</p>
             </div>
 
             <div id="register-box" style="display:none">
