@@ -98,7 +98,7 @@ class SocialAuthController extends Controller
                 $user = User::create([
                     'first_name' => $nameParts['first_name'] ?? '',
                     'last_name' => $nameParts['last_name'] ?? '',
-                    'email' => $socialUser->getEmail() ?? $socialUser->getId() . '@' . $provider . '.local',
+                    'email' => $socialUser->getEmail() ?: null,
                     'social_id' => $socialUser->getId(),
                     'social_provider' => $provider,
                     'password' => bcrypt(str()->random(32)), // Генерируем случайный пароль
@@ -214,7 +214,7 @@ class SocialAuthController extends Controller
             $user = User::create([
                 'first_name' => $firstName ?? '',
                 'last_name' => $lastName ?? '',
-                'email' => $email ?? ($socialId . '@' . $provider . '.local'),
+                'email' => $email ?: null,
                 'social_id' => $socialId,
                 'social_provider' => $provider,
                 'password' => bcrypt(str()->random(32)),
@@ -317,16 +317,15 @@ class SocialAuthController extends Controller
 
         $firstName = $payload['first_name'] ?? '';
         $lastName = $payload['last_name'] ?? '';
-        $email = $telegramId . '@telegram.local';
+        $email = null;
 
         $user = User::where('social_id', $telegramId)
             ->where('social_provider', 'telegram')
             ->first();
 
         if (!$user) {
-            $user = User::where('email', $email)->first();
+            $user = $email ? User::where('email', $email)->first() : null;
         }
-
         if ($linkUser) {
             $this->storeUserSocial($linkUser, 'telegram', $telegramId, $payload['username'] ?? null);
             $this->clearLinkingSession($request);
