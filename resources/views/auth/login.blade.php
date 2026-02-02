@@ -191,6 +191,21 @@
     </div>
 </div>
 
+<div id="cookie-banner" class="cookie-banner">
+  Мы используем cookies для корректной работы сайта.
+  <button type="button" onclick="acceptCookies()">Понятно</button>
+</div>
+
+<script>
+function acceptCookies() {
+  localStorage.setItem("cookieAccepted", "true");
+  document.getElementById("cookie-banner").style.display = "none";
+}
+if (localStorage.getItem("cookieAccepted")) {
+  document.getElementById("cookie-banner").style.display = "none";
+}
+</script>
+
 <script>
     function switchTab(tab) {
         const loginTab = document.getElementById('tab-login');
