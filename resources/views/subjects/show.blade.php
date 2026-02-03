@@ -83,7 +83,7 @@
   }
   .topic-accordion-body .files-list {
     display: grid;
-    gap: 16px;
+    margin-top: 16px;
   }
   .topic-accordion-body .file-card {
     padding: 14px 16px;
