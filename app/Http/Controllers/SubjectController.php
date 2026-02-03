@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Subject;
 use App\Models\SubscriptionLevel;
+use App\Models\SubscriptionOrder;
 use App\Models\Topic;
 use App\Models\TopicMaterial;
+use Illuminate\Support\Facades\Auth;
 
 class SubjectController extends Controller
 {
@@ -55,9 +57,12 @@ class SubjectController extends Controller
             ->orderBy('title')
             ->get();
 
+        $hasAccess = $this->hasActiveSubscriptionForLevel($levelModel->id);
+
         return view('subjects.index', [
             'level' => $levelModel,
             'subjects' => $subjects,
+            'hasAccess' => $hasAccess,
         ]);
     }
 
@@ -69,6 +74,8 @@ class SubjectController extends Controller
         $levelModel = $this->resolveLevel($level);
         $subjectModel = $this->resolveSubject($subject);
 
+        $hasAccess = $this->hasActiveSubscriptionForLevel($levelModel->id);
+
         $topics = Topic::query()
             ->where('subscription_level_id', $levelModel->id)
             ->where('subject_id', $subjectModel->id)
@@ -77,13 +84,13 @@ class SubjectController extends Controller
             ->orderBy('id')
             ->get();
 
-        $topicsData = $topics->map(function (Topic $topic) {
+        $topicsData = $topics->map(function (Topic $topic) use ($hasAccess) {
             return [
                 'id' => $topic->id,
                 'number' => $topic->topic_number,
                 'title' => $topic->title,
                 'text_html' => $this->formatTopicText($topic->text),
-                'is_blocked' => (bool) $topic->is_blocked,
+                'is_blocked' => !$hasAccess || (bool) $topic->is_blocked,
             ];
         })->values();
 
@@ -92,6 +99,7 @@ class SubjectController extends Controller
             'subject' => $subjectModel,
             'topics' => $topics,
             'topicsData' => $topicsData,
+            'hasAccess' => $hasAccess,
         ]);
     }
 
@@ -100,6 +108,10 @@ class SubjectController extends Controller
         $levelModel = $this->resolveLevel($level);
         if (!$levelModel) {
             abort(404);
+        }
+
+        if (!$this->hasActiveSubscriptionForLevel($levelModel->id)) {
+            return response()->json(['materials' => [], 'message' => 'Нет активной подписки на этот уровень.'], 403);
         }
 
         $subjectModel = $this->resolveSubject($subject);
@@ -181,6 +193,32 @@ class SubjectController extends Controller
         $decoded = stripslashes($decoded);
 
         return $decoded;
+    }
+
+    /**
+     * Есть ли у текущего пользователя активная подписка на уровень (paid, date_till >= сегодня).
+     */
+    private function hasActiveSubscriptionForLevel(int $levelId): bool
+    {
+        $userId = Auth::id();
+        if (!$userId) {
+            return false;
+        }
+
+        $today = now()->toDateString();
+
+        return SubscriptionOrder::query()
+            ->where('user_id', $userId)
+            ->where('paid', true)
+            ->whereDate('date_till', '>=', $today)
+            ->where(function ($q) use ($levelId) {
+                $s = (string) $levelId;
+                $q->where('levels', $s)
+                    ->orWhere('levels', 'like', $s . ',%')
+                    ->orWhere('levels', 'like', '%,' . $s . ',%')
+                    ->orWhere('levels', 'like', '%,' . $s);
+            })
+            ->exists();
     }
 
     private function resolveLevel(string $level): ?SubscriptionLevel

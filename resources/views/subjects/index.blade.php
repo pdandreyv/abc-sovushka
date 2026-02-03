@@ -37,6 +37,13 @@
       <h1>{{ $level->title }}</h1>
       <p class="muted">Выберите предмет. Внутри — темы и файлы к урокам (презентации, рабочие листы, конспекты и др.).</p>
 
+      @if(empty($hasAccess))
+        <div class="alert alert-warning" style="margin-bottom: 1rem;">
+          У вас нет активной подписки на этот уровень. Темы и материалы будут закрыты до оформления подписки.
+          <a href="{{ route('subscriptions.index') }}">Оформить подписку</a>
+        </div>
+      @endif
+
       @if($level->sort_order === 1)
       <div class="demo-lesson">
         <h3>Демо-уроки (можно скачать бесплатно)</h3>

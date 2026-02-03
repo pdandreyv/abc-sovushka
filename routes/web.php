@@ -10,6 +10,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\IdeaController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\SubscriptionPaymentController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\ViewerController;
 
@@ -56,6 +57,11 @@ Route::middleware('auth')->group(function () {
     
     // Подписки
     Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');
+    Route::post('/subscriptions/recurring/{level}', [SubscriptionController::class, 'toggleRecurring'])
+        ->name('subscriptions.recurring.toggle');
+    Route::get('/subscriptions/checkout', [SubscriptionPaymentController::class, 'show'])->name('subscriptions.checkout');
+    Route::post('/subscriptions/checkout', [SubscriptionPaymentController::class, 'create'])->name('subscriptions.checkout.create');
+    Route::post('/subscriptions/checkout/confirm', [SubscriptionPaymentController::class, 'confirm'])->name('subscriptions.checkout.confirm');
 
     // Предметы и темы (без проверки подписки)
     Route::get('/subjects/{level}', [SubjectController::class, 'index'])->name('subjects.index');

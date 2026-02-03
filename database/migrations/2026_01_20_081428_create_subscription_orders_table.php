@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedMediumInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->json('subscription_level_ids'); // Массив ID уровней подписок
+            $table->string('subscription_level_ids'); // ID уровней подписок через запятую
             $table->date('date_subscription'); // Дата подписки
             $table->decimal('sum_subscription', 10, 2); // Сумма подписки
             $table->integer('days'); // Количество дней (берется из subscription_tariffs)

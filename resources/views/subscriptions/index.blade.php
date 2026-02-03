@@ -4,6 +4,68 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset_versioned('css/dashboard.css') }}">
+<style>
+  .sub-option.sub-option--meta {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+  }
+  .sub-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-end;
+  }
+  .sub-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    color: #5a5a5a;
+    align-items: flex-end;
+  }
+  .sub-meta-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .sub-meta-actions .btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .sub-actions {
+    display: flex;
+    align-items: center;
+  }
+  .toast-success {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    padding: 14px 24px;
+    background: #e8f5e9;
+    border: 1px solid #4caf50;
+    border-radius: 12px;
+    color: #2e7d32;
+    font-size: 15px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.25);
+    animation: toast-in 0.3s ease;
+  }
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+  .toast-success.toast-out {
+    animation: toast-out 0.3s ease forwards;
+  }
+  @keyframes toast-out {
+    from { opacity: 1; transform: translateX(-50%) translateY(0); }
+    to { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+  }
+</style>
 @endpush
 
 @section('content')
@@ -39,6 +101,9 @@
 
   <div class="content">
     <h1>{{ site_lang('lk_subscriptions|heading', 'Подписки') }}</h1>
+    @if (session('success'))
+      <div id="toast-success" class="toast-success" role="alert">{{ session('success') }}</div>
+    @endif
     <p class="page-hint">
       {{ site_lang('lk_subscriptions|hint', 'Выберите нужные подписки и тариф — итоговая сумма и скидка пересчитаются автоматически.') }}
     </p>
@@ -66,14 +131,49 @@
               $levelLink = route('subjects.index', ['level' => $levelLink]);
             }
           @endphp
-          <div class="sub-option" data-sub-id="{{ $level->id }}">
+          <div class="sub-option sub-option--meta" data-sub-id="{{ $level->id }}">
             <label class="sub-left" for="sub_{{ $level->id }}">
-              <input class="sub-checkbox" id="sub_{{ $level->id }}" type="checkbox" value="{{ $level->id }}"/>
+              <input
+                class="sub-checkbox"
+                id="sub_{{ $level->id }}"
+                type="checkbox"
+                value="{{ $level->id }}"
+                {{ isset($activeByLevel[$level->id]) ? 'disabled' : '' }}
+              />
               <span class="sub-title">{{ $level->title }}</span>
             </label>
-            @if($levelLink)
-            <a class="btn btn-secondary btn-sm" href="{{ $levelLink }}">{{ site_lang('lk_subscriptions|view', 'Посмотреть') }}</a>
-            @endif
+            @php
+              $activeInfo = $activeByLevel[$level->id] ?? null;
+              $recurringInfo = $recurringByLevel[$level->id] ?? null;
+            @endphp
+            <div class="sub-details">
+              @if($activeInfo)
+                <div class="sub-meta">
+                  <div>
+                    {{ site_lang('lk_subscriptions|active_till', 'Оплачено до:') }}
+                    {{ \Illuminate\Support\Carbon::parse($activeInfo['date_till'])->format('d.m.Y') }}
+                  </div>
+                  @if($recurringInfo)
+                    <div class="sub-meta-actions">
+                      <form method="POST" action="{{ route('subscriptions.recurring.toggle', ['level' => $level->id]) }}">
+                        @csrf
+                        <input type="hidden" name="enable" value="{{ $recurringInfo['auto'] ? 0 : 1 }}">
+                        <button class="btn btn-secondary btn-sm" type="submit">
+                          {{ $recurringInfo['auto']
+                            ? site_lang('lk_subscriptions|cancel_autorenew', 'Отменить автопродление')
+                            : site_lang('lk_subscriptions|enable_autorenew', 'Включить автопродление') }}
+                        </button>
+                      </form>
+                    </div>
+                  @endif
+                </div>
+              @endif
+            </div>
+            <div class="sub-actions">
+              @if($levelLink)
+                <a class="btn btn-secondary btn-sm" href="{{ $levelLink }}">{{ site_lang('lk_subscriptions|view', 'Посмотреть') }}</a>
+              @endif
+            </div>
           </div>
           @endforeach
         </div>
@@ -203,6 +303,9 @@
   
   const TARIFFS = @json($tariffsData);
   const UI_TEXTS = @json($uiTexts);
+  const CHECKOUT_URL = @json(route('subscriptions.checkout.create'));
+  const CSRF_TOKEN = @json(csrf_token());
+  const ACTIVE_COUNT = @json(count($activeByLevel ?? []));
 
   // ---------- Утилиты ----------
   function formatRUB(value) {
@@ -219,10 +322,10 @@
   // 2 подписки — 10%
   // 3+ (но не все) — 15%
   // все подписки (7) — 20%
-  function getDiscountPercent(selectedCount) {
-    if (selectedCount >= SUBSCRIPTIONS.length) return 20;
-    if (selectedCount >= 3) return 15;
-    if (selectedCount === 2) return 10;
+  function getDiscountPercent(totalCount) {
+    if (totalCount >= SUBSCRIPTIONS.length) return 20;
+    if (totalCount >= 3) return 15;
+    if (totalCount === 2) return 10;
     return 0;
   }
 
@@ -268,6 +371,11 @@
     // Восстанавливаем выбранные подписки
     document.querySelectorAll('.sub-checkbox').forEach(cb => {
       const subId = cb.closest('.sub-option').getAttribute('data-sub-id');
+      if (cb.disabled) {
+        cb.checked = false;
+        state.selectedSubs.delete(subId);
+        return;
+      }
       if (state.selectedSubs.has(subId)) {
         cb.checked = true;
       }
@@ -295,6 +403,7 @@
     // Обработчики для чекбоксов подписок
     document.querySelectorAll('.sub-checkbox').forEach(cb => {
       cb.addEventListener('change', () => {
+        if (cb.disabled) return;
         const subId = cb.closest('.sub-option').getAttribute('data-sub-id');
         if (cb.checked) {
           state.selectedSubs.add(subId);
@@ -320,13 +429,17 @@
 
   // ---------- Расчёт ----------
   function recalc() {
-    const count = state.selectedSubs.size;
+    const selectedIds = Array.from(
+      document.querySelectorAll('.sub-checkbox:checked:not(:disabled)')
+    ).map(cb => cb.closest('.sub-option').getAttribute('data-sub-id'));
+    const count = selectedIds.length;
+    state.selectedSubs = new Set(selectedIds);
     const tariff = TARIFFS.find((t) => t.id == state.tariffId) || null;
 
     const pricePerSub = tariff ? tariff.price : 0;
     const subtotal = count * pricePerSub;
 
-    const discountPercent = getDiscountPercent(count);
+    const discountPercent = getDiscountPercent(count + ACTIVE_COUNT);
     const discount = Math.round(subtotal * (discountPercent / 100));
     const total = subtotal - discount;
 
@@ -360,7 +473,7 @@
 
     // Подготовка "payload" заказа
     const orderPayload = {
-      subscriptions: Array.from(state.selectedSubs),
+      subscriptions: selectedIds,
       tariffId: tariff ? tariff.id : null,
       count,
       pricePerSubscription: pricePerSub,
@@ -387,9 +500,37 @@
     if (!btn) return;
 
     btn.addEventListener("click", () => {
-      const last = localStorage.getItem("sovushka_last_order_payload");
-      console.log("Checkout payload (demo):", last);
-      alert("Демо: заказ сформирован. Подключение оплаты будет добавлено позже.");
+      const selectedIds = Array.from(
+        document.querySelectorAll('.sub-checkbox:checked:not(:disabled)')
+      ).map(cb => cb.closest('.sub-option').getAttribute('data-sub-id'));
+      if (!state.tariffId || selectedIds.length === 0) return;
+
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = CHECKOUT_URL;
+
+      const csrf = document.createElement("input");
+      csrf.type = "hidden";
+      csrf.name = "_token";
+      csrf.value = CSRF_TOKEN;
+      form.appendChild(csrf);
+
+      const tariff = document.createElement("input");
+      tariff.type = "hidden";
+      tariff.name = "tariff_id";
+      tariff.value = String(state.tariffId);
+      form.appendChild(tariff);
+
+      selectedIds.forEach((id) => {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "levels[]";
+        input.value = String(id);
+        form.appendChild(input);
+      });
+
+      document.body.appendChild(form);
+      form.submit();
     });
   }
 
@@ -403,6 +544,19 @@
     bindPayButton();
     recalc();
   }
+
+  // Попап успеха — скрыть через 2.5 сек
+  (function () {
+    const toast = document.getElementById("toast-success");
+    if (toast) {
+      setTimeout(function () {
+        toast.classList.add("toast-out");
+        setTimeout(function () {
+          toast.remove();
+        }, 300);
+      }, 2500);
+    }
+  })();
 
   // DOMContentLoaded нам не нужен, потому что script подключён с defer
   init();

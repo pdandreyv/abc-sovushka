@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SubscriptionPaymentLog extends Model
 {
+    protected $table = 'subscription_payments_logs';
+
     protected $fillable = [
         'subscription_order_id',
         'status',

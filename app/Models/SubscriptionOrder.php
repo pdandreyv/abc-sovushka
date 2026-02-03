@@ -11,27 +11,35 @@ class SubscriptionOrder extends Model
     protected $fillable = [
         'user_id',
         'subscription_level_ids',
+        'levels',
+        'paid',
         'date_subscription',
         'sum_subscription',
         'sum_without_discount',
         'days',
+        'date_paid',
         'date_next_pay',
         'sum_next_pay',
         'hash',
         'errors',
         'auto',
+        'tariff',
+        'date_till',
     ];
 
     protected $casts = [
-        'subscription_level_ids' => 'array',
+        'paid' => 'boolean',
         'date_subscription' => 'date',
         'sum_subscription' => 'decimal:2',
         'sum_without_discount' => 'decimal:2',
         'days' => 'integer',
+        'date_paid' => 'datetime',
         'date_next_pay' => 'date',
         'sum_next_pay' => 'decimal:2',
         'errors' => 'integer',
         'auto' => 'boolean',
+        'tariff' => 'integer',
+        'date_till' => 'date',
     ];
 
     public function user(): BelongsTo

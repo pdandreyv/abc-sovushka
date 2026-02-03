@@ -51,6 +51,11 @@
             Здесь темы и файлы к урокам. Слева — список тем, справа — материалы выбранной темы.
             Если у темы нет загруженных файлов, она отображается неактивной.
           </p>
+          @if(empty($hasAccess))
+            <p class="muted" style="color: #c62828;">
+              У вас нет активной подписки на этот уровень — темы закрыты. <a href="{{ route('subscriptions.index') }}">Оформить подписку</a>
+            </p>
+          @endif
         </div>
         <div class="subpage-top__actions">
           <a class="btn btn-secondary" href="{{ route('subjects.index', ['level' => $level->id]) }}">← Назад к предметам</a>
@@ -149,8 +154,8 @@
         hintEl.textContent = 'Загрузка материалов...';
         filesEl.innerHTML = '';
 
-        fetchMaterials(topic.id).then(function(items) {
-          renderMaterials(items, topic);
+        fetchMaterials(topic.id).then(function(result) {
+          renderMaterials(result.items, topic, result.noAccess);
         });
       });
 
@@ -165,19 +170,33 @@
 
   function fetchMaterials(topicId) {
     const url = buildMaterialsUrl(topicId);
-    if (!url) return Promise.resolve([]);
+    if (!url) return Promise.resolve({ items: [], noAccess: false });
     return fetch(url, {
       headers: {
         'Accept': 'application/json',
       },
     })
-      .then((response) => response.json())
-      .then((data) => data.materials || [])
-      .catch(() => []);
+      .then((response) => {
+        return response.json().then((data) => ({
+          items: data.materials || [],
+          noAccess: response.status === 403,
+        }));
+      })
+      .catch(() => ({ items: [], noAccess: false }));
   }
 
-  function renderMaterials(items, topic) {
+  function renderMaterials(items, topic, noAccess) {
     filesEl.innerHTML = '';
+
+    if (noAccess) {
+      hintEl.textContent = 'Нет доступа к материалам. Оформите подписку на этот уровень.';
+      hintEl.hidden = false;
+      if (descEl) {
+        descEl.innerHTML = topic && topic.text_html ? topic.text_html : '';
+        descEl.hidden = !topic || !topic.text_html;
+      }
+      return;
+    }
 
     if (!items.length) {
       hintEl.textContent = 'К этой теме пока нет загруженных файлов.';
