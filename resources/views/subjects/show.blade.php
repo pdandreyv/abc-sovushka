@@ -83,7 +83,17 @@
   }
   .topic-accordion-body .files-list {
     display: grid;
-    gap: 10px;
+    gap: 16px;
+  }
+  .topic-accordion-body .file-card {
+    padding: 14px 16px;
+    border: 1px solid #e2e2e2;
+    border-radius: 12px;
+    background: #fff;
+  }
+  .topic-accordion-body .file-card__top {
+    margin-bottom: 0;
+    align-items: center;
   }
   .topic-accordion-body .hint-box {
     margin: 0 0 12px;
@@ -95,19 +105,13 @@
     color: #555;
   }
   .topic-accordion-body .lesson-description {
-    margin-top: 12px;
-    padding: 14px;
+    margin-top: 16px;
+    padding: 14px 16px;
     border-radius: 12px;
     border: 1px solid #e2e2e2;
     background: #fff;
     font-size: 14px;
     line-height: 1.5;
-  }
-  .topic-accordion-body .file-card {
-    border: 1px solid #e2e2e2;
-    border-radius: 12px;
-    padding: 12px;
-    background: #fff;
   }
 </style>
 @endpush
