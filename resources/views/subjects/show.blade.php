@@ -4,6 +4,112 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset_versioned('css/dashboard.css') }}">
+<style>
+  .topics-accordion {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .topic-accordion-item {
+    border: 1px solid #e2e2e2;
+    border-radius: 14px;
+    background: #fff;
+    overflow: hidden;
+  }
+  .topic-accordion-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.08s ease, border-color 0.08s ease;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+  }
+  .topic-accordion-head:hover {
+    background: #f5fbff;
+  }
+  .topic-accordion-item.is-expanded .topic-accordion-head {
+    background: #eaf6ff;
+    border-bottom: 1px solid #e2e2e2;
+  }
+  .topic-accordion-head.is-disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    background: #f8f8f8;
+  }
+  .topic-accordion-head .topic-head-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+  }
+  .topic-accordion-head .topic-number {
+    font-weight: 800;
+    min-width: 22px;
+  }
+  .topic-accordion-head .topic-title {
+    font-weight: 600;
+  }
+  .topic-accordion-head .topic-badge {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid #e2e2e2;
+    background: #fff;
+    color: #666;
+  }
+  .topic-accordion-head .topic-chevron {
+    font-size: 14px;
+    color: #666;
+    transition: transform 0.2s ease;
+  }
+  .topic-accordion-item.is-expanded .topic-chevron {
+    transform: rotate(180deg);
+  }
+  .topic-accordion-body {
+    display: none;
+    padding: 16px;
+    background: #fafbfc;
+  }
+  .topic-accordion-item.is-expanded .topic-accordion-body {
+    display: block;
+  }
+  .topic-accordion-body .files-list {
+    display: grid;
+    gap: 10px;
+  }
+  .topic-accordion-body .hint-box {
+    margin: 0 0 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px dashed #cfcfcf;
+    background: #fff;
+    font-size: 14px;
+    color: #555;
+  }
+  .topic-accordion-body .lesson-description {
+    margin-top: 12px;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid #e2e2e2;
+    background: #fff;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .topic-accordion-body .file-card {
+    border: 1px solid #e2e2e2;
+    border-radius: 12px;
+    padding: 12px;
+    background: #fff;
+  }
+</style>
 @endpush
 
 @section('content')
@@ -48,7 +154,7 @@
         <div>
           <h1>{{ $subject->title }} ({{ $level->title }})</h1>
           <p class="muted">
-            Здесь темы и файлы к урокам. Слева — список тем, справа — материалы выбранной темы.
+            Нажмите на тему, чтобы развернуть и увидеть материалы. Развёрнутой может быть только одна тема.
             Если у темы нет загруженных файлов, она отображается неактивной.
           </p>
           @if(empty($hasAccess))
@@ -67,20 +173,8 @@
         <input id="topicsSearch" type="search" placeholder="Например: 1, школа, речь, предложение..." autocomplete="off"/>
       </div>
 
-      <div class="topics-layout" data-materials-url="{{ route('subjects.materials', ['level' => $levelSlug, 'subject' => $subjectSlug, 'topic' => '__topic__']) }}">
-        <div class="topics-panel">
-          <div class="panel-title">Темы</div>
-          <div id="topicsList" class="topic-list" aria-label="Список тем"></div>
-          <div id="topicsEmpty" class="search-empty" hidden>Ничего не найдено. Попробуйте другое ключевое слово.</div>
-        </div>
-
-        <div class="files-panel">
-          <div class="panel-title">Материалы к теме</div>
-          <div id="topicHint" class="hint-box">Выберите тему слева, чтобы увидеть файлы.</div>
-          <div id="topicFiles" class="files-list"></div>
-          <div id="topicDescription" class="lesson-description" hidden></div>
-        </div>
-      </div>
+      <div id="topicsAccordion" class="topics-accordion" data-materials-url="{{ route('subjects.materials', ['level' => $levelSlug, 'subject' => $subjectSlug, 'topic' => '__topic__']) }}" aria-label="Список тем"></div>
+      <div id="topicsEmpty" class="search-empty" hidden>Ничего не найдено. Попробуйте другое ключевое слово.</div>
     </div>
   </div>
 </div>
@@ -97,14 +191,10 @@
 
   const TOPICS = @json($topicsPayload);
 
-  const listEl = document.getElementById('topicsList');
+  const accordionEl = document.getElementById('topicsAccordion');
   const emptyEl = document.getElementById('topicsEmpty');
   const searchInput = document.getElementById('topicsSearch');
-  const filesEl = document.getElementById('topicFiles');
-  const hintEl = document.getElementById('topicHint');
-  const descEl = document.getElementById('topicDescription');
-  const layoutEl = document.querySelector('.topics-layout');
-  const materialsUrlTemplate = layoutEl ? layoutEl.dataset.materialsUrl : '';
+  const materialsUrlTemplate = accordionEl ? accordionEl.dataset.materialsUrl : '';
 
   let activeTopicId = null;
 
@@ -119,47 +209,69 @@
       return normalize(topic.number + ' ' + topic.title).includes(keyword);
     });
 
-    listEl.innerHTML = '';
-    emptyEl.hidden = filtered.length > 0;
+    accordionEl.innerHTML = '';
+    if (emptyEl) emptyEl.hidden = filtered.length > 0;
 
     filtered.forEach((topic) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'topic-item';
-      btn.dataset.topicId = topic.id;
-
-      if (topic.is_blocked) {
-        btn.classList.add('is-disabled');
-      }
+      const item = document.createElement('div');
+      item.className = 'topic-accordion-item';
+      item.dataset.topicId = topic.id;
       if (topic.id === activeTopicId) {
-        btn.classList.add('is-active');
+        item.classList.add('is-expanded');
       }
 
+      const head = document.createElement('button');
+      head.type = 'button';
+      head.className = 'topic-accordion-head';
+      if (topic.is_blocked) {
+        head.classList.add('is-disabled');
+      }
       const badge = topic.is_blocked
         ? '<span class="topic-badge" title="Закрыто">🔒</span>'
         : '<span class="topic-badge" title="Материалы доступны">📎</span>';
-
       const numberHtml = topic.number ? ('<span class="topic-number">' + topic.number + '</span>') : '';
-      btn.innerHTML =
-        numberHtml +
-        '<span class="topic-title">' + topic.title + '</span>' +
-        badge;
+      head.innerHTML =
+        '<span class="topic-head-content">' +
+          numberHtml +
+          '<span class="topic-title">' + topic.title + '</span>' +
+          badge +
+        '</span>' +
+        '<span class="topic-chevron" aria-hidden="true">▼</span>';
 
-      btn.addEventListener('click', function() {
+      const body = document.createElement('div');
+      body.className = 'topic-accordion-body';
+      body.setAttribute('role', 'region');
+      body.setAttribute('aria-label', 'Материалы к теме');
+      body.innerHTML = '<div class="topic-body-inner"></div>';
+
+      head.addEventListener('click', function() {
         if (topic.is_blocked) return;
-        activeTopicId = topic.id;
-        renderTopics(searchInput ? searchInput.value : '');
-
-        hintEl.hidden = false;
-        hintEl.textContent = 'Загрузка материалов...';
-        filesEl.innerHTML = '';
-
-        fetchMaterials(topic.id).then(function(result) {
-          renderMaterials(result.items, topic, result.noAccess);
+        const wasExpanded = activeTopicId === topic.id;
+        activeTopicId = wasExpanded ? null : topic.id;
+        accordionEl.querySelectorAll('.topic-accordion-item').forEach(function(el) {
+          el.classList.remove('is-expanded');
         });
+        if (!wasExpanded) {
+          item.classList.add('is-expanded');
+          const inner = body.querySelector('.topic-body-inner');
+          inner.innerHTML = '<div class="hint-box">Загрузка материалов...</div>';
+          fetchMaterials(topic.id).then(function(result) {
+            renderMaterialsInto(inner, result.items, topic, result.noAccess);
+          });
+        }
       });
 
-      listEl.appendChild(btn);
+      item.appendChild(head);
+      item.appendChild(body);
+      accordionEl.appendChild(item);
+
+      if (topic.id === activeTopicId) {
+        const inner = body.querySelector('.topic-body-inner');
+        inner.innerHTML = '<div class="hint-box">Загрузка материалов...</div>';
+        fetchMaterials(topic.id).then(function(result) {
+          renderMaterialsInto(inner, result.items, topic, result.noAccess);
+        });
+      }
     });
   }
 
@@ -185,95 +297,90 @@
       .catch(() => ({ items: [], noAccess: false }));
   }
 
-  function renderMaterials(items, topic, noAccess) {
-    filesEl.innerHTML = '';
+  function viewerUrl(path) {
+    return '{{ route('viewer.show') }}?doc=' + encodeURIComponent(path);
+  }
+
+  function renderMaterialsInto(container, items, topic, noAccess) {
+    container.innerHTML = '';
 
     if (noAccess) {
-      hintEl.textContent = 'Нет доступа к материалам. Оформите подписку на этот уровень.';
-      hintEl.hidden = false;
-      if (descEl) {
-        descEl.innerHTML = topic && topic.text_html ? topic.text_html : '';
-        descEl.hidden = !topic || !topic.text_html;
+      container.innerHTML = '<div class="hint-box">Нет доступа к материалам. Оформите подписку на этот уровень.</div>';
+      if (topic && topic.text_html) {
+        const desc = document.createElement('div');
+        desc.className = 'lesson-description';
+        desc.innerHTML = topic.text_html;
+        container.appendChild(desc);
       }
       return;
     }
 
     if (!items.length) {
-      hintEl.textContent = 'К этой теме пока нет загруженных файлов.';
-      hintEl.hidden = false;
-      if (descEl) {
-        descEl.innerHTML = topic && topic.text_html ? topic.text_html : '';
-        descEl.hidden = !topic || !topic.text_html;
+      container.innerHTML = '<div class="hint-box">К этой теме пока нет загруженных файлов.</div>';
+      if (topic && topic.text_html) {
+        const desc = document.createElement('div');
+        desc.className = 'lesson-description';
+        desc.innerHTML = topic.text_html;
+        container.appendChild(desc);
       }
       return;
     }
 
-    hintEl.hidden = true;
-    if (descEl) {
-      descEl.innerHTML = topic && topic.text_html ? topic.text_html : '';
-      descEl.hidden = !topic || !topic.text_html;
+    if (topic && topic.text_html) {
+      const desc = document.createElement('div');
+      desc.className = 'lesson-description';
+      desc.innerHTML = topic.text_html;
+      container.appendChild(desc);
     }
 
-    function viewerUrl(path) {
-      return '{{ route('viewer.show') }}?doc=' + encodeURIComponent(path);
+    const filesList = document.createElement('div');
+    filesList.className = 'files-list';
+    container.appendChild(filesList);
+
+    function getExtension(path) {
+      if (!path) return '';
+      const clean = path.split('?')[0].split('#')[0];
+      const parts = clean.split('.');
+      return parts.length > 1 ? parts.pop().toLowerCase() : '';
     }
 
-    items.forEach((item) => {
+    function isPreviewable(ext) {
+      return ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext);
+    }
+
+    function buildFileActions(fileUrl) {
+      if (!fileUrl || (topic && topic.is_blocked)) return '';
+
+      const ext = getExtension(fileUrl);
+      const label = ext ? ext.toUpperCase() : 'Файл';
+      const group = [];
+
+      if (isPreviewable(ext)) {
+        group.push(
+          '<a class="btn btn-secondary btn-icon" target="_blank" rel="noopener" href="' + viewerUrl(fileUrl) + '" title="Посмотреть">👁</a>'
+        );
+      }
+      group.push(
+        '<a class="btn btn-primary" target="_blank" rel="noopener" href="' + fileUrl + '" download>Скачать ' + label + '</a>'
+      );
+      return '<div class="file-action-group">' + group.join('') + '</div>';
+    }
+
+    items.forEach(function(item) {
       const card = document.createElement('div');
       card.className = 'file-card';
-
-      const actions = [];
-      if (topic && topic.is_blocked) {
-        actions.push('<span class="topic-badge">Закрыто</span>');
-      }
-
-      function getExtension(path) {
-        if (!path) return '';
-        const clean = path.split('?')[0].split('#')[0];
-        const parts = clean.split('.');
-        return parts.length > 1 ? parts.pop().toLowerCase() : '';
-      }
-
-      function isPreviewable(ext) {
-        return ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext);
-      }
-
-      function buildFileActions(fileUrl) {
-        if (!fileUrl || (topic && topic.is_blocked)) return;
-
-        const ext = getExtension(fileUrl);
-        const label = ext ? ext.toUpperCase() : 'Файл';
-        const group = [];
-
-        if (isPreviewable(ext)) {
-          group.push(
-            '<a class="btn btn-secondary btn-icon" target="_blank" rel="noopener" href="' + viewerUrl(fileUrl) + '" title="Посмотреть">👁</a>'
-          );
-        }
-
-        group.push(
-          '<a class="btn btn-primary" target="_blank" rel="noopener" href="' + fileUrl + '" download>Скачать ' + label + '</a>'
-        );
-
-        actions.push('<div class="file-action-group">' + group.join('') + '</div>');
-      }
-
-      buildFileActions(item.pdf_url);
-      buildFileActions(item.zip_url);
-
+      const actions = buildFileActions(item.pdf_url) + buildFileActions(item.zip_url);
       card.innerHTML =
         '<div class="file-card__top">' +
           '<div class="file-name">' + item.title + '</div>' +
-          '<div class="card-actions file-actions">' + actions.join('') + '</div>' +
+          '<div class="card-actions file-actions">' + actions + '</div>' +
         '</div>';
-
-      filesEl.appendChild(card);
-
+      filesList.appendChild(card);
     });
   }
 
   function init() {
-    if (!listEl) return;
+    if (!accordionEl) return;
     renderTopics('');
 
     if (searchInput) {
