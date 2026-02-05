@@ -150,8 +150,8 @@
               @if($activeInfo)
                 <div class="sub-meta">
                   <div>
-                    {{ site_lang('lk_subscriptions|active_till', 'Оплачено до:') }}
                     {{ \Illuminate\Support\Carbon::parse($activeInfo['date_till'])->format('d.m.Y') }}
+                    {{ site_lang('lk_subscriptions|active_till', 'Оплачено до:') }}
                   </div>
                   @if($recurringInfo)
                     <div class="sub-meta-actions">
