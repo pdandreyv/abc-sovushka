@@ -149,11 +149,7 @@
             <div class="sub-details">
               @if($activeInfo)
                 <div class="sub-meta">
-                  <div>
-                    {{ \Illuminate\Support\Carbon::parse($activeInfo['date_till'])->format('d.m.Y') }}
-                    {{ site_lang('lk_subscriptions|active_till', 'Оплачено до:') }}
-                  </div>
-                  @if($recurringInfo)
+                @if($recurringInfo)
                     <div class="sub-meta-actions">
                       <form method="POST" action="{{ route('subscriptions.recurring.toggle', ['level' => $level->id]) }}">
                         @csrf
@@ -166,6 +162,10 @@
                       </form>
                     </div>
                   @endif
+                  <div>
+                    {{ site_lang('lk_subscriptions|active_till', 'Оплачено до:') }}
+                    {{ \Illuminate\Support\Carbon::parse($activeInfo['date_till'])->format('d.m.Y') }}
+                  </div>
                 </div>
               @endif
             </div>
