@@ -7,14 +7,16 @@
 <style>
   .sub-option.sub-option--meta {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: 1fr minmax(220px, auto) auto;
     align-items: center;
+    gap: 12px;
   }
   .sub-details {
     display: flex;
     flex-direction: column;
     gap: 6px;
     align-items: flex-end;
+    min-width: 0;
   }
   .sub-meta {
     display: flex;
@@ -33,6 +35,28 @@
   .sub-meta-actions .btn {
     padding: 6px 10px;
     font-size: 12px;
+  }
+  .sub-recurring-link {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    color: inherit;
+    white-space: nowrap;
+  }
+  .sub-recurring-link--cancel {
+    color: #8b2942;
+  }
+  .sub-recurring-link--cancel:hover {
+    color: #6b1f33;
+  }
+  .sub-recurring-link--enable {
+    color: #2e7d32;
+  }
+  .sub-recurring-link--enable:hover {
+    color: #1b5e20;
   }
   .sub-actions {
     display: flex;
@@ -151,10 +175,10 @@
                 <div class="sub-meta">
                 @if($recurringInfo)
                     <div class="sub-meta-actions">
-                      <form method="POST" action="{{ route('subscriptions.recurring.toggle', ['level' => $level->id]) }}">
+                      <form class="js-recurring-toggle-form" method="POST" action="{{ route('subscriptions.recurring.toggle', ['level' => $level->id]) }}" data-confirm-cancel="{{ site_lang('lk_subscriptions|confirm_cancel_autorenew', 'Вы уверены, что хотите отменить автопродление?') }}" data-confirm-enable="{{ site_lang('lk_subscriptions|confirm_enable_autorenew', 'Включить автопродление подписки?') }}">
                         @csrf
                         <input type="hidden" name="enable" value="{{ $recurringInfo['auto'] ? 0 : 1 }}">
-                        <button class="btn btn-secondary btn-sm" type="submit">
+                        <button class="sub-recurring-link sub-recurring-link--{{ $recurringInfo['auto'] ? 'cancel' : 'enable' }}" type="submit">
                           {{ $recurringInfo['auto']
                             ? site_lang('lk_subscriptions|cancel_autorenew', 'Отменить автопродление')
                             : site_lang('lk_subscriptions|enable_autorenew', 'Включить автопродление') }}
@@ -533,6 +557,21 @@
       form.submit();
     });
   }
+
+  // Подтверждение перед отменой/включением автопродления
+  document.addEventListener("submit", function (e) {
+    const form = e.target;
+    if (!form || !form.classList.contains("js-recurring-toggle-form")) return;
+    e.preventDefault();
+    const enableInput = form.querySelector('input[name="enable"]');
+    const enable = enableInput ? enableInput.value : "";
+    const msg = enable === "1"
+      ? (form.dataset.confirmEnable || "Включить автопродление подписки?")
+      : (form.dataset.confirmCancel || "Вы уверены, что хотите отменить автопродление?");
+    if (confirm(msg)) {
+      form.submit();
+    }
+  });
 
   // ---------- Инициализация ----------
   function init() {

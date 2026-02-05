@@ -232,15 +232,15 @@ class SubscriptionPaymentController extends Controller
             ->orderByDesc('date_till')
             ->first();
 
+        // Оплата наперёд: следующий платёж в день окончания текущего периода (date_next_pay = date_till активной подписки)
         $startDate = $active ? Carbon::parse($active->date_till) : $today;
-        $currentTill = $startDate->copy()->addDays($days);
-        $nextTill = $currentTill->copy()->addDays($days);
+        $periodEnd = $startDate->copy()->addDays($days); // конец периода, который покроет следующий платёж
 
         $existing = SubscriptionOrder::query()
             ->where('user_id', $userId)
             ->where('paid', false)
             ->where('levels', (string) $levelId)
-            ->whereDate('date_next_pay', $currentTill->toDateString())
+            ->whereDate('date_next_pay', $startDate->toDateString())
             ->exists();
 
         if ($existing) {
@@ -259,9 +259,9 @@ class SubscriptionPaymentController extends Controller
             'sum_subscription' => $nextAmount,
             'sum_without_discount' => $pricePerSub,
             'days' => $days,
-            'date_next_pay' => $currentTill->toDateString(),
+            'date_next_pay' => $startDate->toDateString(),
             'sum_next_pay' => $nextAmount,
-            'date_till' => $nextTill->toDateString(),
+            'date_till' => $periodEnd->toDateString(),
             'tariff' => $tariffId,
             'hash' => $hash,
             'errors' => 0,

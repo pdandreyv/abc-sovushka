@@ -12,7 +12,8 @@ if ($get['u']=='edit') {
 	if (@$post['sum_next_pay']=='') $post['sum_next_pay'] = null;
 	if (@$post['hash']=='') $post['hash'] = null;
 	if (!isset($post['errors']) || $post['errors']=='') $post['errors'] = 0;
-	if (!isset($post['auto'])) $post['auto'] = false;
+	if (!isset($post['paid'])) $post['paid'] = 0;
+	if (!isset($post['auto'])) $post['auto'] = 0;
 }
 
 $a18n['user_id'] = 'Пользователь';
@@ -25,7 +26,8 @@ $a18n['date_next_pay'] = 'Дата следующего платежа';
 $a18n['sum_next_pay'] = 'Сумма следующего платежа';
 $a18n['hash'] = 'Хеш карты';
 $a18n['errors'] = 'Ошибки';
-$a18n['auto'] = 'Оплачен';
+$a18n['paid'] = 'Оплачен';
+$a18n['auto'] = 'Автопродление';
 
 $table = array(
 	'id'		=>	'created_at:desc id',
@@ -37,6 +39,7 @@ $table = array(
 	'days'		=>	'',
 	'date_next_pay'	=>	'date',
 	'sum_next_pay'	=>	'',
+	'paid'		=>	'boolean',
 	'auto'		=>	'boolean',
 	'errors'	=>	'',
 );
@@ -73,7 +76,11 @@ $form[] = array('select td6','user_id',array(
 $form[] = array('input td6','subscription_level_ids',array(
 	'help'=>'ID уровней подписок (например: 1,2,3)'
 ));
-$form[] = array('date td3','date_subscription');
+$form[] = array('input td3','date_subscription',array(
+	'attr'=>'type="date"',
+	'value'=>@$post['date_subscription'] ? substr($post['date_subscription'],0,10) : '',
+	'help'=>'Дата оформления подписки (ГГГГ-ММ-ДД)'
+));
 $form[] = array('input td3','sum_subscription',array(
 	'help'=>'Сумма в рублях',
 	'value'=>@$post['sum_subscription'] ? $post['sum_subscription'] : 0
@@ -85,7 +92,11 @@ $form[] = array('input td3','sum_without_discount',array(
 $form[] = array('input td3','days',array(
 	'value'=>@$post['days'] ? $post['days'] : 0
 ));
-$form[] = array('date td3','date_next_pay');
+$form[] = array('input td3','date_next_pay',array(
+	'attr'=>'type="date"',
+	'value'=>@$post['date_next_pay'] ? substr($post['date_next_pay'],0,10) : '',
+	'help'=>'Дата следующего списания (можно менять)'
+));
 $form[] = array('input td3','sum_next_pay',array(
 	'value'=>@$post['sum_next_pay'] ? $post['sum_next_pay'] : 0
 ));
@@ -95,4 +106,5 @@ $form[] = array('input td6','hash',array(
 $form[] = array('input td3','errors',array(
 	'value'=>@$post['errors'] ? $post['errors'] : 0
 ));
-$form[] = array('checkbox','auto');
+$form[] = array('checkbox','paid',array('help'=>'Заказ оплачен (для будущих рекуррентных записей обычно 0)'));
+$form[] = array('checkbox','auto',array('help'=>'Включено автопродление по карте'));
