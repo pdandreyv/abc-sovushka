@@ -6,6 +6,7 @@ use App\Models\SubscriptionLevel;
 use App\Models\SubscriptionOrder;
 use App\Models\SubscriptionPaymentLog;
 use App\Models\SubscriptionTariff;
+use App\Services\YooKassaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -14,6 +15,10 @@ use Illuminate\Support\Str;
 
 class SubscriptionPaymentController extends Controller
 {
+    public function __construct(
+        private YooKassaService $yookassa
+    ) {}
+
     public function show(Request $request)
     {
         $orderId = (int) $request->query('order');
@@ -29,12 +34,178 @@ class SubscriptionPaymentController extends Controller
             ->get();
 
         $tariff = SubscriptionTariff::find($order->tariff);
+        $useYookassa = $this->yookassa->isConfigured();
 
         return view('subscriptions.checkout', [
             'order' => $order,
             'levels' => $levels,
             'tariff' => $tariff,
+            'useYookassa' => $useYookassa,
         ]);
+    }
+
+    /**
+     * Создать платёж в ЮKassa и перенаправить пользователя на страницу оплаты.
+     */
+    public function redirectToPayment(Request $request)
+    {
+        $request->validate(['order_id' => ['required', 'integer']]);
+
+        $order = SubscriptionOrder::query()
+            ->where('id', $request->order_id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        if ($order->paid) {
+            return redirect()->route('subscriptions.index')->with('success', 'Заказ уже оплачен.');
+        }
+
+        if (! $this->yookassa->isConfigured()) {
+            return redirect()->route('subscriptions.checkout', ['order' => $order->id])
+                ->withErrors(['payment' => 'Оплата через ЮKassa не настроена.']);
+        }
+
+        $returnUrl = route('subscriptions.yookassa.return', ['order_id' => $order->id]);
+
+        $result = $this->yookassa->createPayment([
+            'amount' => (float) $order->sum_subscription,
+            'return_url' => $returnUrl,
+            'description' => 'Подписка №' . $order->id,
+            'order_id' => $order->id,
+        ]);
+
+        if (isset($result['error'])) {
+            return redirect()->route('subscriptions.checkout', ['order' => $order->id])
+                ->withErrors(['payment' => 'ЮKassa: ' . $result['error']]);
+        }
+
+        $order->update(['yookassa_payment_id' => $result['id']]);
+
+        if (! empty($result['confirmation_url'])) {
+            return redirect()->away($result['confirmation_url']);
+        }
+
+        return redirect()->route('subscriptions.checkout', ['order' => $order->id])
+            ->withErrors(['payment' => 'Не получена ссылка на оплату.']);
+    }
+
+    /**
+     * Возврат пользователя после оплаты на ЮKassa (return_url).
+     */
+    public function returnFromYooKassa(Request $request)
+    {
+        $orderId = (int) $request->query('order_id');
+        $order = SubscriptionOrder::query()
+            ->where('id', $orderId)
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if (! $order) {
+            return redirect()->route('subscriptions.index')->withErrors(['payment' => 'Заказ не найден.']);
+        }
+
+        if ($order->paid) {
+            return redirect()->route('subscriptions.index')->with('success', 'Оплата прошла успешно. Подписки активированы.');
+        }
+
+        if (! $order->yookassa_payment_id || ! $this->yookassa->isConfigured()) {
+            return redirect()->route('subscriptions.checkout', ['order' => $order->id])
+                ->withErrors(['payment' => 'Невозможно проверить статус платежа.']);
+        }
+
+        $payment = $this->yookassa->getPayment($order->yookassa_payment_id);
+
+        if (isset($payment['error'])) {
+            return redirect()->route('subscriptions.checkout', ['order' => $order->id])
+                ->withErrors(['payment' => 'ЮKassa: ' . $payment['error']]);
+        }
+
+        if (($payment['status'] ?? '') === 'succeeded' && ! empty($payment['paid'])) {
+            $paymentMethodId = isset($payment['payment_method']['id']) ? $payment['payment_method']['id'] : null;
+            $this->processPaymentSuccess($order, $paymentMethodId);
+            return redirect()->route('subscriptions.index')->with('success', 'Оплата прошла успешно. Подписки активированы.');
+        }
+
+        return redirect()->route('subscriptions.checkout', ['order' => $order->id])
+            ->with('info', 'Ожидаем подтверждение оплаты. Если платёж прошёл, страница обновится автоматически.');
+    }
+
+    /**
+     * Webhook от ЮKassa (настроить URL в ЛК: Интеграция → HTTP-уведомления).
+     * События: payment.succeeded, payment.canceled.
+     */
+    public function webhook(Request $request)
+    {
+        $body = $request->all();
+        $event = $body['event'] ?? '';
+        $object = $body['object'] ?? [];
+
+        if ($event !== 'payment.succeeded') {
+            return response()->json(['ok' => true], 200);
+        }
+
+        $orderId = (int) ($object['metadata']['order_id'] ?? 0);
+        if (! $orderId) {
+            return response()->json(['ok' => false, 'message' => 'No order_id in metadata'], 200);
+        }
+
+        $order = SubscriptionOrder::query()->find($orderId);
+        if (! $order || $order->paid) {
+            return response()->json(['ok' => true], 200);
+        }
+
+        $paymentMethodId = isset($object['payment_method']['id']) ? $object['payment_method']['id'] : null;
+        $this->processPaymentSuccess($order, $paymentMethodId);
+
+        return response()->json(['ok' => true], 200);
+    }
+
+    /**
+     * Отметить заказ оплаченным, сохранить способ оплаты для автоплатежей, создать следующие заказы.
+     */
+    private function processPaymentSuccess(SubscriptionOrder $order, ?string $paymentMethodId): void
+    {
+        if ($order->paid) {
+            return;
+        }
+
+        $levels = $this->parseLevelIds($order->subscription_level_ids, $order->levels);
+        $count = count($levels);
+        $pricePerSub = $count > 0 ? round(((float) $order->sum_without_discount) / $count, 2) : 0;
+        $hash = $paymentMethodId ?? $order->hash ?? Str::random(40);
+
+        DB::transaction(function () use ($order, $hash, $levels, $pricePerSub) {
+            $order->update([
+                'paid' => true,
+                'date_paid' => now(),
+                'hash' => $hash,
+                'date_till' => now()->addDays((int) $order->days)->toDateString(),
+            ]);
+
+            SubscriptionPaymentLog::create([
+                'subscription_order_id' => $order->id,
+                'status' => 'success',
+                'amount' => $order->sum_subscription,
+                'message' => 'Оплата через ЮKassa',
+                'response_data' => ['provider' => 'yookassa'],
+                'payment_provider' => 'yookassa',
+                'transaction_id' => $order->yookassa_payment_id ?? 'webhook',
+                'attempted_at' => now(),
+            ]);
+
+            $discountPercentForNext = $this->calculateDiscountPercent($order->user_id, $levels);
+            foreach ($levels as $levelId) {
+                $this->createNextOrderForLevel(
+                    $order->user_id,
+                    (int) $levelId,
+                    (int) $order->days,
+                    $order->tariff,
+                    $hash,
+                    $pricePerSub,
+                    $discountPercentForNext
+                );
+            }
+        });
     }
 
     public function create(Request $request)

@@ -153,91 +153,102 @@
         <div><b>{{ number_format((float) $order->sum_subscription, 0, '.', ' ') }} ₽</b></div>
       </div>
 
-      <form id="checkout-form" method="POST" action="{{ route('subscriptions.checkout.confirm') }}">
-        @csrf
-        <input type="hidden" name="order_id" value="{{ $order->id }}">
-        <div class="checkout-form">
-          <div class="checkout-field full">
-            <label for="card_number">Номер карты</label>
-            <input
-              id="card_number"
-              name="card_number"
-              type="text"
-              inputmode="numeric"
-              autocomplete="cc-number"
-              placeholder="0000 0000 0000 0000"
-              maxlength="19"
-              value="{{ old('card_number') }}"
-              {{ $order->paid ? 'disabled' : '' }}
-              required
-            >
-          </div>
-          <div class="checkout-field">
-            <label for="card_exp">Срок действия</label>
-            <input
-              id="card_exp"
-              name="card_exp"
-              type="text"
-              inputmode="numeric"
-              autocomplete="cc-exp"
-              placeholder="MM/YY"
-              maxlength="5"
-              value="{{ old('card_exp') }}"
-              {{ $order->paid ? 'disabled' : '' }}
-              required
-            >
-          </div>
-          <div class="checkout-field">
-            <label for="card_cvc">CVC/CVV</label>
-            <input
-              id="card_cvc"
-              name="card_cvc"
-              type="password"
-              inputmode="numeric"
-              autocomplete="cc-csc"
-              placeholder="***"
-              {{ $order->paid ? 'disabled' : '' }}
-              required
-            >
-          </div>
-          <div class="checkout-field">
-            <label for="card_holder">Имя держателя</label>
-            <input
-              id="card_holder"
-              name="card_holder"
-              type="text"
-              autocomplete="cc-name"
-              placeholder="IVAN IVANOV"
-              value="{{ old('card_holder') }}"
-              {{ $order->paid ? 'disabled' : '' }}
-              required
-            >
-          </div>
-          <div class="checkout-field full">
-            <label for="payer_email">Email для чека</label>
-            <input
-              id="payer_email"
-              name="payer_email"
-              type="email"
-              autocomplete="email"
-              placeholder="mail@example.com"
-              value="{{ old('payer_email', Auth::user()->email) }}"
-              {{ $order->paid ? 'disabled' : '' }}
-              required
-            >
-          </div>
-        </div>
+      @if ($order->paid)
         <div class="checkout-actions">
-          <button class="btn btn-primary" type="submit" {{ $order->paid ? 'disabled' : '' }}>
-            {{ $order->paid ? site_lang('lk_subscriptions|checkout_paid', 'Оплачено') : site_lang('lk_subscriptions|checkout_pay', 'Оплатить') }}
-          </button>
+          <span class="btn btn-primary" disabled>{{ site_lang('lk_subscriptions|checkout_paid', 'Оплачено') }}</span>
           <a class="btn btn-secondary" href="{{ route('subscriptions.index') }}">{{ site_lang('lk_subscriptions|checkout_back', 'Вернуться к выбору') }}</a>
         </div>
-      </form>
-
-      <div class="checkout-note">
-        {{ site_lang('lk_subscriptions|checkout_test_note', 'Тестовый режим: данные карты используются для имитации YooKassa, рекуррентные списания обрабатываются кроном.') }}
-      </div>
+      @elseif (!empty($useYookassa))
+        <form method="POST" action="{{ route('subscriptions.yookassa.redirect') }}">
+          @csrf
+          <input type="hidden" name="order_id" value="{{ $order->id }}">
+          <div class="checkout-actions">
+            <button class="btn btn-primary" type="submit">{{ site_lang('lk_subscriptions|checkout_pay', 'Оплатить') }} (ЮKassa)</button>
+            <a class="btn btn-secondary" href="{{ route('subscriptions.index') }}">{{ site_lang('lk_subscriptions|checkout_back', 'Вернуться к выбору') }}</a>
+          </div>
+        </form>
+        <div class="checkout-note">
+          Вы будете перенаправлены на защищённую страницу оплаты ЮKassa. Карта сохранится для автопродления подписки.
+        </div>
+      @else
+        <form id="checkout-form" method="POST" action="{{ route('subscriptions.checkout.confirm') }}">
+          @csrf
+          <input type="hidden" name="order_id" value="{{ $order->id }}">
+          <div class="checkout-form">
+            <div class="checkout-field full">
+              <label for="card_number">Номер карты</label>
+              <input
+                id="card_number"
+                name="card_number"
+                type="text"
+                inputmode="numeric"
+                autocomplete="cc-number"
+                placeholder="0000 0000 0000 0000"
+                maxlength="19"
+                value="{{ old('card_number') }}"
+                required
+              >
+            </div>
+            <div class="checkout-field">
+              <label for="card_exp">Срок действия</label>
+              <input
+                id="card_exp"
+                name="card_exp"
+                type="text"
+                inputmode="numeric"
+                autocomplete="cc-exp"
+                placeholder="MM/YY"
+                maxlength="5"
+                value="{{ old('card_exp') }}"
+                required
+              >
+            </div>
+            <div class="checkout-field">
+              <label for="card_cvc">CVC/CVV</label>
+              <input
+                id="card_cvc"
+                name="card_cvc"
+                type="password"
+                inputmode="numeric"
+                autocomplete="cc-csc"
+                placeholder="***"
+                required
+              >
+            </div>
+            <div class="checkout-field">
+              <label for="card_holder">Имя держателя</label>
+              <input
+                id="card_holder"
+                name="card_holder"
+                type="text"
+                autocomplete="cc-name"
+                placeholder="IVAN IVANOV"
+                value="{{ old('card_holder') }}"
+                required
+              >
+            </div>
+            <div class="checkout-field full">
+              <label for="payer_email">Email для чека</label>
+              <input
+                id="payer_email"
+                name="payer_email"
+                type="email"
+                autocomplete="email"
+                placeholder="mail@example.com"
+                value="{{ old('payer_email', Auth::user()->email) }}"
+                required
+              >
+            </div>
+          </div>
+          <div class="checkout-actions">
+            <button class="btn btn-primary" type="submit">{{ site_lang('lk_subscriptions|checkout_pay', 'Оплатить') }}</button>
+            <a class="btn btn-secondary" href="{{ route('subscriptions.index') }}">{{ site_lang('lk_subscriptions|checkout_back', 'Вернуться к выбору') }}</a>
+          </div>
+        </form>
+        <div class="checkout-note">
+          {{ site_lang('lk_subscriptions|checkout_test_note', 'Тестовый режим: данные карты используются для имитации YooKassa. Настройте YOOKASSA_SHOP_ID и YOOKASSA_SECRET_KEY для реальной оплаты.') }}
+        </div>
+      @endif
     </div>
   </div>
 </div>

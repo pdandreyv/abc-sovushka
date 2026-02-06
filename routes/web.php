@@ -62,6 +62,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/subscriptions/checkout', [SubscriptionPaymentController::class, 'show'])->name('subscriptions.checkout');
     Route::post('/subscriptions/checkout', [SubscriptionPaymentController::class, 'create'])->name('subscriptions.checkout.create');
     Route::post('/subscriptions/checkout/confirm', [SubscriptionPaymentController::class, 'confirm'])->name('subscriptions.checkout.confirm');
+    Route::post('/subscriptions/checkout/yookassa/redirect', [SubscriptionPaymentController::class, 'redirectToPayment'])->name('subscriptions.yookassa.redirect');
+    Route::get('/subscriptions/yookassa/return', [SubscriptionPaymentController::class, 'returnFromYooKassa'])->name('subscriptions.yookassa.return');
 
     // Предметы и темы (без проверки подписки)
     Route::get('/subjects/{level}', [SubjectController::class, 'index'])->name('subjects.index');
@@ -71,6 +73,9 @@ Route::middleware('auth')->group(function () {
     // Просмотр файлов
     Route::get('/viewer', [ViewerController::class, 'show'])->name('viewer.show');
 });
+
+// Webhook ЮKassa (без auth; URL указать в ЛК: Интеграция → HTTP-уведомления)
+Route::post('/subscriptions/yookassa/webhook', [SubscriptionPaymentController::class, 'webhook'])->name('subscriptions.yookassa.webhook');
 
 // Публичные страницы (должен быть в конце, чтобы не перехватывать другие маршруты)
 Route::get('/{url}', [PageController::class, 'show'])->name('page.show');

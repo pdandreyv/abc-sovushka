@@ -10,6 +10,7 @@ class SubscriptionOrder extends Model
 {
     protected $fillable = [
         'user_id',
+        'yookassa_payment_id',
         'subscription_level_ids',
         'levels',
         'paid',

@@ -59,4 +59,15 @@ return [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
     ],
 
+    /*
+    | ЮKassa (YooKassa) — приём платежей и автоплатежи
+    | Документация: https://yookassa.ru/developers/using-api/interaction-format
+    | Тестовый режим: создать демо-магазин в ЛК, взять shop_id и secret_key из раздела Интеграция → Ключи API
+    */
+    'yookassa' => [
+        'shop_id' => env('YOOKASSA_SHOP_ID'),
+        'secret_key' => env('YOOKASSA_SECRET_KEY'),
+        'api_url' => 'https://api.yookassa.ru/v3',
+    ],
+
 ];

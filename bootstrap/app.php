@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\CheckMaintenanceMode::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+            'subscriptions/yookassa/webhook',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

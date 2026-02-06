@@ -6,6 +6,7 @@ use App\Models\SubscriptionLevel;
 use App\Models\SubscriptionOrder;
 use App\Models\SubscriptionPaymentLog;
 use App\Models\SubscriptionTariff;
+use App\Services\YooKassaService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -13,7 +14,13 @@ use Illuminate\Support\Str;
 class ProcessSubscriptionRecurring extends Command
 {
     protected $signature = 'subscriptions:recurring';
-    protected $description = 'Process recurring subscription payments (test mode)';
+    protected $description = 'Process recurring subscription payments (YooKassa or test mode)';
+
+    public function __construct(
+        private YooKassaService $yookassa
+    ) {
+        parent::__construct();
+    }
 
     public function handle(): int
     {
@@ -60,7 +67,42 @@ class ProcessSubscriptionRecurring extends Command
         $dateNextPay = Carbon::parse($order->date_next_pay);
         $attempt = $this->getAttemptNumber($dateNextPay, $today, $order->errors);
 
-        $success = true;
+        $success = false;
+        $yookassaPaymentId = null;
+
+        if ($this->yookassa->isConfigured() && $order->hash) {
+            $result = $this->yookassa->createRecurringPayment(
+                $order->hash,
+                $amount,
+                'Продление подписки №' . $order->id
+            );
+
+            if (isset($result['error'])) {
+                $order->increment('errors');
+                SubscriptionPaymentLog::create([
+                    'subscription_order_id' => $order->id,
+                    'status' => 'error',
+                    'amount' => $amount,
+                    'message' => 'ЮKassa: ' . $result['error'],
+                    'response_data' => $result,
+                    'payment_provider' => 'yookassa',
+                    'transaction_id' => 'recurring_' . Str::uuid(),
+                    'attempted_at' => now(),
+                ]);
+                $this->error('Recurring payment failed for order #' . $order->id . ': ' . $result['error']);
+                return self::SUCCESS;
+            }
+
+            $yookassaPaymentId = $result['id'] ?? null;
+            $success = ($result['status'] ?? '') === 'succeeded' || ! empty($result['paid'] ?? false);
+
+            if (! $success && $yookassaPaymentId) {
+                $payment = $this->yookassa->getPayment($yookassaPaymentId);
+                $success = ($payment['status'] ?? '') === 'succeeded' && ! empty($payment['paid'] ?? false);
+            }
+        } else {
+            $success = true;
+        }
 
         if ($success) {
             $periodEnd = Carbon::parse($order->date_till);
@@ -83,10 +125,10 @@ class ProcessSubscriptionRecurring extends Command
                 'subscription_order_id' => $order->id,
                 'status' => 'success',
                 'amount' => $amount,
-                'message' => 'Тестовое рекуррентное списание',
-                'response_data' => ['mode' => 'test'],
+                'message' => $this->yookassa->isConfigured() ? 'Рекуррентное списание через ЮKassa' : 'Тестовое рекуррентное списание',
+                'response_data' => $yookassaPaymentId ? ['yookassa_payment_id' => $yookassaPaymentId] : ['mode' => 'test'],
                 'payment_provider' => 'yookassa',
-                'transaction_id' => 'test_' . Str::uuid(),
+                'transaction_id' => $yookassaPaymentId ?? 'test_' . Str::uuid(),
                 'attempted_at' => now(),
             ]);
 
@@ -100,10 +142,10 @@ class ProcessSubscriptionRecurring extends Command
                 'subscription_order_id' => $order->id,
                 'status' => 'error',
                 'amount' => $amount,
-                'message' => 'Ошибка тестового списания',
-                'response_data' => ['mode' => 'test'],
+                'message' => $this->yookassa->isConfigured() ? 'ЮKassa: платёж не прошёл' : 'Ошибка тестового списания',
+                'response_data' => $yookassaPaymentId ? ['yookassa_payment_id' => $yookassaPaymentId] : ['mode' => 'test'],
                 'payment_provider' => 'yookassa',
-                'transaction_id' => 'test_' . Str::uuid(),
+                'transaction_id' => $yookassaPaymentId ?? 'test_' . Str::uuid(),
                 'attempted_at' => now(),
             ]);
 
