@@ -20,6 +20,7 @@ class SubscriptionController extends Controller
         $today = Carbon::today()->toDateString();
 
         $levels = SubscriptionLevel::where('is_active', true)
+            ->where('display', true)
             ->orderByDesc('sort_order')
             ->get();
         

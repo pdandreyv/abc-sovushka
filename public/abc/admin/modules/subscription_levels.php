@@ -10,6 +10,7 @@ $a18n['title'] = 'Название';
 $a18n['link'] = 'Ссылка';
 $a18n['sort_order'] = 'Сортировка';
 $a18n['open'] = 'Открытый раздел';
+$a18n['display'] = 'В выборе подписок';
 $a18n['is_active'] = 'Активен';
 
 $table = array(
@@ -17,6 +18,7 @@ $table = array(
 	'title'		=>	'',
 	//'slug'		=>	'',
 	'open'		=>	'boolean',
+	'display'	=>	'boolean',
 	'is_active'	=>	'boolean',
 	'sort_order'	=>	'',
 );
@@ -47,4 +49,5 @@ $form[] = array('input td2','sort_order',array(
 	'value'=>@$post['sort_order'] ? $post['sort_order'] : 0
 ));
 $form[] = array('checkbox','open',array('help'=>'Если включено: в боковом меню ЛК появляется ссылка на этот уровень, материалы доступны всем без подписки'));
+$form[] = array('checkbox','display',array('help'=>'Если включено: уровень показывается на странице выбора подписок. При display=0 уровень скрыт из выбора, но в меню ЛК по-прежнему отображаются пункты с open=1'));
 $form[] = array('checkbox','is_active');
