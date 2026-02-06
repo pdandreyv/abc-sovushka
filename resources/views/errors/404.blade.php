@@ -7,32 +7,21 @@
   <link rel="stylesheet" href="{{ asset_versioned('css/dashboard.css') }}">
 </head>
 <body>
-  <div class="sidebar">
-    <div>
-      <img alt="Логотип" class="logo" src="{{ asset('images/logo.png') }}" />
-      @if(\Illuminate\Support\Facades\Auth::check())
-        <div class="user-name">{{ strtoupper(Auth::user()->first_name . ' ' . Auth::user()->last_name) }}</div>
-        <div class="user-code">ID: {{ Auth::user()->user_code }}</div>
-        <a href="#" class="user-logout-link" data-logout>{{ site_lang('lk_menu|logout', 'Выйти') }}</a>
-        <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: none;">
-          @csrf
-        </form>
-        <div class="menu">
-          <button type="button" data-href="{{ route('profile.show') }}">{{ site_lang('lk_menu|profile', 'Личные данные') }}</button>
-          <button type="button" data-href="{{ route('dashboard') }}">{{ site_lang('lk_menu|portfolio', 'Портфолио') }}</button>
-          <button type="button" data-href="{{ route('subscriptions.index') }}">{{ site_lang('lk_menu|subscriptions', 'Подписки') }}</button>
-          <button type="button" data-href="{{ route('ideas.index') }}">{{ site_lang('lk_menu|ideas', 'Кладовая идей') }}</button>
-        </div>
-      @else
+  @if(\Illuminate\Support\Facades\Auth::check())
+    @include('partials.sidebar')
+  @else
+    <div class="sidebar">
+      <div>
+        <img alt="Логотип" class="logo" src="{{ asset('images/logo.png') }}" />
         <div class="user-name">Совушкина школа</div>
         <a class="user-logout-link" href="{{ url('/') }}">На главную</a>
         <div class="menu">
           <a class="menu-link" href="{{ url('/') }}">Главная</a>
           <a class="menu-link" href="{{ url('/login') }}">Войти</a>
         </div>
-      @endif
+      </div>
     </div>
-  </div>
+  @endif
 
   <div class="main">
     <div class="header">

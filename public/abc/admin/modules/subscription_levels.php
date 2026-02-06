@@ -9,12 +9,14 @@ $a18n['title'] = 'Название';
 //$a18n['slug'] = 'Идентификатор';
 $a18n['link'] = 'Ссылка';
 $a18n['sort_order'] = 'Сортировка';
+$a18n['open'] = 'Открытый раздел';
 $a18n['is_active'] = 'Активен';
 
 $table = array(
 	'id'		=>	'sort_order:desc id:desc',
 	'title'		=>	'',
 	//'slug'		=>	'',
+	'open'		=>	'boolean',
 	'is_active'	=>	'boolean',
 	'sort_order'	=>	'',
 );
@@ -44,4 +46,5 @@ $form[] = array('input td8','title');
 $form[] = array('input td2','sort_order',array(
 	'value'=>@$post['sort_order'] ? $post['sort_order'] : 0
 ));
+$form[] = array('checkbox','open',array('help'=>'Если включено: в боковом меню ЛК появляется ссылка на этот уровень, материалы доступны всем без подписки'));
 $form[] = array('checkbox','is_active');

@@ -10,11 +10,13 @@ class SubscriptionLevel extends Model
         'title',
         'link',
         'sort_order',
+        'open',
         'is_active',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'open' => 'boolean',
         'sort_order' => 'integer',
     ];
 }

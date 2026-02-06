@@ -57,7 +57,7 @@ class SubjectController extends Controller
             ->orderBy('title')
             ->get();
 
-        $hasAccess = $this->hasActiveSubscriptionForLevel($levelModel->id);
+        $hasAccess = (bool) $levelModel->open || $this->hasActiveSubscriptionForLevel($levelModel->id);
 
         return view('subjects.index', [
             'level' => $levelModel,
@@ -74,7 +74,7 @@ class SubjectController extends Controller
         $levelModel = $this->resolveLevel($level);
         $subjectModel = $this->resolveSubject($subject);
 
-        $hasAccess = $this->hasActiveSubscriptionForLevel($levelModel->id);
+        $hasAccess = (bool) $levelModel->open || $this->hasActiveSubscriptionForLevel($levelModel->id);
 
         $topics = Topic::query()
             ->where('subscription_level_id', $levelModel->id)
@@ -110,7 +110,7 @@ class SubjectController extends Controller
             abort(404);
         }
 
-        if (!$this->hasActiveSubscriptionForLevel($levelModel->id)) {
+        if (! (bool) $levelModel->open && ! $this->hasActiveSubscriptionForLevel($levelModel->id)) {
             return response()->json(['materials' => [], 'message' => 'Нет активной подписки на этот уровень.'], 403);
         }
 

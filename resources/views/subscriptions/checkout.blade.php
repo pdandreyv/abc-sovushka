@@ -88,23 +88,7 @@
 @endpush
 
 @section('content')
-<div class="sidebar">
-  <div>
-    <img alt="Логотип" class="logo" src="{{ asset('images/logo.png') }}"/>
-    <div class="user-name">{{ strtoupper(Auth::user()->first_name . ' ' . Auth::user()->last_name) }}</div>
-    <div class="user-code">ID: {{ Auth::user()->user_code }}</div>
-    <a href="#" class="user-logout-link" data-logout>{{ site_lang('lk_menu|logout', 'Выйти') }}</a>
-    <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: none;">
-      @csrf
-    </form>
-    <div class="menu">
-      <button type="button" data-href="{{ route('profile.show') }}">{{ site_lang('lk_menu|profile', 'Личные данные') }}</button>
-      <button type="button" data-href="{{ route('dashboard') }}">{{ site_lang('lk_menu|portfolio', 'Портфолио') }}</button>
-      <button class="active" type="button" data-href="{{ route('subscriptions.index') }}">{{ site_lang('lk_menu|subscriptions', 'Подписки') }}</button>
-      <button type="button" data-href="{{ route('ideas.index') }}">{{ site_lang('lk_menu|ideas', 'Кладовая идей') }}</button>
-    </div>
-  </div>
-</div>
+@include('partials.sidebar', ['sidebarActive' => 'subscriptions'])
 
 <div class="main">
   <div class="header">
@@ -254,15 +238,10 @@
 </div>
 
 @push('scripts')
+<script src="{{ asset_versioned('js/dashboard.js') }}"></script>
 <script>
   (function () {
     "use strict";
-    document.querySelectorAll("[data-href]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        window.location.href = btn.getAttribute("data-href");
-      });
-    });
-
     const form = document.getElementById("checkout-form");
     const cardNumber = document.getElementById("card_number");
     const cardExp = document.getElementById("card_exp");
