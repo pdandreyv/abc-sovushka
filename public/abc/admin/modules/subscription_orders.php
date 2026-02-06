@@ -17,6 +17,7 @@ if ($get['u']=='edit') {
 }
 
 $a18n['user_id'] = 'Пользователь';
+$a18n['email'] = 'Пользователь';
 $a18n['subscription_level_ids'] = 'Уровни подписок';
 $a18n['date_subscription'] = 'Дата подписки';
 $a18n['sum_subscription'] = 'Сумма подписки';
@@ -31,7 +32,7 @@ $a18n['auto'] = 'Автопродление';
 
 $table = array(
 	'id'		=>	'created_at:desc id',
-	'user_id'	=>	'',
+	'email'		=>	'',
 	'subscription_level_ids'	=>	'',
 	'date_subscription'	=>	'date',
 	'sum_subscription'	=>	'',
@@ -44,13 +45,15 @@ $table = array(
 	'errors'	=>	'',
 );
 
-// Поиск
+// Поиск (по id заказа, user_id, email пользователя)
 $where = '';
 if (isset($get['search']) && $get['search']!='') {
+	$search = mysql_res($get['search']);
 	$where.= "
 		AND (
-			subscription_orders.id = '".mysql_res($get['search'])."'
-			OR subscription_orders.user_id = '".mysql_res($get['search'])."'
+			subscription_orders.id = '".$search."'
+			OR subscription_orders.user_id = '".$search."'
+			OR users.email LIKE '%".$search."%'
 		)
 	";
 }
