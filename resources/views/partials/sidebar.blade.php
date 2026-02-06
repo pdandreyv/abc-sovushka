@@ -13,7 +13,7 @@
     </form>
     <div class="menu">
       <button type="button" onclick="window.location.href='{{ route('profile.show') }}'" class="{{ $active === 'profile' ? 'active' : '' }}">{{ site_lang('lk_menu|profile', 'Личные данные') }}</button>
-      <button type="button" onclick="window.location.href='{{ route('dashboard') }}'" class="{{ $active === 'dashboard' ? 'active' : '' }}">{{ site_lang('lk_menu|portfolio', 'Портфолио') }}</button>
+      <button type="button" onclick="window.location.href='{{ route('portfolio.index') }}'" class="{{ $active === 'portfolio' ? 'active' : '' }}">{{ site_lang('lk_menu|portfolio', 'Портфолио') }}</button>
       <button type="button" onclick="window.location.href='{{ route('subscriptions.index') }}'" class="{{ $active === 'subscriptions' ? 'active' : '' }}">{{ site_lang('lk_menu|subscriptions', 'Подписки') }}</button>
       <button type="button" onclick="window.location.href='{{ route('ideas.index') }}'" class="{{ $active === 'ideas' ? 'active' : '' }}">{{ site_lang('lk_menu|ideas', 'Кладовая идей') }}</button>
       @foreach($openLevels ?? [] as $openLevel)

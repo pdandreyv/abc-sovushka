@@ -11,6 +11,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\IdeaController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\SubscriptionPaymentController;
+use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\ViewerController;
 
@@ -45,6 +46,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+    Route::get('/portfolio', [PortfolioController::class, 'index'])->name('portfolio.index');
     
     // Профиль пользователя
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');

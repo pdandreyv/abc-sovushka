@@ -143,6 +143,7 @@ $a18n = array(
 	'subscribers'		=> 'Подписчики',
 	'subscribe_letters'	=> 'Рассылка',
 	'subscriptions'		=> 'Подписки',
+	'portfolio_items'		=> 'Портфолио (награды)',
 	'subscription_levels'	=> 'Уровни подписок',
 	'subscription_tariffs'	=> 'Тарифы',
 	'subscription_orders'	=> 'Заказы',

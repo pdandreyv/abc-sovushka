@@ -74,6 +74,11 @@ $modules_admin = array(
 		'icon'=>'star',
 	),
 	array(
+		'module'=>'portfolio_items',
+		'image'=>'portfolio',
+		'icon'=>'award',
+	),
+	array(
 		'name'=>'subscriptions',
 		'image'=>'subscriptions',
 		'icon'=>'credit-card',

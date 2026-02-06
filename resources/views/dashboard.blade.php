@@ -35,10 +35,10 @@
         <h3>{{ site_lang('lk_dashboard|card_ideas_title', 'Кладовая идей') }}</h3>
         <p>{{ site_lang('lk_dashboard|card_ideas_text', 'Материалы доступны всем пользователям') }}</p>
       </div>
-      <div class="card">
+      <a href="{{ route('portfolio.index') }}" class="card" style="text-decoration: none; color: inherit;">
         <h3>{{ site_lang('lk_dashboard|card_portfolio_title', 'Портфолио') }}</h3>
         <p>{{ site_lang('lk_dashboard|card_portfolio_text', 'Ваши награды и сертификаты') }}</p>
-      </div>
+      </a>
     </div>
   </div>
 </div>
