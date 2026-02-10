@@ -262,7 +262,9 @@ class SubscriptionPaymentController extends Controller
             'discount_code' => $appliedCode,
         ]);
 
-        if ($total <= 0 && $appliedCode) {
+        // Бесплатный заказ (100% скидка) — сразу активируем, без страницы оплаты
+        $orderSum = (float) $order->sum_subscription;
+        if ($orderSum <= 0) {
             $this->processPaymentSuccess($order, null);
             return redirect()->route('subscriptions.index')
                 ->with('success', 'Подписка оформлена бесплатно по промокоду. Подписки активированы.');
