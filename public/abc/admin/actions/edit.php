@@ -42,6 +42,10 @@ if (isset($post['nested_sets'])) unset($post['nested_sets']);
 if (isset($config['depend'][$module['table']])) foreach ($config['depend'][$module['table']] as $key=>$value)
 	$post[$key] = isset($post[$key]) ? implode(',',$post[$key]) : '';
 
+// при отправке формы id может быть только в POST (action без id в URL) — подставляем из POST
+if ((!isset($get['id']) || $get['id'] === '') && isset($_POST['id']) && $_POST['id'] !== '') {
+	$get['id'] = (int) $_POST['id'];
+}
 //загрузка модуля
 require_once(ROOT_DIR.'admin/modules/'.$get['m'].'.php');
 //по умолчанию разрешено редактирование

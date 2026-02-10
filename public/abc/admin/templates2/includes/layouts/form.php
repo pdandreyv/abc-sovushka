@@ -2,6 +2,7 @@
 	<div class="modal-dialog modal-lg" role="document">
 		<div class="modal-content">
 			<form id="form<?=$get['id']?>" class="form" method="post" enctype="multipart/form-data" action="<?=setUrlParams($_SERVER['REQUEST_URI'],array('u'=>'edit','id'=>false))?>">
+				<?php if (isset($get['id']) && $get['id'] !== '' && $get['id'] !== 'new') { ?><input type="hidden" name="id" value="<?=(int)$get['id']?>" /><?php } ?>
 				<div class="modal-header">
 					<h5 class="modal-title">
 						ID:<span data-name="id"><?=$get['id']?></span>

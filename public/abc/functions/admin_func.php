@@ -704,6 +704,10 @@ function form_file ($type,$key, $param = array()) {
 		elseif ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
 			$field_dir = ($key == 'pdf_file') ? 'pdf' : 'zip';
 			$root = $publicRoot.'files/'.$module['table'].'/'.$get['id'].'/'.$field_dir.'/'; //public/files/ideas/{id}/{field}/
+		}
+		// Демо-файл уровня подписки — в public для отображения и скачивания
+		elseif ($module['table'] == 'subscription_levels' && $key == 'demo_file') {
+			$root = $publicRoot.'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/';
 		} else {
 			$relative = 'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/'; //v1.3.17 относительный путь папки
 			$root = ROOT_DIR.$relative; //папка от корня основной папки
@@ -722,6 +726,8 @@ function form_file ($type,$key, $param = array()) {
 					if ($file && file_exists($root.$file)) {
 						unlink($root.$file);
 					}
+				} elseif ($module['table'] == 'subscription_levels' && $key == 'demo_file') {
+					delete_all($root, true);
 				} else {
 					delete_all($root,true);
 					//v1.4.41 - удаление превью
@@ -770,6 +776,13 @@ function form_file ($type,$key, $param = array()) {
 					} else {
 						$q[$key] = '';
 					}
+				} elseif ($module['table'] == 'subscription_levels' && $key == 'demo_file') {
+					if (!is_dir($root) && !mkdir($root,0755,true)) {
+						$q[$key] = '';
+					} else {
+						if (file_exists($root.$file)) unlink($root.$file);
+						$q[$key] = copy($temp_file, $root.$file) ? $file : '';
+					}
 				} else {
 					//успешное копирование файла
 					if (copy2 ($temp_file,$root,$file,$param['sizes'])) {
@@ -786,8 +799,8 @@ function form_file ($type,$key, $param = array()) {
 				delete_all($temp,true);
 			}
 		}
-		// Для PDF и ZIP файлов модуля ideas проверяем файл в public/files
-		if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
+		// Для PDF и ZIP (ideas), демо-файла (subscription_levels) проверяем файл в public/files
+		if (($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) || ($module['table'] == 'subscription_levels' && $key == 'demo_file')) {
 			$is_file = is_file($root.$file);
 		} else {
 			$is_file = is_file($root.$file);

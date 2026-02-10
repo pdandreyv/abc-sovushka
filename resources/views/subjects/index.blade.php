@@ -29,16 +29,15 @@
         </div>
       @endif
 
-      @if($level->sort_order === 1)
+      @if(!empty($level->demo_file))
       <div class="demo-lesson">
         <h3>Демо-уроки (можно скачать бесплатно)</h3>
         <p class="muted">
-          Этот блок помогает пользователю увидеть пример материалов по подписке «1 класс».
+          Этот блок помогает пользователю увидеть пример материалов по подписке «{{ $level->title }}».
           Позже сюда можно подгружать демо-уроки из базы данных.
         </p>
-        <div class="demo-lesson__meta">Пример: презентация из раздела «Русский язык. Азбука»</div>
         <div class="card-actions">
-          <a class="btn btn-primary" target="_blank" rel="noopener" download href="/demo/files/sub_1/RUS_A/1/presentation.zip">Скачать ZIP</a>
+          <a class="btn btn-primary" target="_blank" rel="noopener" download href="{{ asset('files/subscription_levels/' . $level->id . '/demo_file/' . $level->demo_file) }}">Скачать ZIP</a>
         </div>
       </div>
       @endif

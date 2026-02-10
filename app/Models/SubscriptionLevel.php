@@ -9,6 +9,7 @@ class SubscriptionLevel extends Model
     protected $fillable = [
         'title',
         'link',
+        'demo_file',
         'sort_order',
         'open',
         'display',
