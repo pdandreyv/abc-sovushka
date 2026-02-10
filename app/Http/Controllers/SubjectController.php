@@ -84,13 +84,15 @@ class SubjectController extends Controller
             ->orderBy('id')
             ->get();
 
-        $topicsData = $topics->map(function (Topic $topic) use ($hasAccess) {
+        $isAdmin = $this->isAdminUser();
+        $topicsData = $topics->map(function (Topic $topic) use ($hasAccess, $isAdmin) {
+            $blocked = !$hasAccess || (!$isAdmin && (bool) $topic->is_blocked);
             return [
                 'id' => $topic->id,
                 'number' => $topic->topic_number,
                 'title' => $topic->title,
                 'text_html' => $this->formatTopicText($topic->text),
-                'is_blocked' => !$hasAccess || (bool) $topic->is_blocked,
+                'is_blocked' => $blocked,
             ];
         })->values();
 
@@ -196,19 +198,31 @@ class SubjectController extends Controller
     }
 
     /**
-     * Есть ли у текущего пользователя активная подписка на уровень (paid, date_till >= сегодня).
-     * Пользователи с ролью админа имеют доступ ко всем уровням независимо от подписки.
+     * Текущий пользователь — администратор (доступ ко всем подпискам и темам без ограничений).
      */
-    private function hasActiveSubscriptionForLevel(int $levelId): bool
+    private function isAdminUser(): bool
     {
         $user = Auth::user();
         if (!$user) {
             return false;
         }
+        $role = strtolower((string) ($user->role ?? ''));
+        return in_array($role, ['admin', 'administrator', 'superadmin', 'owner'], true);
+    }
 
-        $role = strtolower((string) $user->role);
-        if (in_array($role, ['admin', 'administrator', 'superadmin', 'owner'], true)) {
+    /**
+     * Есть ли у текущего пользователя активная подписка на уровень (paid, date_till >= сегодня).
+     * Пользователи с ролью админа имеют доступ ко всем уровням независимо от подписки.
+     */
+    private function hasActiveSubscriptionForLevel(int $levelId): bool
+    {
+        if ($this->isAdminUser()) {
             return true;
+        }
+
+        $user = Auth::user();
+        if (!$user) {
+            return false;
         }
 
         $today = now()->toDateString();

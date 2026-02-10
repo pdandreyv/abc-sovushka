@@ -22,8 +22,13 @@ if ($get['u']=='edit') {
 		//обрезаем пробелы у пароля
 		$post['password'] = trim(@$post['password']);
 		$post['hash'] = user_hash_db($post['salt'],$post['password']);
+		// Хеш для входа в ЛК (Laravel): один пароль — вход и в админку, и в личный кабинет
+		$post['password'] = password_hash($post['password'], PASSWORD_DEFAULT);
 	}
-	unset($post['password'],$post['change']);
+	unset($post['change']);
+	if (!isset($post['password']) || $post['password'] === '') {
+		unset($post['password']);
+	}
 	//изменения логина - если пустые то null, если нет то обрезаем пробелы
 	$config['mysql_null'] = true; //v1.2.89
 	if ($post['email']=='') $post['email'] = null;
@@ -47,6 +52,11 @@ if ($get['u']=='edit') {
 	else $post['about'] = trim($post['about']);
 	//дополнительные параметры
 	$post['fields'] = isset($post['fields']) ? serialize($post['fields']) : '';
+	// Синхронизация role для Laravel: если статус (type) — администратор, ставим role = admin (для входа в ЛК и доступа ко всем подпискам)
+	if (isset($post['type']) && (int)$post['type'] > 0) {
+		$ut = mysql_select("SELECT access_admin FROM user_types WHERE id = " . (int)$post['type'], 'row');
+		$post['role'] = ($ut && $ut['access_admin'] !== '' && $ut['access_admin'] !== null) ? 'admin' : null;
+	}
 }
 //исключение для быстрого редактирования
 if ($get['u']=='post') {

@@ -36,12 +36,14 @@ class SubscriptionPaymentController extends Controller
 
         $tariff = SubscriptionTariff::find($order->tariff);
         $useYookassa = $this->yookassa->isConfigured();
+        $yookassaRecurringEnabled = $this->yookassa->isRecurringEnabled();
 
         return view('subscriptions.checkout', [
             'order' => $order,
             'levels' => $levels,
             'tariff' => $tariff,
             'useYookassa' => $useYookassa,
+            'yookassaRecurringEnabled' => $yookassaRecurringEnabled,
         ]);
     }
 

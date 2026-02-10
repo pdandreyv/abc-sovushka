@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -14,6 +15,7 @@ class YooKassaService
     private string $apiUrl;
     private string $shopId;
     private string $secretKey;
+    private bool $recurringEnabled;
 
     public function __construct()
     {
@@ -21,6 +23,7 @@ class YooKassaService
         $this->apiUrl = rtrim($config['api_url'] ?? 'https://api.yookassa.ru/v3', '/');
         $this->shopId = (string) ($config['shop_id'] ?? '');
         $this->secretKey = (string) ($config['secret_key'] ?? '');
+        $this->recurringEnabled = (bool) ($config['recurring_enabled'] ?? false);
     }
 
     public function isConfigured(): bool
@@ -55,8 +58,10 @@ class YooKassaService
             'metadata' => [
                 'order_id' => (string) $orderId,
             ],
-            'save_payment_method' => true,
         ];
+        if ($this->recurringEnabled) {
+            $body['save_payment_method'] = true;
+        }
 
         $response = $this->request('POST', '/payments', $body);
 
@@ -129,16 +134,33 @@ class YooKassaService
         ];
     }
 
+    /**
+     * Включены ли рекуррентные платежи (сохранение способа оплаты для автопродления).
+     */
+    public function isRecurringEnabled(): bool
+    {
+        return $this->recurringEnabled;
+    }
+
     private function request(string $method, string $path, array $body = []): array
     {
         $url = $this->apiUrl . $path;
         $auth = base64_encode($this->shopId . ':' . $this->secretKey);
+        $idempotenceKey = Str::uuid()->toString();
 
         $headers = [
             'Authorization' => 'Basic ' . $auth,
             'Content-Type' => 'application/json',
-            'Idempotence-Key' => Str::uuid()->toString(),
+            'Idempotence-Key' => $idempotenceKey,
         ];
+
+        Log::channel('single')->info('YooKassa request', [
+            'method' => $method,
+            'path' => $path,
+            'url' => $url,
+            'idempotence_key' => $idempotenceKey,
+            'body' => $body,
+        ]);
 
         if ($method === 'GET') {
             $response = Http::withHeaders($headers)->get($url);
@@ -146,9 +168,18 @@ class YooKassaService
             $response = Http::withHeaders($headers)->post($url, $body);
         }
 
+        $httpStatus = $response->status();
         $data = $response->json();
+
+        Log::channel('single')->info('YooKassa response', [
+            'method' => $method,
+            'path' => $path,
+            'http_status' => $httpStatus,
+            'response_body' => is_array($data) ? $data : $response->body(),
+        ]);
+
         if (! is_array($data)) {
-            return ['error' => 'Invalid response from YooKassa', 'http_status' => $response->status()];
+            return ['error' => 'Invalid response from YooKassa', 'http_status' => $httpStatus];
         }
 
         return $data;

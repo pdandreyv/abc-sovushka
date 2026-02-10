@@ -67,7 +67,9 @@ return [
     'yookassa' => [
         'shop_id' => env('YOOKASSA_SHOP_ID'),
         'secret_key' => env('YOOKASSA_SECRET_KEY'),
-        'api_url' => 'https://api.yookassa.ru/v3',
+        'api_url' => env('YOOKASSA_API_URL', 'https://api.yookassa.ru/v3'),
+        // Рекуррентные платежи: true только если в ЛК ЮKassa подключены автоплатежи для магазина
+        'recurring_enabled' => env('YOOKASSA_RECURRING_ENABLED', false),
     ],
 
 ];

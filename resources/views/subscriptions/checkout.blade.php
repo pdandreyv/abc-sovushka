@@ -152,7 +152,10 @@
           </div>
         </form>
         <div class="checkout-note">
-          Вы будете перенаправлены на защищённую страницу оплаты ЮKassa. Карта сохранится для автопродления подписки.
+          Вы будете перенаправлены на защищённую страницу оплаты ЮKassa. Оплата доступна картой, СБП и другими способами.
+          @if(!empty($yookassaRecurringEnabled))
+          Карта сохранится для автопродления подписки.
+          @endif
         </div>
       @else
         <form id="checkout-form" method="POST" action="{{ route('subscriptions.checkout.confirm') }}">

@@ -482,7 +482,8 @@ $(document).ready(function(){
 	//отправка формы редактирования
 	}).on('form.submit','.form',function(e,close){
 		var form = $(this).trigger('form.disable'),
-			id = form.prop('id').substr(4),
+			formId = form.prop('id'),
+			id = (typeof formId === 'string' && formId.length > 4) ? formId.substr(4) : (form.find('input[name="id"]').val() || ''),
 			url = form.attr('action');
 		if (close.sa) $('input[name*="nested_sets"]',form).val(1); //учитываем вложенность при сохранить как
 		//обновить текстареа, так как он обновляется при отправке формы
