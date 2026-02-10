@@ -9,17 +9,14 @@
 @section('content')
 @include('partials.sidebar', ['sidebarActive' => 'ideas'])
 
-<!-- ===== ОСНОВНАЯ ЧАСТЬ (контент) ===== -->
 <div class="main">
-  <div class="header">
-    <div class="breadcrumbs">{{ site_lang('lk_ideas|breadcrumbs', 'Главная / Кабинет / Кладовая идей') }}</div>
-    <div class="header-icons">
-      <img alt="Подписка" src="{{ asset('images/subscription_icon.png') }}"/>
-      <div class="subscription-status">{{ site_lang('lk_ideas|status', 'Подписок нет: материалы здесь доступны бесплатно') }}</div>
-      <img alt="Поддержка" src="{{ asset('images/support_icon.png') }}"/>
-    </div>
-  </div>
-
+  @include('partials.lk-header', [
+    'breadcrumbItems' => [
+      ['label' => site_lang('lk_ideas|crumb_home', 'Главная'), 'url' => url('/')],
+      ['label' => site_lang('lk_ideas|crumb_cabinet', 'Кабинет'), 'url' => route('dashboard')],
+      ['label' => site_lang('lk_ideas|crumb_ideas', 'Кладовая идей'), 'url' => null],
+    ],
+  ])
   <div class="content">
     <h1>{{ site_lang('lk_ideas|heading', 'Кладовая идей') }}</h1>
     <p class="page-hint">

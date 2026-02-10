@@ -20,7 +20,7 @@ $a18n['sort_order'] = 'Сортировка';
 $a18n['display'] = 'Показывать';
 
 $table = array(
-	'id'         => 'sort_order:asc id:asc',
+	'id'         => 'sort_order:desc id:desc',
 	'title'      => '',
 	'badge'      => '',
 	'image_thumb' => 'img',
@@ -47,9 +47,8 @@ $query = "
 $filter[] = array('search');
 
 $form[] = array('input td8', 'title');
-$form[] = array('select td4', 'badge', array(
-	'help'  => 'Подпись на карточке в ЛК: «Сертификат», «Диплом» или «Награда».',
-	'value' => array(@$post['badge'] ?: 'Сертификат', array('Сертификат' => 'Сертификат', 'Диплом' => 'Диплом', 'Награда' => 'Награда')),
+$form[] = array('input td4', 'badge', array(
+	'help' => 'Подпись на карточке в ЛК (например: Сертификат, Диплом, Награда).',
 ));
 $form[] = array('input td2', 'sort_order', array(
 	'value' => @$post['sort_order'] ?: 0,

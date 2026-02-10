@@ -63,3 +63,133 @@ if (!function_exists('site_lang')) {
         return $default ?? $key;
     }
 }
+
+if (!function_exists('lk_subscription_status')) {
+    /**
+     * Статус подписок текущего пользователя для шапки ЛК.
+     * Возвращает: есть ли активные подписки и сколько дней до ближайшего окончания.
+     *
+     * @return array{hasSubscriptions: bool, daysLeft: int|null}
+     */
+    function lk_subscription_status(): array
+    {
+        $userId = \Illuminate\Support\Facades\Auth::id();
+        if (!$userId) {
+            return ['hasSubscriptions' => false, 'daysLeft' => null];
+        }
+
+        $today = \Carbon\Carbon::today()->toDateString();
+        $activeOrders = \App\Models\SubscriptionOrder::query()
+            ->where('user_id', $userId)
+            ->where('paid', true)
+            ->whereDate('date_till', '>=', $today)
+            ->get(['subscription_level_ids', 'levels', 'date_till']);
+
+        $minDateTill = null;
+        foreach ($activeOrders as $order) {
+            if ($order->date_till !== null) {
+                $dateTill = $order->date_till instanceof \Carbon\Carbon
+                    ? $order->date_till
+                    : \Carbon\Carbon::parse($order->date_till);
+                if ($minDateTill === null || $dateTill->lt($minDateTill)) {
+                    $minDateTill = $dateTill;
+                }
+            }
+        }
+
+        $daysLeft = null;
+        if ($minDateTill !== null) {
+            $daysLeft = max(0, (int) \Carbon\Carbon::today()->startOfDay()->diffInDays($minDateTill->copy()->startOfDay()));
+        }
+
+        return [
+            'hasSubscriptions' => $activeOrders->isNotEmpty(),
+            'daysLeft' => $daysLeft,
+        ];
+    }
+}
+
+if (!function_exists('lk_my_subscription_levels')) {
+    /**
+     * Уровни подписок, на которые подписан текущий пользователь (оплаченные, date_till >= сегодня).
+     * Для подменю «Мои подписки» в сайдбаре ЛК.
+     *
+     * @return \Illuminate\Support\Collection<int, \App\Models\SubscriptionLevel>
+     */
+    function lk_my_subscription_levels(): \Illuminate\Support\Collection
+    {
+        $userId = \Illuminate\Support\Facades\Auth::id();
+        if (!$userId) {
+            return collect();
+        }
+
+        $today = \Carbon\Carbon::today()->toDateString();
+        $activeOrders = \App\Models\SubscriptionOrder::query()
+            ->where('user_id', $userId)
+            ->where('paid', true)
+            ->whereDate('date_till', '>=', $today)
+            ->get(['subscription_level_ids', 'levels']);
+
+        $levelIds = [];
+        foreach ($activeOrders as $order) {
+            $source = $order->subscription_level_ids ?: $order->levels;
+            if (is_array($source)) {
+                foreach (array_map('intval', $source) as $id) {
+                    if ($id > 0) {
+                        $levelIds[$id] = true;
+                    }
+                }
+                continue;
+            }
+            if (!is_string($source) || trim($source) === '') {
+                continue;
+            }
+            $decoded = json_decode($source, true);
+            if (is_array($decoded)) {
+                foreach (array_map('intval', $decoded) as $id) {
+                    if ($id > 0) {
+                        $levelIds[$id] = true;
+                    }
+                }
+                continue;
+            }
+            foreach (array_filter(array_map('trim', explode(',', $source))) as $id) {
+                $id = (int) $id;
+                if ($id > 0) {
+                    $levelIds[$id] = true;
+                }
+            }
+        }
+        $levelIds = array_keys($levelIds);
+        if (empty($levelIds)) {
+            return collect();
+        }
+
+        return \App\Models\SubscriptionLevel::query()
+            ->whereIn('id', $levelIds)
+            ->orderByDesc('sort_order')
+            ->get(['id', 'title']);
+    }
+}
+
+if (!function_exists('plural_ru')) {
+    /**
+     * Склонение для русского языка (1, 2-4, 5+).
+     * Как в public/abc/functions/string_func.php plural().
+     *
+     * @param int $number число
+     * @param string $str1 форма для 1 (день)
+     * @param string $str2 форма для 2-4 (дня)
+     * @param string $str5 форма для 5+ (дней)
+     * @return string
+     */
+    function plural_ru(int $number, string $str1, string $str2, string $str5): string
+    {
+        $n = abs($number);
+        return $n % 10 == 1 && $n % 100 != 11
+            ? $str1
+            : ($n % 10 >= 2 && $n % 10 <= 4 && ($n % 100 < 10 || $n % 100 >= 20)
+                ? $str2
+                : $str5);
+    }
+}

@@ -12,6 +12,7 @@ use App\Http\Controllers\IdeaController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\SubscriptionPaymentController;
 use App\Http\Controllers\PortfolioController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\ViewerController;
 
@@ -43,9 +44,7 @@ Route::post('/auth/vkid/callback', [SocialAuthController::class, 'vkidCallback']
 
 // Защищенные маршруты
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/portfolio', [PortfolioController::class, 'index'])->name('portfolio.index');
     
@@ -60,6 +59,7 @@ Route::middleware('auth')->group(function () {
     
     // Подписки
     Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');
+    Route::post('/subscriptions/apply-code', [SubscriptionController::class, 'applyCode'])->name('subscriptions.apply-code');
     Route::post('/subscriptions/recurring/{level}', [SubscriptionController::class, 'toggleRecurring'])
         ->name('subscriptions.recurring.toggle');
     Route::get('/subscriptions/checkout', [SubscriptionPaymentController::class, 'show'])->name('subscriptions.checkout');

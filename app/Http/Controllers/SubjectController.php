@@ -197,18 +197,24 @@ class SubjectController extends Controller
 
     /**
      * Есть ли у текущего пользователя активная подписка на уровень (paid, date_till >= сегодня).
+     * Пользователи с ролью админа имеют доступ ко всем уровням независимо от подписки.
      */
     private function hasActiveSubscriptionForLevel(int $levelId): bool
     {
-        $userId = Auth::id();
-        if (!$userId) {
+        $user = Auth::user();
+        if (!$user) {
             return false;
+        }
+
+        $role = strtolower((string) $user->role);
+        if (in_array($role, ['admin', 'administrator', 'superadmin', 'owner'], true)) {
+            return true;
         }
 
         $today = now()->toDateString();
 
         return SubscriptionOrder::query()
-            ->where('user_id', $userId)
+            ->where('user_id', $user->id)
             ->where('paid', true)
             ->whereDate('date_till', '>=', $today)
             ->where(function ($q) use ($levelId) {

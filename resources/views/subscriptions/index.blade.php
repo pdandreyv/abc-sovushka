@@ -89,23 +89,28 @@
     from { opacity: 1; transform: translateX(-50%) translateY(0); }
     to { opacity: 0; transform: translateX(-50%) translateY(-12px); }
   }
+  .promo-box { margin-top: 1rem; }
+  .promo-label { display: block; font-weight: 500; margin-bottom: 6px; }
+  .promo-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .promo-input { flex: 1; min-width: 140px; padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; }
+  .promo-btn { white-space: nowrap; }
+  .promo-message { margin-top: 8px; font-size: 14px; min-height: 1.4em; }
+  .promo-message.success { color: #2e7d32; }
+  .promo-message.error { color: #c62828; }
 </style>
 @endpush
 
 @section('content')
 @include('partials.sidebar', ['sidebarActive' => 'subscriptions'])
 
-<!-- ===== ПРАВАЯ ЧАСТЬ (main): контент страницы ===== -->
 <div class="main">
-  <div class="header">
-    <div class="breadcrumbs">{{ site_lang('lk_subscriptions|breadcrumbs', 'Главная / Кабинет / Подписки') }}</div>
-    <div class="header-icons">
-      <img alt="Подписка" src="{{ asset('images/subscription_icon.png') }}"/>
-      <a class="subscription-status subscription-status-link" href="{{ route('subscriptions.index') }}">{{ site_lang('lk_subscriptions|status', 'Выбор подписок и тарифа') }}</a>
-      <img alt="Поддержка" src="{{ asset('images/support_icon.png') }}"/>
-    </div>
-  </div>
-
+  @include('partials.lk-header', [
+    'breadcrumbItems' => [
+      ['label' => site_lang('lk_subscriptions|crumb_home', 'Главная'), 'url' => url('/')],
+      ['label' => site_lang('lk_subscriptions|crumb_cabinet', 'Кабинет'), 'url' => route('dashboard')],
+      ['label' => site_lang('lk_subscriptions|crumb_subscriptions', 'Подписки'), 'url' => null],
+    ],
+  ])
   <div class="content">
     <h1>{{ site_lang('lk_subscriptions|heading', 'Подписки') }}</h1>
     @if (session('success'))
@@ -246,6 +251,16 @@
           <div id="discountHint" class="discount-hint">{{ site_lang('lk_subscriptions|discount_none', '1 подписка — выгодных предложений нет') }}</div>
         </div>
 
+        <!-- Промокод -->
+        <div class="promo-box">
+          <label for="promoInput" class="promo-label">{{ site_lang('lk_subscriptions|promo_label', 'Промокод') }}</label>
+          <div class="promo-row">
+            <input type="text" id="promoInput" class="promo-input" placeholder="{{ site_lang('lk_subscriptions|promo_placeholder', 'Введите код') }}" maxlength="64" autocomplete="off"/>
+            <button type="button" id="promoApplyBtn" class="btn btn-secondary promo-btn">{{ site_lang('lk_subscriptions|promo_apply', 'Применить') }}</button>
+          </div>
+          <div id="promoMessage" class="promo-message" aria-live="polite"></div>
+        </div>
+
         <div class="step-note">
           <small>{{ site_lang('lk_subscriptions|step3_note', 'Скидка применяется автоматически и отображается в расчёте ниже.') }}</small>
         </div>
@@ -311,6 +326,7 @@
   const TARIFFS = @json($tariffsData);
   const UI_TEXTS = @json($uiTexts);
   const CHECKOUT_URL = @json(route('subscriptions.checkout.create'));
+  const APPLY_CODE_URL = @json(route('subscriptions.apply-code'));
   const CSRF_TOKEN = @json(csrf_token());
   const ACTIVE_COUNT = @json(count($activeByLevel ?? []));
 
@@ -341,6 +357,7 @@
   const state = {
     selectedSubs: new Set(),
     tariffId: null,
+    appliedPromo: null,
   };
 
   function loadState() {
@@ -417,6 +434,7 @@
         } else {
           state.selectedSubs.delete(subId);
         }
+        clearPromo();
         saveState();
         recalc();
       });
@@ -427,11 +445,20 @@
       radio.addEventListener('change', () => {
         if (radio.checked) {
           state.tariffId = parseInt(radio.value);
+          clearPromo();
           saveState();
           recalc();
         }
       });
     });
+  }
+
+  function clearPromo() {
+    state.appliedPromo = null;
+    const msg = $("#promoMessage");
+    if (msg) { msg.textContent = ""; msg.className = "promo-message"; }
+    const inp = $("#promoInput");
+    if (inp) inp.value = "";
   }
 
   // ---------- Расчёт ----------
@@ -446,7 +473,8 @@
     const pricePerSub = tariff ? tariff.price : 0;
     const subtotal = count * pricePerSub;
 
-    const discountPercent = getDiscountPercent(count + ACTIVE_COUNT);
+    let discountPercent = getDiscountPercent(count + ACTIVE_COUNT);
+    if (state.appliedPromo != null) discountPercent = state.appliedPromo.discount_percent;
     const discount = Math.round(subtotal * (discountPercent / 100));
     const total = subtotal - discount;
 
@@ -471,7 +499,8 @@
 
     const hint = $("#discountHint");
     if (hint) {
-      if (count <= 1) hint.textContent = UI_TEXTS.discount_none;
+      if (state.appliedPromo != null) hint.textContent = state.appliedPromo.message || "";
+      else if (count <= 1) hint.textContent = UI_TEXTS.discount_none;
       else if (discountPercent === 10) hint.textContent = UI_TEXTS.discount_10;
       else if (discountPercent === 15) hint.textContent = UI_TEXTS.discount_15;
       else if (discountPercent === 20) hint.textContent = UI_TEXTS.discount_20;
@@ -536,8 +565,84 @@
         form.appendChild(input);
       });
 
+      if (state.appliedPromo && state.appliedPromo.code) {
+        const codeInput = document.createElement("input");
+        codeInput.type = "hidden";
+        codeInput.name = "discount_code";
+        codeInput.value = state.appliedPromo.code;
+        form.appendChild(codeInput);
+      }
+
       document.body.appendChild(form);
       form.submit();
+    });
+  }
+
+  function bindPromoButton() {
+    const btn = $("#promoApplyBtn");
+    const input = $("#promoInput");
+    const msgEl = $("#promoMessage");
+    if (!btn || !input || !msgEl) return;
+
+    btn.addEventListener("click", function () {
+      const code = input.value.trim();
+      const selectedIds = Array.from(
+        document.querySelectorAll(".sub-checkbox:checked:not(:disabled)")
+      ).map((cb) => cb.closest(".sub-option").getAttribute("data-sub-id"));
+
+      msgEl.textContent = "";
+      msgEl.className = "promo-message";
+
+      if (!code) {
+        msgEl.className = "promo-message error";
+        msgEl.textContent = "Введите код.";
+        return;
+      }
+      if (selectedIds.length === 0) {
+        msgEl.className = "promo-message error";
+        msgEl.textContent = "Сначала выберите подписки.";
+        return;
+      }
+
+      btn.disabled = true;
+      fetch(APPLY_CODE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-TOKEN": CSRF_TOKEN,
+          "Accept": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        body: JSON.stringify({ code: code, level_ids: selectedIds }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.success) {
+            state.appliedPromo = {
+              code: code,
+              discount_percent: data.discount_percent,
+              level_titles: data.level_titles || [],
+              message: data.message || "",
+            };
+            msgEl.className = "promo-message success";
+            msgEl.textContent = data.message || "Скидка применена.";
+            recalc();
+          } else {
+            let text = data.message || "Код недействителен.";
+            if (data.error === "code_no_match" && (data.level_titles || []).length > 0) {
+              text += " Код действует на подписки: " + (data.level_titles || []).join(", ") + ".";
+            }
+            msgEl.className = "promo-message error";
+            msgEl.textContent = text;
+          }
+        })
+        .catch(() => {
+          msgEl.className = "promo-message error";
+          msgEl.textContent = "Ошибка связи. Попробуйте позже.";
+        })
+        .finally(() => {
+          btn.disabled = false;
+        });
     });
   }
 
@@ -563,6 +668,7 @@
     loadState();
     initState();
     bindEvents();
+    bindPromoButton();
     bindPayButton();
     recalc();
   }

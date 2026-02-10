@@ -24,12 +24,21 @@
   @endif
 
   <div class="main">
-    <div class="header">
-      <div class="breadcrumbs">Ошибка / 404</div>
-      <div class="header-icons">
-        <img alt="Поддержка" src="{{ asset('images/support_icon.png') }}" />
+    @if(\Illuminate\Support\Facades\Auth::check())
+      @include('partials.lk-header', [
+        'breadcrumbItems' => [
+          ['label' => 'Главная', 'url' => url('/')],
+          ['label' => 'Ошибка / 404', 'url' => null],
+        ],
+      ])
+    @else
+      <div class="header">
+        <div class="breadcrumbs"><a href="{{ url('/') }}">Главная</a> / Ошибка / 404</div>
+        <div class="header-icons">
+          <img alt="Поддержка" src="{{ asset('images/support_icon.png') }}" />
+        </div>
       </div>
-    </div>
+    @endif
 
     <div class="content">
       <div class="card error-card">

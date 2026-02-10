@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DiscountCode;
 use App\Models\SubscriptionLevel;
 use App\Models\SubscriptionOrder;
 use App\Models\SubscriptionTariff;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
@@ -95,6 +97,105 @@ class SubscriptionController extends Controller
             'activeByLevel',
             'recurringByLevel'
         ));
+    }
+
+    /**
+     * Проверка и применение промокода (AJAX).
+     * Один пользователь может использовать код только один раз.
+     */
+    public function applyCode(Request $request): JsonResponse
+    {
+        $request->validate([
+            'code' => ['required', 'string', 'max:64'],
+            'level_ids' => ['required', 'array', 'min:1'],
+            'level_ids.*' => ['integer'],
+        ]);
+
+        $codeRaw = trim($request->input('code'));
+        $levelIds = array_values(array_unique(array_map('intval', $request->input('level_ids'))));
+
+        $promo = DiscountCode::query()
+            ->whereRaw('LOWER(code) = ?', [mb_strtolower($codeRaw)])
+            ->first();
+
+        if (! $promo) {
+            return response()->json([
+                'success' => false,
+                'error' => 'code_invalid',
+                'message' => 'Код не найден или недействителен.',
+            ]);
+        }
+
+        if (! $promo->isValidOn(now()->toDateString())) {
+            return response()->json([
+                'success' => false,
+                'error' => 'code_expired',
+                'message' => 'Срок действия кода истёк.',
+            ]);
+        }
+
+        if (! $promo->hasUsagesLeft()) {
+            return response()->json([
+                'success' => false,
+                'error' => 'code_exhausted',
+                'message' => 'Код исчерпан (достигнут лимит использований).',
+            ]);
+        }
+
+        $userUsed = SubscriptionOrder::query()
+            ->where('user_id', Auth::id())
+            ->where('discount_code', $promo->code)
+            ->exists();
+
+        if ($userUsed) {
+            return response()->json([
+                'success' => false,
+                'error' => 'code_used',
+                'message' => 'Вы уже использовали этот код.',
+            ]);
+        }
+
+        $codeLevelIds = $promo->level_ids;
+        if (empty($codeLevelIds)) {
+            return response()->json([
+                'success' => false,
+                'error' => 'code_invalid',
+                'message' => 'Код не привязан ни к одному уровню подписки.',
+            ]);
+        }
+
+        $intersection = array_intersect($levelIds, $codeLevelIds);
+        if (empty($intersection)) {
+            $levelTitles = SubscriptionLevel::query()
+                ->whereIn('id', $codeLevelIds)
+                ->orderBy('sort_order')
+                ->pluck('title')
+                ->toArray();
+
+            return response()->json([
+                'success' => false,
+                'error' => 'code_no_match',
+                'message' => 'Код не подходит к выбранным подпискам.',
+                'level_titles' => $levelTitles,
+            ]);
+        }
+
+        $levelTitles = SubscriptionLevel::query()
+            ->whereIn('id', $intersection)
+            ->orderBy('sort_order')
+            ->pluck('title')
+            ->toArray();
+
+        return response()->json([
+            'success' => true,
+            'discount_percent' => $promo->discount_percent,
+            'level_titles' => $levelTitles,
+            'message' => sprintf(
+                'Применена скидка %d%% на подписки: %s.',
+                $promo->discount_percent,
+                implode(', ', $levelTitles)
+            ),
+        ]);
     }
 
     public function toggleRecurring(Request $request, int $level)

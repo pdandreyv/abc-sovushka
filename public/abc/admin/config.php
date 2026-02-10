@@ -85,6 +85,7 @@ $modules_admin = array(
 		'module'=>array(
 			array('module'=>'subscription_levels'),
 			array('module'=>'subscription_tariffs'),
+			array('module'=>'discount_codes'),
 			array('module'=>'subscription_orders'),
 			array('module'=>'subscription_payments_logs'),
 		),

@@ -119,12 +119,15 @@
 @section('content')
 @include('partials.sidebar', ['sidebarActive' => $level->id])
 
-<!-- ===== ОСНОВНАЯ ЧАСТЬ ===== -->
 <div class="main">
-  <div class="header">
-    <div class="header-title">{{ $subject->title }}</div>
-  </div>
-
+  @include('partials.lk-header', [
+    'breadcrumbItems' => [
+      ['label' => site_lang('lk_dashboard|crumb_home', 'Главная'), 'url' => url('/')],
+      ['label' => site_lang('lk_dashboard|crumb_cabinet', 'Кабинет'), 'url' => route('dashboard')],
+      ['label' => $level->title, 'url' => route('subjects.index', ['level' => $level->id])],
+      ['label' => $subject->title, 'url' => null],
+    ],
+  ])
   @php
     $levelLink = $level->link ?: (string) $level->id;
     $levelPath = trim(parse_url($levelLink, PHP_URL_PATH) ?? $levelLink, '/');

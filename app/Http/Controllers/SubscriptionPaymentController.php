@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DiscountCode;
 use App\Models\SubscriptionLevel;
 use App\Models\SubscriptionOrder;
 use App\Models\SubscriptionPaymentLog;
@@ -214,6 +215,7 @@ class SubscriptionPaymentController extends Controller
             'levels' => ['required', 'array', 'min:1'],
             'levels.*' => ['integer'],
             'tariff_id' => ['required', 'integer'],
+            'discount_code' => ['nullable', 'string', 'max:64'],
         ]);
 
         $user = Auth::user();
@@ -234,6 +236,16 @@ class SubscriptionPaymentController extends Controller
         $discountPercent = $this->calculateDiscountPercent($user->id, $levelIds);
         $discount = round($subtotal * ($discountPercent / 100), 2);
         $total = max(0, $subtotal - $discount);
+        $appliedCode = null;
+
+        if (! empty(trim($data['discount_code'] ?? ''))) {
+            $promo = $this->resolvePromoCode(trim($data['discount_code']), $levelIds, $user->id);
+            if ($promo) {
+                $appliedCode = $promo->code;
+                $discount = round($subtotal * ($promo->discount_percent / 100), 2);
+                $total = max(0, $subtotal - $discount);
+            }
+        }
 
         $order = SubscriptionOrder::create([
             'user_id' => $user->id,
@@ -247,9 +259,41 @@ class SubscriptionPaymentController extends Controller
             'tariff' => $tariff->id,
             'errors' => 0,
             'auto' => true,
+            'discount_code' => $appliedCode,
         ]);
 
+        if ($total <= 0 && $appliedCode) {
+            $this->processPaymentSuccess($order, null);
+            return redirect()->route('subscriptions.index')
+                ->with('success', 'Подписка оформлена бесплатно по промокоду. Подписки активированы.');
+        }
+
         return redirect()->route('subscriptions.checkout', ['order' => $order->id]);
+    }
+
+    /**
+     * Проверка промокода при создании заказа. Возвращает модель или null.
+     */
+    private function resolvePromoCode(string $codeRaw, array $levelIds, int $userId): ?DiscountCode
+    {
+        $promo = DiscountCode::query()
+            ->whereRaw('LOWER(code) = ?', [mb_strtolower($codeRaw)])
+            ->first();
+
+        if (! $promo || ! $promo->isValidOn(now()->toDateString()) || ! $promo->hasUsagesLeft()) {
+            return null;
+        }
+
+        if (SubscriptionOrder::query()->where('user_id', $userId)->where('discount_code', $promo->code)->exists()) {
+            return null;
+        }
+
+        $codeLevelIds = $promo->level_ids;
+        if (empty($codeLevelIds) || empty(array_intersect($levelIds, $codeLevelIds))) {
+            return null;
+        }
+
+        return $promo;
     }
 
     public function confirm(Request $request)

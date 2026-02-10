@@ -9,12 +9,14 @@
 @section('content')
 @include('partials.sidebar', ['sidebarActive' => $level->id])
 
-<!-- ===== ПРАВАЯ ЧАСТЬ (main): контент страницы ===== -->
 <div class="main">
-  <div class="header">
-    <div class="header-title">{{ $level->title }}</div>
-  </div>
-
+  @include('partials.lk-header', [
+    'breadcrumbItems' => [
+      ['label' => site_lang('lk_dashboard|crumb_home', 'Главная'), 'url' => url('/')],
+      ['label' => site_lang('lk_dashboard|crumb_cabinet', 'Кабинет'), 'url' => route('dashboard')],
+      ['label' => $level->title, 'url' => null],
+    ],
+  ])
   <div class="content">
     <div class="card">
       <h1>{{ $level->title }}</h1>

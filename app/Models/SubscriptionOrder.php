@@ -17,6 +17,7 @@ class SubscriptionOrder extends Model
         'date_subscription',
         'sum_subscription',
         'sum_without_discount',
+        'discount_code',
         'days',
         'date_paid',
         'date_next_pay',

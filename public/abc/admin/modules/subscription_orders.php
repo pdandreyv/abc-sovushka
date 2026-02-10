@@ -22,6 +22,7 @@ $a18n['subscription_level_ids'] = 'Уровни подписок';
 $a18n['date_subscription'] = 'Дата подписки';
 $a18n['sum_subscription'] = 'Сумма подписки';
 $a18n['sum_without_discount'] = 'Сумма без скидки';
+$a18n['discount_code'] = 'Промокод';
 $a18n['days'] = 'Количество дней';
 $a18n['date_next_pay'] = 'Дата следующего платежа';
 $a18n['sum_next_pay'] = 'Сумма следующего платежа';
@@ -37,6 +38,7 @@ $table = array(
 	'date_subscription'	=>	'date',
 	'sum_subscription'	=>	'',
 	'sum_without_discount'	=>	'',
+	'discount_code'	=>	'',
 	'days'		=>	'',
 	'date_next_pay'	=>	'date',
 	'sum_next_pay'	=>	'',
@@ -91,6 +93,9 @@ $form[] = array('input td3','sum_subscription',array(
 $form[] = array('input td3','sum_without_discount',array(
 	'help'=>'Сумма в рублях без скидки',
 	'value'=>@$post['sum_without_discount'] ? $post['sum_without_discount'] : 0
+));
+$form[] = array('input td3','discount_code',array(
+	'help'=>'Промокод (строка), если был применён при оформлении'
 ));
 $form[] = array('input td3','days',array(
 	'value'=>@$post['days'] ? $post['days'] : 0

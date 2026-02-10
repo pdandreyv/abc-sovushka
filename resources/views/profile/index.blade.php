@@ -10,15 +10,13 @@
 @include('partials.sidebar', ['sidebarActive' => 'profile'])
 
 <div class="main">
-  <!-- Основной контент страницы (шапка, хлебные крошки, карточки и т.д.) -->
-  <div class="header">
-    <div class="breadcrumbs">{{ site_lang('lk_profile|breadcrumbs', 'Главная / Кабинет / Личные данные') }}</div>
-    <div class="header-icons">
-      <img alt="Подписка" src="{{ asset('images/subscription_icon.png') }}"/>
-      <a class="subscription-status subscription-status-link" href="{{ route('dashboard') }}">{{ site_lang('lk_profile|status', 'Подписок нет: выбрать / оформить') }}</a>
-      <img alt="Поддержка" src="{{ asset('images/support_icon.png') }}"/>
-    </div>
-  </div>
+  @include('partials.lk-header', [
+    'breadcrumbItems' => [
+      ['label' => site_lang('lk_profile|crumb_home', 'Главная'), 'url' => url('/')],
+      ['label' => site_lang('lk_profile|crumb_cabinet', 'Кабинет'), 'url' => route('dashboard')],
+      ['label' => site_lang('lk_profile|crumb_profile', 'Личные данные'), 'url' => null],
+    ],
+  ])
   <div class="content">
     <h1>{{ site_lang('lk_profile|heading', 'Проверьте и сохраните данные профиля') }}</h1>
     <p class="page-hint">

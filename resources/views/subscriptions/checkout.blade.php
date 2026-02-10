@@ -91,14 +91,14 @@
 @include('partials.sidebar', ['sidebarActive' => 'subscriptions'])
 
 <div class="main">
-  <div class="header">
-    <div class="breadcrumbs">{{ site_lang('lk_subscriptions|breadcrumbs_checkout', 'Главная / Кабинет / Подписки / Оплата') }}</div>
-    <div class="header-icons">
-      <img alt="Подписка" src="{{ asset('images/subscription_icon.png') }}"/>
-      <span class="subscription-status">{{ site_lang('lk_subscriptions|status_checkout', 'Оплата') }}</span>
-    </div>
-  </div>
-
+  @include('partials.lk-header', [
+    'breadcrumbItems' => [
+      ['label' => site_lang('lk_subscriptions|crumb_home', 'Главная'), 'url' => url('/')],
+      ['label' => site_lang('lk_subscriptions|crumb_cabinet', 'Кабинет'), 'url' => route('dashboard')],
+      ['label' => site_lang('lk_subscriptions|crumb_subscriptions', 'Подписки'), 'url' => route('subscriptions.index')],
+      ['label' => site_lang('lk_subscriptions|crumb_checkout', 'Оплата'), 'url' => null],
+    ],
+  ])
   <div class="content">
     <div class="checkout-card">
       <h2 style="margin-top: 0;">{{ site_lang('lk_subscriptions|checkout_header', 'Оплата подписки') }}</h2>

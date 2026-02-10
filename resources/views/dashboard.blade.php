@@ -10,15 +10,12 @@
 @include('partials.sidebar', ['sidebarActive' => 'dashboard'])
 
 <div class="main">
-  <!-- Основной контент страницы (шапка, хлебные крошки, карточки и т.д.) -->
-  <div class="header">
-    <div class="breadcrumbs">{{ site_lang('lk_dashboard|breadcrumbs', 'Главная / Кабинет') }}</div>
-    <div class="header-icons">
-      <img alt="Подписка" src="{{ asset('images/subscription_icon.png') }}"/>
-      <a class="subscription-status subscription-status-link" href="{{ route('dashboard') }}">{{ site_lang('lk_dashboard|status', 'Осталось 5 дней подписки: продлить / отменить') }}</a>
-      <img alt="Поддержка" src="{{ asset('images/support_icon.png') }}"/>
-    </div>
-  </div>
+  @include('partials.lk-header', [
+    'breadcrumbItems' => [
+      ['label' => site_lang('lk_dashboard|crumb_home', 'Главная'), 'url' => url('/')],
+      ['label' => site_lang('lk_dashboard|crumb_cabinet', 'Кабинет'), 'url' => null],
+    ],
+  ])
   <div class="content">
     @if (session('success'))
       <div class="alert alert-success" style="max-width: 600px; margin-bottom: 20px;">
@@ -28,12 +25,20 @@
     <h1>{{ site_lang('lk_dashboard|welcome', 'Добро пожаловать') }}, {{ Auth::user()->first_name }}!</h1>
     <div class="cards">
       <div class="card">
-        <h3>{{ site_lang('lk_dashboard|card_subscription_title', 'Моя подписка') }}</h3>
-        <p>{{ site_lang('lk_dashboard|card_subscription_text', 'Вы подписаны на материалы для 1 класса') }}</p>
+        <h3>{{ site_lang('lk_dashboard|card_subscriptions_title', 'Мои подписки') }}</h3>
+        @if($subscriptionLevels->isNotEmpty())
+          <p>{{ site_lang('lk_dashboard|card_subscriptions_list', 'Вы подписаны на:') }} {{ $subscriptionLevels->pluck('title')->join(', ') }}</p>
+        @else
+          <p>{{ site_lang('lk_dashboard|card_subscriptions_empty', 'Пока нет активных подписок.') }}</p>
+        @endif
       </div>
       <div class="card">
         <h3>{{ site_lang('lk_dashboard|card_ideas_title', 'Кладовая идей') }}</h3>
-        <p>{{ site_lang('lk_dashboard|card_ideas_text', 'Материалы доступны всем пользователям') }}</p>
+        @if($latestIdea ?? null)
+          <p>{{ site_lang('lk_dashboard|card_ideas_latest', 'Последний материал:') }} <a href="{{ route('ideas.index') }}">{{ $latestIdea->title }}</a></p>
+        @else
+          <p>{{ site_lang('lk_dashboard|card_ideas_text', 'Материалы доступны всем пользователям') }} <a href="{{ route('ideas.index') }}">{{ site_lang('lk_dashboard|card_ideas_link', 'Перейти в раздел') }}</a></p>
+        @endif
       </div>
       <a href="{{ route('portfolio.index') }}" class="card" style="text-decoration: none; color: inherit;">
         <h3>{{ site_lang('lk_dashboard|card_portfolio_title', 'Портфолио') }}</h3>
