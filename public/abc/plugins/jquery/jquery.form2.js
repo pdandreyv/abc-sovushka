@@ -24,17 +24,31 @@
 			},
 			success: function(response, textStatus){
 				var data = response;
-				//console.log('response');
-				//console.log(response);
 				if (iframe) {
-					//обрезаем <textarea>
-					data = data.slice(0, -11);
-					data = data.substring(10);
-					//конвертируем в json
-					data = JSON.parse(data);
+					// извлекаем содержимое <textarea>...</textarea> (ответ может содержать PHP Warning до тега)
+					var startTag = '<textarea>';
+					var endTag = '</textarea>';
+					var start = (typeof data === 'string' && data.indexOf(startTag) >= 0)
+						? data.indexOf(startTag) + startTag.length
+						: 0;
+					var end = (typeof data === 'string' && data.indexOf(endTag, start) >= 0)
+						? data.indexOf(endTag, start)
+						: data.length;
+					data = typeof data === 'string' ? data.substring(start, end).trim() : '';
+					try {
+						if (!data || (data.charAt(0) !== '{' && data.charAt(0) !== '[')) {
+							throw new Error('Ответ сервера не JSON');
+						}
+						data = JSON.parse(data);
+					} catch (e) {
+						if (options.error) {
+							options.error();
+						} else if (options.success) {
+							options.success({ error: 'Ошибка ответа сервера. Проверьте логи (PHP Notice/Warning).' });
+						}
+						return;
+					}
 				}
-				//console.log('data');
-				//console.log(data);
 				if (options.success) {
 					options.success(data);
 				}

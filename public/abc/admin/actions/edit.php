@@ -11,6 +11,9 @@
  *  v1.4.82 - serialize->json
  */
 
+// буфер: чтобы PHP Notice/Warning не попали в ответ и не ломали JSON
+ob_start();
+
 //создание массива post и его бработка
 $post = stripslashes_smart($_POST); //error_handler(1,serialize($post),1,1);
 $data = array();
@@ -265,6 +268,7 @@ $data['error']	= $error;
 $data['id']		= $get['id'];
 
 //v1.4.32 если нужен чистых жейсон
+ob_end_clean();
 if (@$_GET['option']=='json') {
 	header('Content-type: application/json; charset=UTF-8');
 	echo json_encode($data);
