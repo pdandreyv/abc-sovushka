@@ -9,6 +9,7 @@ $api = array(
 	'items'=>array()
 );
 
+$where = '';
 if (@$_GET['q']) $where.= "
 	AND (
 		LOWER(users.email) like '%".mysql_res(mb_strtolower($_GET['q'],'UTF-8'))."%'

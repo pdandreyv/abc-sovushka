@@ -47,6 +47,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/portfolio', [PortfolioController::class, 'index'])->name('portfolio.index');
+    Route::get('/portfolio/items/{id}/file', [PortfolioController::class, 'certificateFile'])
+        ->where('id', '[0-9]+')
+        ->name('portfolio.certificate.file');
     
     // Профиль пользователя
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');

@@ -37,10 +37,11 @@
           <div class="award-actions">
             @if($item->image_file)
               @php
-                $fileUrl = asset('files/portfolio_items/'.$item->id.'/image_file/'.$item->image_file);
+                $fileViewUrl = route('portfolio.certificate.file', ['id' => $item->id]);
+                $fileDownloadUrl = route('portfolio.certificate.file', ['id' => $item->id, 'download' => 1]);
               @endphp
-              <button class="btn btn-secondary" type="button" data-view-doc="{{ $fileUrl }}">{{ site_lang('lk_portfolio|view', 'Посмотреть') }}</button>
-              <a class="btn btn-primary" href="{{ $fileUrl }}" target="_blank" rel="noopener">{{ site_lang('lk_portfolio|download', 'Скачать') }}</a>
+              <button class="btn btn-secondary" type="button" data-view-doc="{{ $fileViewUrl }}">{{ site_lang('lk_portfolio|view', 'Посмотреть') }}</button>
+              <a class="btn btn-primary" href="{{ $fileDownloadUrl }}" target="_blank" rel="noopener">{{ site_lang('lk_portfolio|download', 'Скачать') }}</a>
             @endif
           </div>
           <div class="award-title">{{ $item->title }}</div>
