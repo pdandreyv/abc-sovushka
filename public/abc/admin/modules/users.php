@@ -22,8 +22,13 @@ if ($get['u']=='edit') {
 		//обрезаем пробелы у пароля
 		$post['password'] = trim(@$post['password']);
 		$post['hash'] = user_hash_db($post['salt'],$post['password']);
-		// Хеш для входа в ЛК (Laravel): один пароль — вход и в админку, и в личный кабинет
-		$post['password'] = password_hash($post['password'], PASSWORD_DEFAULT);
+		// Хеш для входа в ЛК (Laravel): один пароль — вход и в админку, и в личный кабинет (PHP 5.5+)
+		if (function_exists('password_hash') && $post['password'] !== '') {
+			$post['password'] = password_hash($post['password'], PASSWORD_DEFAULT);
+		} else {
+			// пустой пароль или нет password_hash — не сохраняем поле password в БД
+			unset($post['password']);
+		}
 	}
 	unset($post['change']);
 	if (!isset($post['password']) || $post['password'] === '') {
@@ -53,10 +58,18 @@ if ($get['u']=='edit') {
 	//дополнительные параметры
 	$post['fields'] = isset($post['fields']) ? serialize($post['fields']) : '';
 	// Синхронизация role для Laravel: если статус (type) — администратор, ставим role = admin (для входа в ЛК и доступа ко всем подпискам)
+	// Устанавливаем role только если в таблице users есть колонка role (миграция Laravel)
 	if (isset($post['type']) && (int)$post['type'] > 0) {
-		$ut = mysql_select("SELECT access_admin FROM user_types WHERE id = " . (int)$post['type'], 'row');
-		$post['role'] = ($ut && $ut['access_admin'] !== '' && $ut['access_admin'] !== null) ? 'admin' : null;
+		$hasRoleColumn = mysql_select("SHOW COLUMNS FROM users LIKE 'role'", 'rows');
+		if (!empty($hasRoleColumn)) {
+			$ut = mysql_select("SELECT access_admin FROM user_types WHERE id = " . (int)$post['type'], 'row');
+			$post['role'] = ($ut && isset($ut['access_admin']) && $ut['access_admin'] !== '' && $ut['access_admin'] !== null) ? 'admin' : null;
+		} else {
+			unset($post['role']);
+		}
 	}
+	// _socials — виртуальное поле формы (привязанные соцсети), в таблице users такой колонки нет
+	unset($post['_socials']);
 }
 //исключение для быстрого редактирования
 if ($get['u']=='post') {

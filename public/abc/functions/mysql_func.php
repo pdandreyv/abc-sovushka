@@ -73,7 +73,10 @@ function mysql_close_db() {
  * v1.2.52 - переделка на mysqli
  */
 function mysql_res ($str) {
-	if ($connect = mysql_connect_db()) return mysqli_real_escape_string($connect,$str);
+	if ($connect = mysql_connect_db()) {
+		$str = ($str === null || $str === '') ? '' : (string) $str;
+		return mysqli_real_escape_string($connect, $str);
+	}
 	return false;
 }
 

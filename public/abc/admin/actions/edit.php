@@ -11,7 +11,10 @@
  *  v1.4.82 - serialize->json
  */
 
-// буфер: чтобы PHP Notice/Warning не попали в ответ и не ломали JSON
+// не выводить PHP Notice/Warning в ответ (чтобы не ломать JSON); ошибки по-прежнему пишутся в лог
+$prevDisplayErrors = ini_get('display_errors');
+ini_set('display_errors', '0');
+// буфер: любой случайный вывод до финального echo отбрасываем
 ob_start();
 
 //создание массива post и его бработка
@@ -268,7 +271,10 @@ $data['error']	= $error;
 $data['id']		= $get['id'];
 
 //v1.4.32 если нужен чистых жейсон
-ob_end_clean();
+if (ob_get_level()) {
+	ob_end_clean();
+}
+ini_set('display_errors', $prevDisplayErrors);
 if (@$_GET['option']=='json') {
 	header('Content-type: application/json; charset=UTF-8');
 	echo json_encode($data);

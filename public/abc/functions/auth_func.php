@@ -9,6 +9,13 @@ v1.4.48 - users - удалил дату
 v1.4.76 - users - uid facebook
 */
 
+function _auth_log($source, $data) {
+	if (!defined('ROOT_DIR')) return;
+	$dir = ROOT_DIR . 'logs';
+	if (!is_dir($dir)) @mkdir($dir, 0755, true);
+	$line = date('Y-m-d H:i:s') . ' [' . $source . '] ' . (is_array($data) ? json_encode($data, JSON_UNESCAPED_UNICODE) : $data) . PHP_EOL;
+	@file_put_contents($dir . '/auth_trace.log', $line, FILE_APPEND | LOCK_EX);
+}
 
 /**
  * права доступа
@@ -26,6 +33,14 @@ function access($mode,$q = '') {
 	//права администратора ********************************
 	if ($mode[0]=='admin') {
 		if (@$user['id']==1) return true;	//первый пользователь всегда с полным доступом
+		// полный доступ для роли admin (пользователь из ЛК или назначенный администратором — без ограничения по списку модулей типа)
+		$role = isset($user['role']) ? strtolower(trim((string) $user['role'])) : '';
+		if (in_array($role, ['admin', 'administrator', 'superadmin', 'owner'], true)) {
+			if ($q=='_login') return true;
+			if ($mode[1]=='module') return true;
+			if ($mode[1]=='delete') return true;
+			if ($mode[1]=='ftp') return true;
+		}
 		//доступ к авторизации есть у всех
 		if ($q=='_login') return true;
 		elseif (@$user['access_admin']=='') return false;
@@ -324,6 +339,9 @@ function user($type = '',$param = '') {
 			}
 		}
 		//echo $where;
+		if ($where == '' && $type == 'enter' && $login && function_exists('_auth_log')) {
+			_auth_log('abc_enter', ['login' => $login, 'error' => 'where_empty', 'msg' => 'user not found by login/phone']);
+		}
 		if ($where != '') {
 			if ($q = mysql_select("
 				SELECT ut.*,u.*
@@ -334,13 +352,42 @@ function user($type = '',$param = '') {
 				LIMIT 1
 			", 'row')
 			) {
+				if ($type == 'enter' && function_exists('_auth_log')) {
+					_auth_log('abc_enter', ['login' => $login, 'user_id' => $q['id'], 'has_hash' => (isset($q['hash']) && $q['hash'] !== ''), 'has_salt' => (isset($q['salt']) && $q['salt'] !== ''), 'has_password_col' => (isset($q['password']) && $q['password'] !== '')]);
+				}
 				//если авторизация по ссылке то другой хеш
 				if ($type == 'remind') {
 					if (user_hash($q) == $hash2) $success = true;
 				}
 				//если авторизация через форму то генерируем хеш из пароля
 				elseif($type == 'enter') {
-					if (user_hash_db($q['salt'], $password) == $q['hash']) $success = true;
+					$hash_check = (isset($q['salt'], $q['hash']) && user_hash_db($q['salt'], $password) == $q['hash']);
+					$pw_column_set = !empty($q['password']);
+					$pw_verify_ok = ($pw_column_set && function_exists('password_verify') && password_verify($password, $q['password']));
+					if (function_exists('_auth_log')) {
+						_auth_log('abc_enter', [
+							'user_id' => $q['id'],
+							'login' => $login,
+							'has_hash_salt' => (isset($q['hash']) && $q['hash'] !== '' && isset($q['salt']) && $q['salt'] !== ''),
+							'hash_check' => $hash_check,
+							'has_password_col' => $pw_column_set,
+							'password_verify' => $pw_verify_ok,
+							'success' => $hash_check || $pw_verify_ok,
+						]);
+					}
+					if ($hash_check) {
+						$success = true;
+					}
+					// пользователь из ЛК (пароль в колонке password, bcrypt): вход в админку по тому же паролю
+					elseif ($pw_verify_ok) {
+						$success = true;
+						// синхронизируем hash/salt для cookie «запомнить меня» и последующих входов
+						$new_salt = md5(time());
+						$new_hash = user_hash_db($new_salt, $password);
+						mysql_fn('update', 'users', array('id' => $q['id'], 'salt' => $new_salt, 'hash' => $new_hash));
+						$q['salt'] = $new_salt;
+						$q['hash'] = $new_hash;
+					}
 				}
 				//в других случаях сравниваем хеш прямо из базы
 				else {
@@ -355,7 +402,7 @@ function user($type = '',$param = '') {
 					$data = array(
 						'id' => $q['id'],
 						'last_visit' => $config['datetime'],
-						'remember_me' => $remember_me
+						'remember_me' => $remember_me ? 1 : 0
 					);
 					//это условие делает так что по ссылке можно авторизироваться только один раз
 					if ($type == 'remind') $data['remind'] = $data['last_visit'];
@@ -363,6 +410,8 @@ function user($type = '',$param = '') {
 					mysql_fn('update', 'users', $data);
 					return $_SESSION['user'] = $q;
 				}
+			} elseif ($type == 'enter' && $login && function_exists('_auth_log')) {
+				_auth_log('abc_enter', ['login' => $login, 'error' => 'query_no_row', 'msg' => 'SELECT returned no user']);
 			}
 		}
 	}
