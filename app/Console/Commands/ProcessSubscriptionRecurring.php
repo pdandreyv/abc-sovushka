@@ -71,10 +71,21 @@ class ProcessSubscriptionRecurring extends Command
         $yookassaPaymentId = null;
 
         if ($this->yookassa->isConfigured() && $order->hash) {
+            $user = $order->user;
+            $receiptParams = [
+                'customer_email' => $user?->email,
+                'customer_phone' => $user?->phone,
+                'customer_name' => $user ? trim(implode(' ', array_filter([
+                    $user->last_name ?? '',
+                    $user->first_name ?? '',
+                    $user->middle_name ?? '',
+                ]))) : '',
+            ];
             $result = $this->yookassa->createRecurringPayment(
                 $order->hash,
                 $amount,
-                'Продление подписки №' . $order->id
+                'Продление подписки №' . $order->id,
+                $receiptParams
             );
 
             if (isset($result['error'])) {

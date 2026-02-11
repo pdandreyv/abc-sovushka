@@ -70,11 +70,20 @@ class SubscriptionPaymentController extends Controller
 
         $returnUrl = route('subscriptions.yookassa.return', ['order_id' => $order->id]);
 
+        $user = $order->user;
+        $customerName = $user ? trim(implode(' ', array_filter([
+            $user->last_name ?? '',
+            $user->first_name ?? '',
+            $user->middle_name ?? '',
+        ]))) : '';
         $result = $this->yookassa->createPayment([
             'amount' => (float) $order->sum_subscription,
             'return_url' => $returnUrl,
             'description' => 'Подписка №' . $order->id,
             'order_id' => $order->id,
+            'customer_email' => $user?->email,
+            'customer_phone' => $user?->phone,
+            'customer_name' => $customerName,
         ]);
 
         if (isset($result['error'])) {
