@@ -617,6 +617,10 @@ function form_file ($type,$key, $param = array()) {
 		elseif ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
 			$field_dir = ($key == 'pdf_file') ? 'pdf' : 'zip';
 			$root = $publicRoot.'files/'.$module['table'].'/'.$get['id'].'/'.$field_dir.'/';
+		}
+		// Портфолио (сертификаты) — в public/files/ для выдачи через Laravel
+		elseif ($module['table'] == 'portfolio_items' && in_array($key, array('image_file', 'image_thumb'))) {
+			$root = $publicRoot.'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/';
 		} else {
 			$root = ROOT_DIR.'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/'; //папка от корня основной папки
 		}
@@ -629,7 +633,7 @@ function form_file ($type,$key, $param = array()) {
 		$message = '';//сообщение с ошибкой
 		if ($get['u']=='edit') {
 			if (is_uploaded_file($temp)) {//проверка записался ли файл на сервер во временную папку
-				if (($module['table'] == 'topic_materials' || $module['table'] == 'ideas') && !is_dir($root)) {
+				if (($module['table'] == 'topic_materials' || $module['table'] == 'ideas' || $module['table'] == 'portfolio_items') && !is_dir($root)) {
 					if (!mkdir($root,0755,true)) {
 						$message = 'ошибка создания каталога!';
 					}
@@ -708,6 +712,10 @@ function form_file ($type,$key, $param = array()) {
 		// Демо-файл уровня подписки — в public для отображения и скачивания
 		elseif ($module['table'] == 'subscription_levels' && $key == 'demo_file') {
 			$root = $publicRoot.'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/';
+		}
+		// Портфолио (сертификаты) — в public/files/ для выдачи через Laravel
+		elseif ($module['table'] == 'portfolio_items' && in_array($key, array('image_file', 'image_thumb'))) {
+			$root = $publicRoot.'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/';
 		} else {
 			$relative = 'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/'; //v1.3.17 относительный путь папки
 			$root = ROOT_DIR.$relative; //папка от корня основной папки
@@ -781,6 +789,13 @@ function form_file ($type,$key, $param = array()) {
 						$q[$key] = '';
 					} else {
 						if (file_exists($root.$file)) unlink($root.$file);
+						$q[$key] = copy($temp_file, $root.$file) ? $file : '';
+					}
+				} elseif ($module['table'] == 'portfolio_items' && in_array($key, array('image_file', 'image_thumb'))) {
+					if (!is_dir($root) && !mkdir($root,0755,true)) {
+						$q[$key] = '';
+					} else {
+						if (file_exists($root.$file)) @unlink($root.$file);
 						$q[$key] = copy($temp_file, $root.$file) ? $file : '';
 					}
 				} else {
