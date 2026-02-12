@@ -2,12 +2,19 @@
 
 // Промокоды (коды скидок) для подписок
 // 2026-02-03
+// 2026-02-12 — display (выкл = промокод не действует), used_count в списке
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($post['display'])) {
+	$post['display'] = 0;
+}
 
 $a18n['code'] = 'Код';
 $a18n['valid_until'] = 'Действует до (включительно)';
 $a18n['usage_limit'] = 'Количество использований';
 $a18n['subscription_level_ids'] = 'Уровни подписок';
 $a18n['discount_percent'] = 'Процент скидки';
+$a18n['display'] = 'Вкл';
+$a18n['used_count'] = 'Использовано';
 
 $levels = mysql_select("SELECT id, title as name FROM subscription_levels ORDER BY sort_order", 'array');
 
@@ -18,6 +25,8 @@ $table = array(
 	'usage_limit' => '',
 	'subscription_level_ids' => '',
 	'discount_percent' => '',
+	'display' => 'boolean',
+	'used_count' => '',
 );
 
 $where = '';
@@ -30,7 +39,8 @@ if (isset($get['search']) && $get['search'] != '') {
 }
 
 $query = "
-	SELECT discount_codes.*
+	SELECT discount_codes.*,
+		(SELECT COUNT(*) FROM subscription_orders WHERE subscription_orders.discount_code = discount_codes.code) AS used_count
 	FROM discount_codes
 	WHERE 1 " . $where . "
 ";
@@ -57,4 +67,7 @@ $form[] = array('multicheckbox td12', 'subscription_level_ids', array(
 	'value' => array(true, 'SELECT id, title as name FROM subscription_levels ORDER BY sort_order'),
 	'name' => 'Уровни подписок (к каким применяется код)',
 	'help' => 'Если ни один не выбран — код не применяется ни к каким уровням.',
+));
+$form[] = array('checkbox', 'display', array(
+	'help' => 'При выключении промокод не действует (код и данные не удаляются).',
 ));

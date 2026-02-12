@@ -116,6 +116,7 @@ class SubscriptionController extends Controller
 
         $promo = DiscountCode::query()
             ->whereRaw('LOWER(code) = ?', [mb_strtolower($codeRaw)])
+            ->where('display', true)
             ->first();
 
         if (! $promo) {

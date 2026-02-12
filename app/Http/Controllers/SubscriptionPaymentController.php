@@ -291,6 +291,7 @@ class SubscriptionPaymentController extends Controller
     {
         $promo = DiscountCode::query()
             ->whereRaw('LOWER(code) = ?', [mb_strtolower($codeRaw)])
+            ->where('display', true)
             ->first();
 
         if (! $promo || ! $promo->isValidOn(now()->toDateString()) || ! $promo->hasUsagesLeft()) {

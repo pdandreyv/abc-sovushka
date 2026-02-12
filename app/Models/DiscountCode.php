@@ -12,12 +12,14 @@ class DiscountCode extends Model
         'usage_limit',
         'subscription_level_ids',
         'discount_percent',
+        'display',
     ];
 
     protected $casts = [
         'valid_until' => 'date',
         'usage_limit' => 'integer',
         'discount_percent' => 'integer',
+        'display' => 'boolean',
     ];
 
     /**
