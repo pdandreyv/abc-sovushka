@@ -12,8 +12,7 @@
 <div class="main">
   @include('partials.lk-header', [
     'breadcrumbItems' => [
-      ['label' => site_lang('lk_dashboard|crumb_home', 'Главная'), 'url' => url('/')],
-      ['label' => site_lang('lk_dashboard|crumb_cabinet', 'Кабинет'), 'url' => null],
+      ['label' => site_lang('lk_dashboard|crumb_home', 'Главная'), 'url' => null],
     ],
   ])
   <div class="content">

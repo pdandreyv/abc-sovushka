@@ -13,7 +13,6 @@
   @include('partials.lk-header', [
     'breadcrumbItems' => [
       ['label' => site_lang('lk_ideas|crumb_home', 'Главная'), 'url' => url('/')],
-      ['label' => site_lang('lk_ideas|crumb_cabinet', 'Кабинет'), 'url' => route('dashboard')],
       ['label' => site_lang('lk_ideas|crumb_ideas', 'Кладовая идей'), 'url' => null],
     ],
   ])

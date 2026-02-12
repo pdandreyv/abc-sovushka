@@ -94,7 +94,6 @@
   @include('partials.lk-header', [
     'breadcrumbItems' => [
       ['label' => site_lang('lk_subscriptions|crumb_home', 'Главная'), 'url' => url('/')],
-      ['label' => site_lang('lk_subscriptions|crumb_cabinet', 'Кабинет'), 'url' => route('dashboard')],
       ['label' => site_lang('lk_subscriptions|crumb_subscriptions', 'Подписки'), 'url' => route('subscriptions.index')],
       ['label' => site_lang('lk_subscriptions|crumb_checkout', 'Оплата'), 'url' => null],
     ],
