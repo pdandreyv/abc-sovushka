@@ -16,6 +16,8 @@ $a18n['title'] = 'Название';
 //$a18n['slug'] = 'Идентификатор';
 $a18n['link'] = 'Ссылка';
 $a18n['demo_file'] = 'Демо-файл';
+$a18n['demo_block_title'] = 'Заголовок блока демо-уроков';
+$a18n['demo_block_description'] = 'Описание блока демо-уроков';
 $a18n['sort_order'] = 'Сортировка';
 $a18n['open'] = 'Открытый раздел';
 $a18n['display'] = 'В выборе подписок';
@@ -26,6 +28,8 @@ $table = array(
 	'title'		=>	'',
 	//'slug'		=>	'',
 	'demo_file'	=>	'',
+	'demo_block_title'	=>	'',
+	'demo_block_description'	=>	'',
 	'open'		=>	'boolean',
 	'display'	=>	'boolean',
 	'is_active'	=>	'boolean',
@@ -51,10 +55,20 @@ $query = "
 $filter[] = array('search');
 
 $form[] = array('input td8','title');
-$form[] = array('input td6','link',array('help'=>'Ссылка на страницу направления (например: demo/sub_1.html или путь для роута)'));
+$form[] = array('input td6','link',array('help'=>'Ссылка на страницу направления'));
 $form[] = array('file td12','demo_file',array(
-	'name'=>'Демо-файл (любой файл для отображения и скачивания, как на demo/sub_1.html)',
+	'name'=>'Демо-файл (любой файл для отображения и скачивания)',
 	'help'=>'Загрузите файл — в форме будет отображаться ссылка на него и возможность скачать.'
+));
+$form[] = array('input td12','demo_block_title',array(
+	'name'=>'Заголовок блока демо-уроков',
+	'help'=>'Текст над блоком демо-файла на странице уровня (например: Демо-уроки (можно скачать бесплатно)).',
+	'placeholder'=>'Демо-уроки (можно скачать бесплатно)'
+));
+$form[] = array('textarea td12','demo_block_description',array(
+	'name'=>'Описание блока демо-уроков',
+	'help'=>'Подзаголовок под заголовком демо-блока на странице уровня. В тексте можно использовать {title} — подставится название уровня.',
+	'placeholder'=>'Этот блок помогает пользователю увидеть пример материалов по подписке. Позже сюда можно подгружать демо-уроки из базы данных.'
 ));
 $form[] = array('input td2','sort_order',array(
 	'value'=>@$post['sort_order'] ? $post['sort_order'] : 0

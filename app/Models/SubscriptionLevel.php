@@ -10,6 +10,8 @@ class SubscriptionLevel extends Model
         'title',
         'link',
         'demo_file',
+        'demo_block_title',
+        'demo_block_description',
         'sort_order',
         'open',
         'display',

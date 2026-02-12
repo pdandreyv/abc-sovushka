@@ -37,8 +37,12 @@ $query = "
 
 $filter[] = array('search');
 
-$form[] = array('input td6', 'code', array(
+$form[] = array('input td3', 'code', array(
 	'help' => 'Уникальный код например: WELCOME10. Регистр не учитывается при проверке.',
+));
+$form[] = array('input td3', 'discount_percent', array(
+	'value' => @$post['discount_percent'] !== '' && @$post['discount_percent'] !== null ? $post['discount_percent'] : 0,
+	'help' => 'Процент скидки 0–100. При 100% подписка бесплатная, на оплату не перенаправляем.',
 ));
 $form[] = array('input td3', 'valid_until', array(
 	'attr' => 'type="date"',
@@ -53,8 +57,4 @@ $form[] = array('multicheckbox td12', 'subscription_level_ids', array(
 	'value' => array(true, 'SELECT id, title as name FROM subscription_levels ORDER BY sort_order'),
 	'name' => 'Уровни подписок (к каким применяется код)',
 	'help' => 'Если ни один не выбран — код не применяется ни к каким уровням.',
-));
-$form[] = array('input td3', 'discount_percent', array(
-	'value' => @$post['discount_percent'] !== '' && @$post['discount_percent'] !== null ? $post['discount_percent'] : 0,
-	'help' => 'Процент скидки 0–100. При 100% подписка бесплатная, на оплату не перенаправляем.',
 ));

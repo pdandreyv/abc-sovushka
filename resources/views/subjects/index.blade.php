@@ -29,11 +29,15 @@
       @endif
 
       @if(!empty($level->demo_file))
+      @php
+        $demoTitle = $level->demo_block_title ?? 'Демо-уроки (можно скачать бесплатно)';
+        $demoDesc = $level->demo_block_description ?? 'Этот блок помогает пользователю увидеть пример материалов по подписке «' . e($level->title) . '». Позже сюда можно подгружать демо-уроки из базы данных.';
+        $demoDesc = str_replace('{title}', e($level->title), $demoDesc);
+      @endphp
       <div class="demo-lesson">
-        <h3>Демо-уроки (можно скачать бесплатно)</h3>
+        <h3>{{ $demoTitle }}</h3>
         <p class="muted">
-          Этот блок помогает пользователю увидеть пример материалов по подписке «{{ $level->title }}».
-          Позже сюда можно подгружать демо-уроки из базы данных.
+          {!! nl2br(e($demoDesc)) !!}
         </p>
         <div class="card-actions">
           <a class="btn btn-primary" target="_blank" rel="noopener" download href="{{ asset('files/subscription_levels/' . $level->id . '/demo_file/' . $level->demo_file) }}">Скачать ZIP</a>
