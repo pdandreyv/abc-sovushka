@@ -64,9 +64,9 @@ $form[] = array('input td4', 'badge', array(
 	'help' => 'Подпись на карточке в ЛК (например: Сертификат, Диплом, Награда).',
 ));
 $form[] = array('select td6', 'subscription_level_id', array(
-	'value' => array(true, 'SELECT id, title as name FROM subscription_levels WHERE is_active=1 ORDER BY sort_order, id'),
+	'value' => array(true, 'SELECT id, title as name FROM subscription_levels WHERE is_active=1 ORDER BY sort_order, id', ''),
 	'name'  => 'Уровень подписки',
-	'help'  => 'Для не именного сертификата: показывается, если у пользователя была подписка на этот уровень в указанный период.',
+	'help'  => 'Для не именного сертификата: показывается, если у пользователя была подписка на этот уровень в указанный период. Пусто — без привязки к уровню.',
 ));
 $form[] = array('input td3', 'date_from', array(
 	'attr'  => 'type="date"',
