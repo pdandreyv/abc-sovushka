@@ -52,7 +52,7 @@ class SubscriptionController extends Controller
             ->where('user_id', $userId)
             ->where('paid', true)
             ->whereDate('date_till', '>=', $today)
-            ->get(['levels', 'subscription_level_ids', 'date_till']);
+            ->get(['levels', 'subscription_level_ids', 'date_till', 'tariff']);
 
         $activeByLevel = [];
         foreach ($activeOrders as $order) {
@@ -61,6 +61,7 @@ class SubscriptionController extends Controller
                 if (!isset($activeByLevel[$levelId]) || $order->date_till > $activeByLevel[$levelId]['date_till']) {
                     $activeByLevel[$levelId] = [
                         'date_till' => $order->date_till,
+                        'tariff_id' => $order->tariff ? (int) $order->tariff : null,
                     ];
                 }
             }

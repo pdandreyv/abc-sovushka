@@ -156,11 +156,28 @@
             @php
               $activeInfo = $activeByLevel[$level->id] ?? null;
               $recurringInfo = $recurringByLevel[$level->id] ?? null;
+              $activeTariff = $activeInfo && !empty($activeInfo['tariff_id']) ? $tariffs->firstWhere('id', $activeInfo['tariff_id']) : null;
             @endphp
             <div class="sub-details">
               @if($activeInfo)
                 <div class="sub-meta">
-                @if($recurringInfo)
+                  <div>
+                    {{ site_lang('lk_subscriptions|active_till', 'Оплачено до:') }}
+                    {{ \Illuminate\Support\Carbon::parse($activeInfo['date_till'])->format('d.m.Y') }}
+                  </div>
+                  @if($activeTariff)
+                    <div>
+                      {{ site_lang('lk_subscriptions|tariff_label', 'Тариф:') }}
+                      {{ $activeTariff->title }} ({{ number_format((float) $activeTariff->price, 0, ',', ' ') }} {{ site_lang('lk_subscriptions|rubles', 'рублей') }})
+                    </div>
+                  @endif
+                  @if($recurringInfo)
+                    @if($recurringInfo['auto'])
+                      <div>
+                        {{ site_lang('lk_subscriptions|next_charge', 'Следующее списание:') }}
+                        {{ \Illuminate\Support\Carbon::parse($recurringInfo['date_next_pay'])->format('d.m.Y') }}
+                      </div>
+                    @endif
                     <div class="sub-meta-actions">
                       <form class="js-recurring-toggle-form" method="POST" action="{{ route('subscriptions.recurring.toggle', ['level' => $level->id]) }}" data-confirm-cancel="{{ site_lang('lk_subscriptions|confirm_cancel_autorenew', 'Вы уверены, что хотите отменить автопродление?') }}" data-confirm-enable="{{ site_lang('lk_subscriptions|confirm_enable_autorenew', 'Включить автопродление подписки?') }}">
                         @csrf
@@ -173,10 +190,6 @@
                       </form>
                     </div>
                   @endif
-                  <div>
-                    {{ site_lang('lk_subscriptions|active_till', 'Оплачено до:') }}
-                    {{ \Illuminate\Support\Carbon::parse($activeInfo['date_till'])->format('d.m.Y') }}
-                  </div>
                 </div>
               @endif
             </div>
