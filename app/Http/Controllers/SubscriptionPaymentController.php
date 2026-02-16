@@ -6,6 +6,7 @@ use App\Models\DiscountCode;
 use App\Models\SubscriptionLevel;
 use App\Models\SubscriptionOrder;
 use App\Models\SubscriptionPaymentLog;
+use App\Models\Promotion;
 use App\Models\SubscriptionTariff;
 use App\Services\YooKassaService;
 use Illuminate\Http\Request;
@@ -37,6 +38,7 @@ class SubscriptionPaymentController extends Controller
         $tariff = SubscriptionTariff::find($order->tariff);
         $useYookassa = $this->yookassa->isConfigured();
         $yookassaRecurringEnabled = $this->yookassa->isRecurringEnabled();
+        $isPromotionAttach = $order->promotion_id && (float) $order->sum_subscription <= 0;
 
         return view('subscriptions.checkout', [
             'order' => $order,
@@ -44,6 +46,7 @@ class SubscriptionPaymentController extends Controller
             'tariff' => $tariff,
             'useYookassa' => $useYookassa,
             'yookassaRecurringEnabled' => $yookassaRecurringEnabled,
+            'isPromotionAttach' => $isPromotionAttach,
         ]);
     }
 
@@ -136,7 +139,10 @@ class SubscriptionPaymentController extends Controller
             $paymentMethodId = isset($payment['payment_method']['id']) ? $payment['payment_method']['id'] : null;
             $cardLast4 = isset($payment['payment_method']['card']['last4']) ? $this->normalizeCardLast4($payment['payment_method']['card']['last4']) : null;
             $this->processPaymentSuccess($order, $paymentMethodId, $cardLast4);
-            return redirect()->route('subscriptions.index')->with('success', 'Оплата прошла успешно. Подписки активированы.');
+            $message = $order->promotion_id
+                ? 'Карта привязана. Бесплатный период активирован.'
+                : 'Оплата прошла успешно. Подписки активированы.';
+            return redirect()->route('subscriptions.index')->with('success', $message);
         }
 
         return redirect()->route('subscriptions.checkout', ['order' => $order->id])
@@ -185,9 +191,14 @@ class SubscriptionPaymentController extends Controller
 
         $levels = $this->parseLevelIds($order->subscription_level_ids, $order->levels);
         $count = count($levels);
-        $pricePerSub = $count > 0 ? round(((float) $order->sum_without_discount) / $count, 2) : 0;
         $hash = $paymentMethodId ?? $order->hash ?? Str::random(40);
 
+        if ($order->promotion_id) {
+            $this->processPromotionPaymentSuccess($order, $hash, $levels, $cardLast4);
+            return;
+        }
+
+        $pricePerSub = $count > 0 ? round(((float) $order->sum_without_discount) / $count, 2) : 0;
         $updateData = [
             'paid' => true,
             'date_paid' => now(),
@@ -225,6 +236,70 @@ class SubscriptionPaymentController extends Controller
                     $cardLast4
                 );
             }
+        });
+    }
+
+    /**
+     * Обработка успешной привязки карты по акции: активируем бесплатные дни, создаём следующие заказы по спец. цене, помечаем акцию использованной.
+     */
+    private function processPromotionPaymentSuccess(SubscriptionOrder $order, string $hash, array $levels, ?string $cardLast4): void
+    {
+        $promotion = Promotion::find($order->promotion_id);
+        if (!$promotion || $promotion->used) {
+            return;
+        }
+
+        $freeDays = (int) $promotion->free_days;
+        $specialPrice = (float) $promotion->special_price;
+        $today = Carbon::today();
+        $dateTill = $today->copy()->addDays($freeDays);
+        $nextChargeDate = $today->copy()->addDays(max(0, $freeDays - 1));
+        $tariff = $promotion->tariff_id;
+        $tariffDays = $promotion->tariff ? (SubscriptionTariff::find($promotion->tariff_id)?->days ?? 30) : 30;
+        $levelsStr = implode(',', $levels);
+        $periodEnd = $nextChargeDate->copy()->addDays($tariffDays);
+
+        DB::transaction(function () use ($order, $promotion, $hash, $levelsStr, $cardLast4, $dateTill, $nextChargeDate, $specialPrice, $tariff, $tariffDays, $periodEnd) {
+            $order->update([
+                'paid' => true,
+                'date_paid' => now(),
+                'hash' => $hash,
+                'date_till' => $dateTill->toDateString(),
+                'card_last4' => $cardLast4,
+            ]);
+
+            SubscriptionPaymentLog::create([
+                'subscription_order_id' => $order->id,
+                'status' => 'success',
+                'amount' => $order->sum_subscription,
+                'message' => 'Привязка карты по акции (ЮKassa)',
+                'response_data' => ['provider' => 'yookassa', 'promotion_id' => $promotion->id],
+                'payment_provider' => 'yookassa',
+                'transaction_id' => $order->yookassa_payment_id ?? 'webhook',
+                'attempted_at' => now(),
+            ]);
+
+            // Один рекуррентный заказ на все уровни с общей суммой по спец. цене (не разбиваем на отдельные заказы).
+            SubscriptionOrder::create([
+                'user_id' => $order->user_id,
+                'subscription_level_ids' => $levelsStr,
+                'levels' => $levelsStr,
+                'paid' => false,
+                'date_subscription' => $order->date_subscription,
+                'sum_subscription' => $specialPrice,
+                'sum_without_discount' => $specialPrice,
+                'days' => $tariffDays,
+                'date_next_pay' => $nextChargeDate->toDateString(),
+                'sum_next_pay' => $specialPrice,
+                'date_till' => $periodEnd->toDateString(),
+                'tariff' => $tariff,
+                'hash' => $hash,
+                'card_last4' => $cardLast4,
+                'errors' => 0,
+                'auto' => true,
+            ]);
+
+            $promotion->update(['used' => true, 'used_at' => now()]);
         });
     }
 
@@ -339,9 +414,6 @@ class SubscriptionPaymentController extends Controller
         }
 
         $levels = $this->parseLevelIds($order->subscription_level_ids, $order->levels);
-        $count = count($levels);
-        $perLevelPaidAmount = $count > 0 ? round(((float) $order->sum_subscription) / $count, 2) : 0;
-        $pricePerSub = $count > 0 ? round(((float) $order->sum_without_discount) / $count, 2) : 0;
         $cardNumber = preg_replace('/\D+/', '', $data['card_number']);
         $cardLast4 = strlen($cardNumber) >= 4 ? substr($cardNumber, -4) : null;
         [$expMonthRaw, $expYearRaw] = array_map('trim', explode('/', $data['card_exp']));
@@ -349,6 +421,17 @@ class SubscriptionPaymentController extends Controller
         $expYear = (int) $expYearRaw;
         $expYear = 2000 + $expYear;
         $hash = $order->hash ?: hash('sha256', $cardNumber . '|' . $expMonth . '|' . $expYear);
+
+        // Заказ по акции: один рекуррентный заказ на все уровни, без разбиения по уровням.
+        if ($order->promotion_id) {
+            $this->processPromotionPaymentSuccess($order, $hash, $levels, $cardLast4);
+            return redirect()->route('subscriptions.index')
+                ->with('success', 'Карта привязана. Бесплатный период активирован.');
+        }
+
+        $count = count($levels);
+        $perLevelPaidAmount = $count > 0 ? round(((float) $order->sum_subscription) / $count, 2) : 0;
+        $pricePerSub = $count > 0 ? round(((float) $order->sum_without_discount) / $count, 2) : 0;
 
         try {
             DB::transaction(function () use (

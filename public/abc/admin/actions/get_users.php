@@ -10,14 +10,22 @@ $api = array(
 );
 
 $where = '';
-if (@$_GET['q']) $where.= "
-	AND (
-		LOWER(users.email) like '%".mysql_res(mb_strtolower($_GET['q'],'UTF-8'))."%'
-		OR LOWER(CONCAT(users.last_name,' ',users.first_name,' ',users.middle_name)) like '%".mysql_res(mb_strtolower($_GET['q'],'UTF-8'))."%'
-		OR LOWER(CONCAT(users.first_name,' ',users.last_name)) like '%".mysql_res(mb_strtolower($_GET['q'],'UTF-8'))."%'
-		OR LOWER(users.phone) like '%".mysql_res(mb_strtolower($_GET['q'],'UTF-8'))."%'
-	)
-";
+if (@$_GET['q']) {
+	$q = trim($_GET['q']);
+	$qEsc = mysql_res(mb_strtolower($q, 'UTF-8'));
+	$where.= " AND ( ";
+	// поиск по id (число) или полному id (user_code)
+	if (is_numeric($q)) {
+		$where.= " users.id = '".intval($q)."' OR ";
+	}
+	if ($q !== '') {
+		$where.= " ( users.user_code = '".mysql_res($q)."' OR LOWER(users.email) LIKE '%".$qEsc."%'";
+		$where.= " OR LOWER(CONCAT(users.last_name,' ',users.first_name,' ',users.middle_name)) LIKE '%".$qEsc."%'";
+		$where.= " OR LOWER(CONCAT(users.first_name,' ',users.last_name)) LIKE '%".$qEsc."%'";
+		$where.= " OR LOWER(users.phone) LIKE '%".$qEsc."%' )";
+	}
+	$where.= " ) ";
+}
 //v1.2.28 другие пользователи не видят суперадмина
 if ($user['id']!=1) $where.= ' AND users.id!=1';
 

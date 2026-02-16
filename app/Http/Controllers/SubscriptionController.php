@@ -73,11 +73,31 @@ class SubscriptionController extends Controller
             ->whereNotNull('date_next_pay')
             ->whereNotNull('levels')
             ->orderBy('date_next_pay')
-            ->get(['id', 'levels', 'subscription_level_ids', 'date_next_pay', 'auto', 'card_last4']);
+            ->get(['id', 'levels', 'subscription_level_ids', 'date_next_pay', 'sum_next_pay', 'auto', 'card_last4']);
 
         $recurringByLevel = [];
+        $recurringMultiLevel = [];
+        $levelsById = $levels->keyBy('id');
+
         foreach ($recurringOrders as $order) {
             $levelIds = $this->parseLevelIds($order->subscription_level_ids, $order->levels);
+            if (count($levelIds) > 1) {
+                $titles = [];
+                foreach ($levelIds as $lid) {
+                    $l = $levelsById->get($lid);
+                    $titles[] = $l ? $l->title : (string) $lid;
+                }
+                $recurringMultiLevel[] = [
+                    'order_id' => $order->id,
+                    'level_titles' => $titles,
+                    'sum_next_pay' => (float) ($order->sum_next_pay ?? 0),
+                    'date_next_pay' => $order->date_next_pay,
+                    'auto' => (bool) $order->auto,
+                    'card_last4' => $order->card_last4,
+                    'first_level_id' => (int) $levelIds[0],
+                ];
+                continue;
+            }
             foreach ($levelIds as $levelId) {
                 if (isset($recurringByLevel[$levelId])) {
                     continue;
@@ -97,7 +117,8 @@ class SubscriptionController extends Controller
             'subscriptionsData',
             'tariffsData',
             'activeByLevel',
-            'recurringByLevel'
+            'recurringByLevel',
+            'recurringMultiLevel'
         ));
     }
 
@@ -211,7 +232,10 @@ class SubscriptionController extends Controller
             ->where('user_id', Auth::id())
             ->where('paid', false)
             ->whereNotNull('date_next_pay')
-            ->where('levels', (string) $level)
+            ->where(function ($q) use ($level) {
+                $q->where('levels', (string) $level)
+                    ->orWhereRaw('FIND_IN_SET(?, levels)', [$level]);
+            })
             ->orderBy('date_next_pay')
             ->firstOrFail();
 

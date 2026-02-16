@@ -59,10 +59,22 @@ class ProcessSubscriptionRecurring extends Command
             $this->error('Order #' . $order->id . ' has invalid level set.');
             return self::FAILURE;
         }
-        $basePrice = $this->resolveBasePrice($order, $levelId);
-        $discountPercent = $this->calculateDiscountPercent($order->user_id, [$levelId]);
-        $discount = round($basePrice * ($discountPercent / 100), 2);
-        $amount = max(0, $basePrice - $discount);
+
+        $levelIds = $this->parseLevelIds($order->subscription_level_ids, $order->levels);
+        $isMultiLevel = count($levelIds) > 1;
+
+        if ($isMultiLevel) {
+            // Акция: несколько подписок одним заказом — списываем фиксированную сумму (sum_next_pay), без скидки.
+            $basePrice = (float) ($order->sum_next_pay ?: $order->sum_without_discount ?: 0);
+            $discountPercent = 0;
+            $discount = 0;
+            $amount = $basePrice;
+        } else {
+            $basePrice = $this->resolveBasePrice($order, $levelId);
+            $discountPercent = $this->calculateDiscountPercent($order->user_id, [$levelId]);
+            $discount = round($basePrice * ($discountPercent / 100), 2);
+            $amount = max(0, $basePrice - $discount);
+        }
 
         $dateNextPay = Carbon::parse($order->date_next_pay);
         $attempt = $this->getAttemptNumber($dateNextPay, $today, $order->errors);
@@ -138,7 +150,8 @@ class ProcessSubscriptionRecurring extends Command
 
             // Дата следующего списания для нового заказа = конец периода оплаченного заказа (order->date_till, мы его не меняем).
             $nextOrderStart = Carbon::parse($order->date_till);
-            $this->createNextOrder($order, $basePrice, $levelId, $discountPercent, $nextOrderStart->toDateString());
+            $nextDiscountPercent = $isMultiLevel ? 0 : $this->calculateDiscountPercent($order->user_id, $levelIds);
+            $this->createNextOrder($order, $basePrice, $levelId, $nextDiscountPercent, $nextOrderStart->toDateString());
 
             $this->info('Recurring payment successful for order #' . $order->id);
         } else {
@@ -201,7 +214,7 @@ class ProcessSubscriptionRecurring extends Command
             return (int) $order->levels;
         }
         $ids = $this->parseLevelIds($order->subscription_level_ids, $order->levels);
-        if (count($ids) === 1) {
+        if (count($ids) >= 1) {
             return (int) $ids[0];
         }
         return null;

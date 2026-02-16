@@ -27,6 +27,9 @@
       </div>
       @endif
       <button type="button" onclick="window.location.href='{{ route('subscriptions.index') }}'" class="{{ $active === 'subscriptions' ? 'active' : '' }}">{{ site_lang('lk_menu|subscriptions', 'Оформить подписку') }}</button>
+      @if(\App\Models\Promotion::where('user_id', Auth::id())->where('used', false)->exists())
+      <button type="button" onclick="window.location.href='{{ route('promotion.index') }}'" class="{{ $active === 'promotion' ? 'active' : '' }}">{{ site_lang('lk_menu|promotion', 'Акция') }}</button>
+      @endif
       <button type="button" onclick="window.location.href='{{ route('ideas.index') }}'" class="{{ $active === 'ideas' ? 'active' : '' }}">{{ site_lang('lk_menu|ideas', 'Кладовая идей') }}</button>
       @foreach($openLevels ?? [] as $openLevel)
       <button type="button" onclick="window.location.href='{{ route('subjects.index', ['level' => $openLevel->id]) }}'" class="{{ $active === $openLevel->id || $active === (string) $openLevel->id ? 'active' : '' }}">{{ $openLevel->title }}</button>

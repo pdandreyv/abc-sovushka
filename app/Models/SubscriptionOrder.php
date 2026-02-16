@@ -10,6 +10,7 @@ class SubscriptionOrder extends Model
 {
     protected $fillable = [
         'user_id',
+        'promotion_id',
         'yookassa_payment_id',
         'subscription_level_ids',
         'levels',
@@ -48,6 +49,11 @@ class SubscriptionOrder extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function promotion(): BelongsTo
+    {
+        return $this->belongsTo(Promotion::class);
     }
 
     public function paymentLogs(): HasMany

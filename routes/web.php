@@ -15,6 +15,7 @@ use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\ViewerController;
+use App\Http\Controllers\PromotionController;
 
 // Главная страница - форма входа
 Route::get('/', function (Request $request) {
@@ -70,6 +71,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/subscriptions/checkout/confirm', [SubscriptionPaymentController::class, 'confirm'])->name('subscriptions.checkout.confirm');
     Route::post('/subscriptions/checkout/yookassa/redirect', [SubscriptionPaymentController::class, 'redirectToPayment'])->name('subscriptions.yookassa.redirect');
     Route::get('/subscriptions/yookassa/return', [SubscriptionPaymentController::class, 'returnFromYooKassa'])->name('subscriptions.yookassa.return');
+
+    // Акция (персональная, при наличии неиспользованной)
+    Route::get('/promotion', [PromotionController::class, 'index'])->name('promotion.index');
+    Route::post('/promotion/attach-card', [PromotionController::class, 'createOrder'])->name('promotion.attach-card');
 
     // Предметы и темы (без проверки подписки)
     Route::get('/subjects/{level}', [SubjectController::class, 'index'])->name('subjects.index');

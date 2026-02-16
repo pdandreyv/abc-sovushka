@@ -126,6 +126,33 @@
       {{ site_lang('lk_subscriptions|hint', 'Выберите нужные подписки и тариф — итоговая сумма и скидка пересчитаются автоматически.') }}
     </p>
 
+    @if(!empty($recurringMultiLevel))
+    <div class="step-card recurring-multi-block" style="margin-bottom: 20px;">
+      <div class="step-title">{{ site_lang('lk_promotion|recurring_multi_title', 'Акционная подписка') }}</div>
+      @foreach($recurringMultiLevel as $rec)
+      <div class="sub-option sub-option--meta" style="grid-template-columns: 1fr minmax(220px, auto) auto;">
+        <span class="sub-title">{{ implode(', ', $rec['level_titles']) }}</span>
+        <div class="sub-meta">
+          <div>{{ site_lang('lk_subscriptions|next_charge', 'Следующее списание:') }} {{ \Illuminate\Support\Carbon::parse($rec['date_next_pay'])->format('d.m.Y') }}</div>
+          <div>{{ site_lang('lk_subscriptions|summary_total', 'Итого:') }} {{ number_format($rec['sum_next_pay'], 0, ',', ' ') }} {{ site_lang('lk_subscriptions|rubles', '₽') }}</div>
+          @if(!empty($rec['card_last4']))
+          <div class="sub-card-info">{{ site_lang('lk_subscriptions|card_number', 'Карта') }} **** {{ $rec['card_last4'] }}</div>
+          @endif
+          <div class="sub-meta-actions">
+            <form class="js-recurring-toggle-form" method="POST" action="{{ route('subscriptions.recurring.toggle', ['level' => $rec['first_level_id']]) }}" data-confirm-cancel="{{ site_lang('lk_subscriptions|confirm_cancel_autorenew', 'Вы уверены, что хотите отменить автопродление?') }}" data-confirm-enable="{{ site_lang('lk_subscriptions|confirm_enable_autorenew', 'Включить автопродление подписки?') }}">
+              @csrf
+              <input type="hidden" name="enable" value="{{ $rec['auto'] ? 0 : 1 }}">
+              <button class="sub-recurring-link sub-recurring-link--{{ $rec['auto'] ? 'cancel' : 'enable' }}" type="submit">
+                {{ $rec['auto'] ? site_lang('lk_subscriptions|cancel_autorenew', 'Отменить автопродление') : site_lang('lk_subscriptions|enable_autorenew', 'Включить автопродление') }}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      @endforeach
+    </div>
+    @endif
+
     <!-- ===== ТРИ ШАГА ВЫБОРА: подписки → тариф → скидка ===== -->
     <div id="subscriptionsApp" class="steps-grid">
       <!-- Шаг 1 -->

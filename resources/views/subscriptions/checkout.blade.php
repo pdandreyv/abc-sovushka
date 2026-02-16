@@ -132,7 +132,7 @@
         <div>{{ $order->days }}</div>
       </div>
       <div class="checkout-row">
-        <div>{{ site_lang('lk_subscriptions|checkout_sum', 'К оплате') }}</div>
+        <div>{{ $isPromotionAttach ?? false ? (site_lang('lk_promotion|attach_sum_label', 'К оплате (привязка карты)')) : site_lang('lk_subscriptions|checkout_sum', 'К оплате') }}</div>
         <div><b>{{ number_format((float) $order->sum_subscription, 0, '.', ' ') }} ₽</b></div>
       </div>
 
@@ -146,8 +146,8 @@
           @csrf
           <input type="hidden" name="order_id" value="{{ $order->id }}">
           <div class="checkout-actions">
-            <button class="btn btn-primary" type="submit">{{ site_lang('lk_subscriptions|checkout_pay', 'Оплатить') }} (ЮKassa)</button>
-            <a class="btn btn-secondary" href="{{ route('subscriptions.index') }}">{{ site_lang('lk_subscriptions|checkout_back', 'Вернуться к выбору') }}</a>
+            <button class="btn btn-primary" type="submit">{{ ($isPromotionAttach ?? false) ? site_lang('lk_promotion|attach_card', 'Привязать карту') : site_lang('lk_subscriptions|checkout_pay', 'Оплатить') }} (ЮKassa)</button>
+            <a class="btn btn-secondary" href="{{ ($isPromotionAttach ?? false) ? route('promotion.index') : route('subscriptions.index') }}">{{ site_lang('lk_subscriptions|checkout_back', 'Вернуться к выбору') }}</a>
           </div>
         </form>
         <div class="checkout-note">
@@ -227,8 +227,8 @@
             </div>
           </div>
           <div class="checkout-actions">
-            <button class="btn btn-primary" type="submit">{{ site_lang('lk_subscriptions|checkout_pay', 'Оплатить') }}</button>
-            <a class="btn btn-secondary" href="{{ route('subscriptions.index') }}">{{ site_lang('lk_subscriptions|checkout_back', 'Вернуться к выбору') }}</a>
+            <button class="btn btn-primary" type="submit">{{ ($isPromotionAttach ?? false) ? site_lang('lk_promotion|attach_card', 'Привязать карту') : site_lang('lk_subscriptions|checkout_pay', 'Оплатить') }}</button>
+            <a class="btn btn-secondary" href="{{ ($isPromotionAttach ?? false) ? route('promotion.index') : route('subscriptions.index') }}">{{ site_lang('lk_subscriptions|checkout_back', 'Вернуться к выбору') }}</a>
           </div>
         </form>
         <div class="checkout-note">
