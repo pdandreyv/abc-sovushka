@@ -7,9 +7,14 @@
 <style>
   .sub-option.sub-option--meta {
     display: grid;
-    grid-template-columns: 1fr minmax(220px, auto) auto;
-    align-items: center;
+    grid-template-columns: 1fr minmax(220px, auto);
+    align-items: start;
     gap: 12px;
+  }
+  .sub-left-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
   .sub-details {
     display: flex;
@@ -130,8 +135,11 @@
     <div class="step-card recurring-multi-block" style="margin-bottom: 20px;">
       <div class="step-title">{{ site_lang('lk_promotion|recurring_multi_title', 'Акционная подписка') }}</div>
       @foreach($recurringMultiLevel as $rec)
-      <div class="sub-option sub-option--meta" style="grid-template-columns: 1fr minmax(220px, auto) auto;">
-        <span class="sub-title">{{ implode(', ', $rec['level_titles']) }}</span>
+      <div class="sub-option sub-option--meta">
+        <div class="sub-left-col">
+          <span class="sub-title">{{ implode(', ', $rec['level_titles']) }}</span>
+        </div>
+        <div class="sub-details">
         <div class="sub-meta">
           <div>{{ site_lang('lk_subscriptions|next_charge', 'Следующее списание:') }} {{ \Illuminate\Support\Carbon::parse($rec['date_next_pay'])->format('d.m.Y') }}</div>
           <div>{{ site_lang('lk_subscriptions|summary_total', 'Итого:') }} {{ number_format($rec['sum_next_pay'], 0, ',', ' ') }} {{ site_lang('lk_subscriptions|rubles', '₽') }}</div>
@@ -147,6 +155,7 @@
               </button>
             </form>
           </div>
+        </div>
         </div>
       </div>
       @endforeach
@@ -177,16 +186,23 @@
             }
           @endphp
           <div class="sub-option sub-option--meta" data-sub-id="{{ $level->id }}">
-            <label class="sub-left" for="sub_{{ $level->id }}">
-              <input
-                class="sub-checkbox"
-                id="sub_{{ $level->id }}"
-                type="checkbox"
-                value="{{ $level->id }}"
-                {{ isset($activeByLevel[$level->id]) ? 'disabled' : '' }}
-              />
-              <span class="sub-title">{{ $level->title }}</span>
-            </label>
+            <div class="sub-left-col">
+              <label class="sub-left" for="sub_{{ $level->id }}">
+                <input
+                  class="sub-checkbox"
+                  id="sub_{{ $level->id }}"
+                  type="checkbox"
+                  value="{{ $level->id }}"
+                  {{ isset($activeByLevel[$level->id]) ? 'disabled' : '' }}
+                />
+                <span class="sub-title">{{ $level->title }}</span>
+              </label>
+              @if($levelLink)
+                <div class="sub-actions">
+                  <a class="btn btn-secondary btn-sm" href="{{ $levelLink }}">{{ site_lang('lk_subscriptions|view', 'Посмотреть') }}</a>
+                </div>
+              @endif
+            </div>
             @php
               $activeInfo = $activeByLevel[$level->id] ?? null;
               $recurringInfo = $recurringByLevel[$level->id] ?? null;
@@ -228,11 +244,6 @@
                     </div>
                   @endif
                 </div>
-              @endif
-            </div>
-            <div class="sub-actions">
-              @if($levelLink)
-                <a class="btn btn-secondary btn-sm" href="{{ $levelLink }}">{{ site_lang('lk_subscriptions|view', 'Посмотреть') }}</a>
               @endif
             </div>
           </div>
