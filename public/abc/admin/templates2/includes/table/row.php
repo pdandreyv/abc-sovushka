@@ -77,6 +77,7 @@ foreach ($q['table'] as $k=>$v) {
 	}
 	elseif ($v=='date')		$content.= '<td data-name="'.$k.'" class="post">'.$row[$k].'</td>';
 	elseif ($v=='date_smart')		$content.= '<td title="'.$row[$k].'">'.date2($row[$k],'smart').'</td>';
+	elseif ($v=='datetime')		$content.= '<td data-name="'.$k.'" class="post" title="'.(isset($row[$k]) ? $row[$k] : '').'">'.(isset($row[$k]) && $row[$k] ? date2($row[$k], '%d.%m.%Y %H:%M') : '').'</td>';
 	elseif ($v=='boolean' OR $v=='display') {
 		$content .= '<td data-name="' . $k . '">
 			<div class="custom-control custom-switch custom-checkbox-warning" title="'.a18n($k).'" data-toggle="tooltip">

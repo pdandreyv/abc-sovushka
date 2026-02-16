@@ -139,6 +139,7 @@ class SubscriptionPaymentController extends Controller
             $paymentMethodId = isset($payment['payment_method']['id']) ? $payment['payment_method']['id'] : null;
             $cardLast4 = isset($payment['payment_method']['card']['last4']) ? $this->normalizeCardLast4($payment['payment_method']['card']['last4']) : null;
             $this->processPaymentSuccess($order, $paymentMethodId, $cardLast4);
+            $this->markPromotionUsedIfActivated($order->id);
             $message = $order->promotion_id
                 ? 'Карта привязана. Бесплатный период активирован.'
                 : 'Оплата прошла успешно. Подписки активированы.';
@@ -176,8 +177,24 @@ class SubscriptionPaymentController extends Controller
         $paymentMethodId = isset($object['payment_method']['id']) ? $object['payment_method']['id'] : null;
         $cardLast4 = isset($object['payment_method']['card']['last4']) ? $this->normalizeCardLast4($object['payment_method']['card']['last4']) : null;
         $this->processPaymentSuccess($order, $paymentMethodId, $cardLast4);
+        $this->markPromotionUsedIfActivated($order->id);
 
         return response()->json(['ok' => true], 200);
+    }
+
+    /**
+     * Если заказ по акции успешно оплачен/активирован — помечаем акцию как использованную.
+     */
+    private function markPromotionUsedIfActivated(int $orderId): void
+    {
+        $order = SubscriptionOrder::find($orderId);
+        if (! $order || ! $order->promotion_id || ! $order->paid) {
+            return;
+        }
+        Promotion::where('id', $order->promotion_id)->update([
+            'used' => true,
+            'used_at' => now(),
+        ]);
     }
 
     /**
@@ -425,6 +442,7 @@ class SubscriptionPaymentController extends Controller
         // Заказ по акции: один рекуррентный заказ на все уровни, без разбиения по уровням.
         if ($order->promotion_id) {
             $this->processPromotionPaymentSuccess($order, $hash, $levels, $cardLast4);
+            $this->markPromotionUsedIfActivated($order->id);
             return redirect()->route('subscriptions.index')
                 ->with('success', 'Карта привязана. Бесплатный период активирован.');
         }
