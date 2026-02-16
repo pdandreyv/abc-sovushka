@@ -92,10 +92,11 @@ if (
 	array_splice($u, 0, 3);
 	$temp = implode('/', $u);
 	$temp = trim($temp, '/');
-	// Файлы subscription_levels, ideas, topic_materials лежат в public/files/, а не в public/abc/files/
+	// Файлы subscription_levels, ideas, topic_materials могут быть в public/files/ или в public/abc/files/
 	$temp_fs = ROOT_DIR . $temp;
 	if (preg_match('#^files/(subscription_levels|ideas|topic_materials)/#', $temp)) {
-		$temp_fs = ROOT_DIR . '../' . $temp;
+		$temp_fs_public = ROOT_DIR . '../' . $temp;
+		$temp_fs = file_exists($temp_fs_public) ? $temp_fs_public : $temp_fs;
 	}
 	$temp = $temp_fs;
 	//echo $type.' '.$temp.' '.$size.' '.$root_file; die();

@@ -148,6 +148,7 @@ $a18n = array(
 	'subscription_tariffs'	=> 'Тарифы',
 	'discount_codes'		=> 'Промокоды',
 	'subscription_orders'	=> 'Заказы',
+	'promotions'		=> 'Акции',
 	'subscription_payments_logs'	=> 'Логи платежей',
 	'subscription_level_id'	=> 'уровень подписки',
 	'topics'			=> 'Темы',
