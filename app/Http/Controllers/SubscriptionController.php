@@ -73,7 +73,7 @@ class SubscriptionController extends Controller
             ->whereNotNull('date_next_pay')
             ->whereNotNull('levels')
             ->orderBy('date_next_pay')
-            ->get(['id', 'levels', 'subscription_level_ids', 'date_next_pay', 'auto']);
+            ->get(['id', 'levels', 'subscription_level_ids', 'date_next_pay', 'auto', 'card_last4']);
 
         $recurringByLevel = [];
         foreach ($recurringOrders as $order) {
@@ -86,6 +86,7 @@ class SubscriptionController extends Controller
                     'order_id' => $order->id,
                     'date_next_pay' => $order->date_next_pay,
                     'auto' => (bool) $order->auto,
+                    'card_last4' => $order->card_last4,
                 ];
             }
         }

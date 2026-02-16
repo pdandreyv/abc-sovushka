@@ -134,7 +134,8 @@ class SubscriptionPaymentController extends Controller
 
         if (($payment['status'] ?? '') === 'succeeded' && ! empty($payment['paid'])) {
             $paymentMethodId = isset($payment['payment_method']['id']) ? $payment['payment_method']['id'] : null;
-            $this->processPaymentSuccess($order, $paymentMethodId);
+            $cardLast4 = isset($payment['payment_method']['card']['last4']) ? $this->normalizeCardLast4($payment['payment_method']['card']['last4']) : null;
+            $this->processPaymentSuccess($order, $paymentMethodId, $cardLast4);
             return redirect()->route('subscriptions.index')->with('success', 'Оплата прошла успешно. Подписки активированы.');
         }
 
@@ -167,7 +168,8 @@ class SubscriptionPaymentController extends Controller
         }
 
         $paymentMethodId = isset($object['payment_method']['id']) ? $object['payment_method']['id'] : null;
-        $this->processPaymentSuccess($order, $paymentMethodId);
+        $cardLast4 = isset($object['payment_method']['card']['last4']) ? $this->normalizeCardLast4($object['payment_method']['card']['last4']) : null;
+        $this->processPaymentSuccess($order, $paymentMethodId, $cardLast4);
 
         return response()->json(['ok' => true], 200);
     }
@@ -175,7 +177,7 @@ class SubscriptionPaymentController extends Controller
     /**
      * Отметить заказ оплаченным, сохранить способ оплаты для автоплатежей, создать следующие заказы.
      */
-    private function processPaymentSuccess(SubscriptionOrder $order, ?string $paymentMethodId): void
+    private function processPaymentSuccess(SubscriptionOrder $order, ?string $paymentMethodId, ?string $cardLast4 = null): void
     {
         if ($order->paid) {
             return;
@@ -186,13 +188,18 @@ class SubscriptionPaymentController extends Controller
         $pricePerSub = $count > 0 ? round(((float) $order->sum_without_discount) / $count, 2) : 0;
         $hash = $paymentMethodId ?? $order->hash ?? Str::random(40);
 
-        DB::transaction(function () use ($order, $hash, $levels, $pricePerSub) {
-            $order->update([
-                'paid' => true,
-                'date_paid' => now(),
-                'hash' => $hash,
-                'date_till' => now()->addDays((int) $order->days)->toDateString(),
-            ]);
+        $updateData = [
+            'paid' => true,
+            'date_paid' => now(),
+            'hash' => $hash,
+            'date_till' => now()->addDays((int) $order->days)->toDateString(),
+        ];
+        if ($cardLast4 !== null) {
+            $updateData['card_last4'] = $cardLast4;
+        }
+
+        DB::transaction(function () use ($order, $updateData, $hash, $levels, $pricePerSub, $cardLast4) {
+            $order->update($updateData);
 
             SubscriptionPaymentLog::create([
                 'subscription_order_id' => $order->id,
@@ -214,7 +221,8 @@ class SubscriptionPaymentController extends Controller
                     $order->tariff,
                     $hash,
                     $pricePerSub,
-                    $discountPercentForNext
+                    $discountPercentForNext,
+                    $cardLast4
                 );
             }
         });
@@ -335,6 +343,7 @@ class SubscriptionPaymentController extends Controller
         $perLevelPaidAmount = $count > 0 ? round(((float) $order->sum_subscription) / $count, 2) : 0;
         $pricePerSub = $count > 0 ? round(((float) $order->sum_without_discount) / $count, 2) : 0;
         $cardNumber = preg_replace('/\D+/', '', $data['card_number']);
+        $cardLast4 = strlen($cardNumber) >= 4 ? substr($cardNumber, -4) : null;
         [$expMonthRaw, $expYearRaw] = array_map('trim', explode('/', $data['card_exp']));
         $expMonth = (int) $expMonthRaw;
         $expYear = (int) $expYearRaw;
@@ -345,6 +354,7 @@ class SubscriptionPaymentController extends Controller
             DB::transaction(function () use (
                 $order,
                 $hash,
+                $cardLast4,
                 $cardNumber,
                 $expMonth,
                 $expYear,
@@ -352,12 +362,16 @@ class SubscriptionPaymentController extends Controller
                 $levels,
                 $pricePerSub
             ) {
-                $order->update([
+                $updateData = [
                     'paid' => true,
                     'date_paid' => now(),
                     'hash' => $hash,
                     'date_till' => now()->addDays((int) $order->days)->toDateString(),
-                ]);
+                ];
+                if ($cardLast4 !== null) {
+                    $updateData['card_last4'] = $cardLast4;
+                }
+                $order->update($updateData);
 
                 SubscriptionPaymentLog::create([
                     'subscription_order_id' => $order->id,
@@ -388,7 +402,8 @@ class SubscriptionPaymentController extends Controller
                         $order->tariff,
                         $hash,
                         $pricePerSub,
-                        $discountPercentForNext
+                        $discountPercentForNext,
+                        $cardLast4
                     );
                 }
             });
@@ -446,7 +461,8 @@ class SubscriptionPaymentController extends Controller
         ?int $tariffId,
         string $hash,
         float $pricePerSub,
-        int $discountPercent = 0
+        int $discountPercent = 0,
+        ?string $cardLast4 = null
     ): void {
         $today = Carbon::today();
 
@@ -493,9 +509,19 @@ class SubscriptionPaymentController extends Controller
             'date_till' => $periodEnd->toDateString(),
             'tariff' => $tariffId,
             'hash' => $hash,
+            'card_last4' => $cardLast4,
             'errors' => 0,
             'auto' => true,
         ]);
+    }
+
+    private function normalizeCardLast4(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        $digits = preg_replace('/\D/', '', $value);
+        return strlen($digits) >= 4 ? substr($digits, -4) : null;
     }
 
     private function parseLevelIds($subscriptionLevelIds, ?string $levels = null): array

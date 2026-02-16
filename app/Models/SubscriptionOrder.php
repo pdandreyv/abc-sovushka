@@ -23,6 +23,7 @@ class SubscriptionOrder extends Model
         'date_next_pay',
         'sum_next_pay',
         'hash',
+        'card_last4',
         'errors',
         'auto',
         'tariff',

@@ -27,6 +27,7 @@ $a18n['days'] = 'Количество дней';
 $a18n['date_next_pay'] = 'Дата следующего платежа';
 $a18n['sum_next_pay'] = 'Сумма следующего платежа';
 $a18n['hash'] = 'Хеш карты';
+$a18n['card_last4'] = 'Карта (4 цифры)';
 $a18n['errors'] = 'Ошибки';
 $a18n['logs'] = 'Логи';
 $a18n['paid'] = 'Оплачен';
@@ -43,6 +44,7 @@ $table = array(
 	'days'		=>	'',
 	'date_next_pay'	=>	'date',
 	'sum_next_pay'	=>	'',
+	'card_last4'	=>	'',
 	'errors'	=>	'',
 	'logs'		=>	'<a href="/admin.php?m=subscription_payments_logs&search={id}">Логи</a>',
 	'paid'		=>	'boolean',
@@ -112,6 +114,9 @@ $form[] = array('input td3','sum_next_pay',array(
 ));
 $form[] = array('input td6','hash',array(
 	'help'=>'Хеш карты для рекуррентного платежа'
+));
+$form[] = array('input td2','card_last4',array(
+	'help'=>'Последние 4 цифры карты (из ЮKassa), только для отображения'
 ));
 $form[] = array('input td3','errors',array(
 	'value'=>@$post['errors'] ? $post['errors'] : 0

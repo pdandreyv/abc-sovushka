@@ -266,6 +266,7 @@ class ProcessSubscriptionRecurring extends Command
             'date_till' => $nextTill->toDateString(),
             'tariff' => $order->tariff,
             'hash' => $order->hash,
+            'card_last4' => $order->card_last4,
             'errors' => 0,
             'auto' => true,
         ]);

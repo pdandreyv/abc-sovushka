@@ -28,7 +28,14 @@
   }
   .sub-meta-actions {
     display: flex;
+    align-items: center;
     gap: 8px;
+  }
+  .sub-card-info {
+    font-size: 13px;
+    color: #555;
+  }
+  .sub-meta-actions form {
     flex-wrap: wrap;
     justify-content: flex-end;
   }
@@ -171,7 +178,7 @@
                       {{ $activeTariff->title }} ({{ number_format((float) $activeTariff->price, 0, ',', ' ') }} {{ site_lang('lk_subscriptions|rubles', '₽') }})
                     </div>
                   @endif
-                  @if($recurringInfo)
+                    @if($recurringInfo)
                     @if($recurringInfo['auto'])
                       <div>
                         {{ site_lang('lk_subscriptions|next_charge', 'Следующее списание:') }}
@@ -179,6 +186,9 @@
                       </div>
                     @endif
                     <div class="sub-meta-actions">
+                      @if(!empty($recurringInfo['card_last4']))
+                        <span class="sub-card-info">{{ site_lang('lk_subscriptions|card_number', 'Карта') }} **** {{ $recurringInfo['card_last4'] }}</span>
+                      @endif
                       <form class="js-recurring-toggle-form" method="POST" action="{{ route('subscriptions.recurring.toggle', ['level' => $level->id]) }}" data-confirm-cancel="{{ site_lang('lk_subscriptions|confirm_cancel_autorenew', 'Вы уверены, что хотите отменить автопродление?') }}" data-confirm-enable="{{ site_lang('lk_subscriptions|confirm_enable_autorenew', 'Включить автопродление подписки?') }}">
                         @csrf
                         <input type="hidden" name="enable" value="{{ $recurringInfo['auto'] ? 0 : 1 }}">
