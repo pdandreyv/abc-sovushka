@@ -168,7 +168,7 @@
                   @if($activeTariff)
                     <div>
                       {{ site_lang('lk_subscriptions|tariff_label', 'Тариф:') }}
-                      {{ $activeTariff->title }} ({{ number_format((float) $activeTariff->price, 0, ',', ' ') }} {{ site_lang('lk_subscriptions|rubles', 'рублей') }})
+                      {{ $activeTariff->title }} ({{ number_format((float) $activeTariff->price, 0, ',', ' ') }} {{ site_lang('lk_subscriptions|rubles', '₽') }})
                     </div>
                   @endif
                   @if($recurringInfo)
