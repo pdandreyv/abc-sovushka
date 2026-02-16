@@ -58,7 +58,7 @@
             </button>
 
             @if($idea->image)
-              <img src="/_imgs/270x185/files/ideas/{{ $idea->id }}/image/{{ $idea->image }}" alt="{{ $idea->title }}" />
+              <img src="/abc/_imgs/270x185/files/ideas/{{ $idea->id }}/image/{{ $idea->image }}" alt="{{ $idea->title }}" />
             @else
               <img src="{{ asset('images/placeholder.jpg') }}" alt="{{ $idea->title }}" />
             @endif
