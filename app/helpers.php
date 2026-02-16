@@ -64,6 +64,34 @@ if (!function_exists('site_lang')) {
     }
 }
 
+if (!function_exists('lk_parse_subscription_level_ids')) {
+    /**
+     * Парсит ID уровней подписки из полей заказа (subscription_level_ids или levels).
+     *
+     * @param mixed $subscriptionLevelIds
+     * @param string|null $levels
+     * @return array<int>
+     */
+    function lk_parse_subscription_level_ids($subscriptionLevelIds, ?string $levels = null): array
+    {
+        if (is_array($subscriptionLevelIds)) {
+            return array_values(array_unique(array_map('intval', $subscriptionLevelIds)));
+        }
+        $source = $subscriptionLevelIds ?: $levels;
+        if (!is_string($source) || trim($source) === '') {
+            return [];
+        }
+        $decoded = json_decode($source, true);
+        if (is_array($decoded)) {
+            return array_values(array_unique(array_map('intval', $decoded)));
+        }
+        return array_values(array_unique(array_map(
+            'intval',
+            array_filter(array_map('trim', explode(',', $source)))
+        )));
+    }
+}
+
 if (!function_exists('lk_subscription_status')) {
     /**
      * Статус подписок текущего пользователя для шапки ЛК.
@@ -85,21 +113,35 @@ if (!function_exists('lk_subscription_status')) {
             ->whereDate('date_till', '>=', $today)
             ->get(['subscription_level_ids', 'levels', 'date_till']);
 
-        $minDateTill = null;
+        // По каждой подписке (level_id) — максимальная date_till среди оплаченных; затем минимум из этих дат (первая истекающая).
+        $maxDateTillByLevel = [];
         foreach ($activeOrders as $order) {
-            if ($order->date_till !== null) {
-                $dateTill = $order->date_till instanceof \Carbon\Carbon
-                    ? $order->date_till
-                    : \Carbon\Carbon::parse($order->date_till);
-                if ($minDateTill === null || $dateTill->lt($minDateTill)) {
-                    $minDateTill = $dateTill;
+            if ($order->date_till === null) {
+                continue;
+            }
+            $dateTill = $order->date_till instanceof \Carbon\Carbon
+                ? $order->date_till
+                : \Carbon\Carbon::parse($order->date_till);
+            $levelIds = lk_parse_subscription_level_ids($order->subscription_level_ids, $order->levels);
+            foreach ($levelIds as $levelId) {
+                if (!isset($maxDateTillByLevel[$levelId]) || $dateTill->gt($maxDateTillByLevel[$levelId])) {
+                    $maxDateTillByLevel[$levelId] = $dateTill;
                 }
+            }
+        }
+
+        $minDateTill = null;
+        foreach ($maxDateTillByLevel as $dateTill) {
+            if ($minDateTill === null || $dateTill->lt($minDateTill)) {
+                $minDateTill = $dateTill;
             }
         }
 
         $daysLeft = null;
         if ($minDateTill !== null) {
-            $daysLeft = max(0, (int) \Carbon\Carbon::today()->startOfDay()->diffInDays($minDateTill->copy()->startOfDay()));
+            $todayStart = \Carbon\Carbon::today()->startOfDay();
+            $endStart = $minDateTill->copy()->startOfDay();
+            $daysLeft = max(0, (int) round($todayStart->diffInDays($endStart)));
         }
 
         return [

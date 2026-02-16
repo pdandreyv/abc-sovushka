@@ -28,6 +28,7 @@ $a18n['date_next_pay'] = 'Дата следующего платежа';
 $a18n['sum_next_pay'] = 'Сумма следующего платежа';
 $a18n['hash'] = 'Хеш карты';
 $a18n['errors'] = 'Ошибки';
+$a18n['logs'] = 'Логи';
 $a18n['paid'] = 'Оплачен';
 $a18n['auto'] = 'Автопродление';
 
@@ -42,9 +43,10 @@ $table = array(
 	'days'		=>	'',
 	'date_next_pay'	=>	'date',
 	'sum_next_pay'	=>	'',
+	'errors'	=>	'',
+	'logs'		=>	'<a href="/admin.php?m=subscription_payments_logs&search={id}">Логи</a>',
 	'paid'		=>	'boolean',
 	'auto'		=>	'boolean',
-	'errors'	=>	'',
 );
 
 // Поиск (по id заказа, user_id, email пользователя)

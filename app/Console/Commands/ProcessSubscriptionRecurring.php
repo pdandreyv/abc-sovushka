@@ -116,17 +116,10 @@ class ProcessSubscriptionRecurring extends Command
         }
 
         if ($success) {
-            $periodEnd = Carbon::parse($order->date_till);
-            if ($attempt === 1) {
-                $periodEnd->addDay();
-            } elseif ($attempt === 3) {
-                $periodEnd->subDay();
-            }
-
+            // Не меняем date_till обрабатываемого заказа — он уже создан с правильной датой (конец оплаченного периода). Только отмечаем оплату.
             $order->update([
                 'paid' => true,
                 'date_paid' => now(),
-                'date_till' => $periodEnd->toDateString(),
                 'sum_subscription' => $amount,
                 'sum_without_discount' => $basePrice,
                 'hash' => $order->hash ?: Str::random(40),
@@ -143,7 +136,9 @@ class ProcessSubscriptionRecurring extends Command
                 'attempted_at' => now(),
             ]);
 
-            $this->createNextOrder($order, $basePrice, $levelId, $discountPercent, $periodEnd->toDateString());
+            // Дата следующего списания для нового заказа = конец периода оплаченного заказа (order->date_till, мы его не меняем).
+            $nextOrderStart = Carbon::parse($order->date_till);
+            $this->createNextOrder($order, $basePrice, $levelId, $discountPercent, $nextOrderStart->toDateString());
 
             $this->info('Recurring payment successful for order #' . $order->id);
         } else {
