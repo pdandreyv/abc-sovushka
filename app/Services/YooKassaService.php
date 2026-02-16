@@ -185,7 +185,7 @@ class YooKassaService
                         'value' => $amount,
                         'currency' => 'RUB',
                     ],
-                    'vat_code' => 1,
+                    'vat_code' => 7, // 5% НДС (1 — без НДС, 3 — 10%, 4 — 20%, 7 — 5%)
                     'payment_mode' => 'full_prepayment',
                     'payment_subject' => 'service',
                 ],
