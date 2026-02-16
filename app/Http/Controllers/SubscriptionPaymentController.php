@@ -73,6 +73,21 @@ class SubscriptionPaymentController extends Controller
 
         $returnUrl = route('subscriptions.yookassa.return', ['order_id' => $order->id]);
 
+        // Привязка карты по акции: используем привязку на нулевую сумму (POST /payment_methods без amount)
+        if ($order->promotion_id && (float) $order->sum_subscription <= 0) {
+            $result = $this->yookassa->createPaymentMethod($returnUrl);
+            if (isset($result['error'])) {
+                return redirect()->route('subscriptions.checkout', ['order' => $order->id])
+                    ->withErrors(['payment' => 'ЮKassa: ' . $result['error']]);
+            }
+            $order->update(['yookassa_payment_id' => $result['id']]);
+            if (! empty($result['confirmation_url'])) {
+                return redirect()->away($result['confirmation_url']);
+            }
+            return redirect()->route('subscriptions.checkout', ['order' => $order->id])
+                ->withErrors(['payment' => 'Не получена ссылка на привязку карты.']);
+        }
+
         $user = $order->user;
         $customerName = $user ? trim(implode(' ', array_filter([
             $user->last_name ?? '',
@@ -130,12 +145,8 @@ class SubscriptionPaymentController extends Controller
 
         $payment = $this->yookassa->getPayment($order->yookassa_payment_id);
 
-        if (isset($payment['error'])) {
-            return redirect()->route('subscriptions.checkout', ['order' => $order->id])
-                ->withErrors(['payment' => 'ЮKassa: ' . $payment['error']]);
-        }
-
-        if (($payment['status'] ?? '') === 'succeeded' && ! empty($payment['paid'])) {
+        // Если это был платёж — обрабатываем успех
+        if (! isset($payment['error']) && ($payment['status'] ?? '') === 'succeeded' && ! empty($payment['paid'])) {
             $paymentMethodId = isset($payment['payment_method']['id']) ? $payment['payment_method']['id'] : null;
             $cardLast4 = isset($payment['payment_method']['card']['last4']) ? $this->normalizeCardLast4($payment['payment_method']['card']['last4']) : null;
             $this->processPaymentSuccess($order, $paymentMethodId, $cardLast4);
@@ -144,6 +155,27 @@ class SubscriptionPaymentController extends Controller
                 ? 'Карта привязана. Бесплатный период активирован.'
                 : 'Оплата прошла успешно. Подписки активированы.';
             return redirect()->route('subscriptions.index')->with('success', $message);
+        }
+
+        // Привязка на нулевую сумму: в yookassa_payment_id хранится id способа оплаты
+        if ($order->promotion_id && (float) $order->sum_subscription <= 0) {
+            $pm = $this->yookassa->getPaymentMethod($order->yookassa_payment_id);
+            if (! isset($pm['error']) && ($pm['status'] ?? '') === 'active' && ! empty($pm['saved'])) {
+                $hash = $pm['id'];
+                $cardLast4 = isset($pm['card']['last4']) ? $this->normalizeCardLast4($pm['card']['last4']) : null;
+                $levels = $this->parseLevelIds($order->subscription_level_ids, $order->levels);
+                $this->processPromotionPaymentSuccess($order, $hash, $levels, $cardLast4);
+                $this->markPromotionUsedIfActivated($order->id);
+                return redirect()->route('subscriptions.index')
+                    ->with('success', 'Карта привязана. Бесплатный период активирован.');
+            }
+            if (isset($pm['error'])) {
+                return redirect()->route('subscriptions.checkout', ['order' => $order->id])
+                    ->withErrors(['payment' => 'ЮKassa: ' . $pm['error']]);
+            }
+        } elseif (isset($payment['error'])) {
+            return redirect()->route('subscriptions.checkout', ['order' => $order->id])
+                ->withErrors(['payment' => 'ЮKassa: ' . $payment['error']]);
         }
 
         return redirect()->route('subscriptions.checkout', ['order' => $order->id])

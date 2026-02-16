@@ -81,6 +81,60 @@ class YooKassaService
     }
 
     /**
+     * Привязка карты на нулевую сумму (без списания).
+     * Документация: https://yookassa.ru/developers/payment-acceptance/scenario-extensions/recurring-payments/save-payment-method/save-without-payment
+     * Запрос к POST /payment_methods — без поля amount.
+     *
+     * @return array{id: string, confirmation_url?: string}|array{error: string}
+     */
+    public function createPaymentMethod(string $returnUrl): array
+    {
+        $body = [
+            'type' => 'bank_card',
+            'confirmation' => [
+                'type' => 'redirect',
+                'return_url' => $returnUrl,
+            ],
+        ];
+
+        $response = $this->request('POST', '/payment_methods', $body);
+
+        if (isset($response['id'])) {
+            return [
+                'id' => $response['id'],
+                'confirmation_url' => $response['confirmation']['confirmation_url'] ?? null,
+            ];
+        }
+
+        return [
+            'error' => $response['description'] ?? $response['code'] ?? 'Unknown YooKassa error',
+        ];
+    }
+
+    /**
+     * Получить информацию о способе оплаты (для проверки результата привязки на нулевую сумму).
+     *
+     * @return array{id: string, status: string, saved: bool, card?: array}|array{error: string}
+     */
+    public function getPaymentMethod(string $paymentMethodId): array
+    {
+        $response = $this->request('GET', '/payment_methods/' . $paymentMethodId);
+
+        if (isset($response['id'], $response['status'])) {
+            return [
+                'id' => $response['id'],
+                'status' => (string) ($response['status'] ?? ''),
+                'saved' => (bool) ($response['saved'] ?? false),
+                'card' => $response['card'] ?? null,
+            ];
+        }
+
+        return [
+            'error' => $response['description'] ?? $response['code'] ?? 'Unknown YooKassa error',
+        ];
+    }
+
+    /**
      * Получить информацию о платеже.
      *
      * @return array{id: string, status: string, paid: bool, payment_method?: array}|array{error: string}
