@@ -52,8 +52,14 @@ $query = "
 
 $filter[] = array('search');
 
-$form[] = array('input td8','title');
-$form[] = array('input td6','link',array('help'=>'Ссылка на страницу направления'));
+$form[] = array('input td4','title');
+$form[] = array('input td2','sort_order',array(
+	'value'=>@$post['sort_order'] ? $post['sort_order'] : 0
+));
+$form[] = array('checkbox','open',array('help'=>'Если включено: в боковом меню ЛК появляется ссылка на этот уровень, материалы доступны всем без подписки'));
+$form[] = array('checkbox','display',array('help'=>'Если включено: уровень показывается на странице выбора подписок. При display=0 уровень скрыт из выбора, но в меню ЛК по-прежнему отображаются пункты с open=1'));
+$form[] = array('checkbox','is_active');
+//$form[] = array('input td6','link',array('help'=>'Ссылка на страницу направления'));
 $form[] = array('file td12','demo_file',array(
 	'name'=>'Демо-файл (любой файл для отображения и скачивания)',
 	'help'=>'Загрузите файл — в форме будет отображаться ссылка на него и возможность скачать.'
@@ -68,9 +74,4 @@ $form[] = array('textarea td12','demo_block_description',array(
 	'help'=>'Подзаголовок под заголовком демо-блока на странице уровня. В тексте можно использовать {title} — подставится название уровня.',
 	'placeholder'=>'Этот блок помогает пользователю увидеть пример материалов по подписке. Позже сюда можно подгружать демо-уроки из базы данных.'
 ));
-$form[] = array('input td2','sort_order',array(
-	'value'=>@$post['sort_order'] ? $post['sort_order'] : 0
-));
-$form[] = array('checkbox','open',array('help'=>'Если включено: в боковом меню ЛК появляется ссылка на этот уровень, материалы доступны всем без подписки'));
-$form[] = array('checkbox','display',array('help'=>'Если включено: уровень показывается на странице выбора подписок. При display=0 уровень скрыт из выбора, но в меню ЛК по-прежнему отображаются пункты с open=1'));
-$form[] = array('checkbox','is_active');
+

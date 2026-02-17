@@ -60,6 +60,9 @@ $form[] = array('select td6', 'user_id', array(
 	'attr' => 'data-url="/admin.php?m=promotions&u=get_users" data-min-input="1"',
 	'help' => 'Поиск по ID, полному ID (user_code) или email',
 ));
+$form[] = array('checkbox', 'used', array(
+	'help' => 'Отметьте, если акция уже использована (или снимайте галочку для сброса).',
+));
 $form[] = array('multicheckbox td12', 'subscription_level_ids', array(
 	'value' => array(true, 'SELECT id, title as name FROM subscription_levels ORDER BY sort_order'),
 	'name' => 'Уровни подписки',
@@ -76,7 +79,4 @@ $form[] = array('input td3', 'special_price', array(
 $form[] = array('input td3', 'free_days', array(
 	'value' => @$post['free_days'] !== '' && @$post['free_days'] !== null ? $post['free_days'] : 0,
 	'help' => 'Количество бесплатных дней после привязки карты.',
-));
-$form[] = array('checkbox', 'used', array(
-	'help' => 'Отметьте, если акция уже использована (или снимайте галочку для сброса).',
 ));

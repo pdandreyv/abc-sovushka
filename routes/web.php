@@ -76,6 +76,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/promotion', [PromotionController::class, 'index'])->name('promotion.index');
     Route::post('/promotion/attach-card', [PromotionController::class, 'createOrder'])->name('promotion.attach-card');
 
+    // Редирект /subjects и /subjects/ на подписки (иначе 404)
+    Route::redirect('/subjects', '/subscriptions', 301);
+    Route::redirect('/subjects/', '/subscriptions', 301);
+
     // Предметы и темы (без проверки подписки)
     Route::get('/subjects/{level}', [SubjectController::class, 'index'])->name('subjects.index');
     Route::get('/subjects/{level}/{subject}', [SubjectController::class, 'show'])->name('subjects.show');
