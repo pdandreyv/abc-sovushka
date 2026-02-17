@@ -175,6 +175,7 @@ $a18n = array(
 	'user_types'	=> 'Роли',
 	'user_fields'	=> 'Параметры',
 	'user_socials'	=> 'Социльные профили',
+	'user_activity_logs' => 'Логи действий',
 	'units'			=> 'ед.измерения',
 	'upload_images' => 'загрузка картинок',
 	'values'		=> 'значения',

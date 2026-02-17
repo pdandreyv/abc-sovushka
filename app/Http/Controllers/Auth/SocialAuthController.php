@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\UserActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -108,6 +109,7 @@ class SocialAuthController extends Controller
 
         // Авторизуем пользователя
         Auth::login($user, true);
+        UserActivityLogService::logLogin((int) $user->id, $request->ip() ?? '');
 
         $this->ensureUserCode($user);
         $this->storeUserSocial($user, $provider, $socialUser->getId(), $socialUser->getEmail());
@@ -223,6 +225,7 @@ class SocialAuthController extends Controller
         }
 
         Auth::login($user, true);
+        UserActivityLogService::logLogin((int) $user->id, $request->ip() ?? '');
 
         $this->ensureUserCode($user);
         $this->storeUserSocial($user, $provider, $socialId, $email);
@@ -351,6 +354,7 @@ class SocialAuthController extends Controller
         }
 
         Auth::login($user, true);
+        UserActivityLogService::logLogin((int) $user->id, $request->ip() ?? '');
 
         $this->ensureUserCode($user);
         $this->storeUserSocial($user, 'telegram', $telegramId, $payload['username'] ?? null);

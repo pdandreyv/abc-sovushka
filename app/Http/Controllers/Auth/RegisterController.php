@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\UserActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -51,6 +52,7 @@ class RegisterController extends Controller
         ]);
 
         Auth::login($user, true);
+        UserActivityLogService::logLogin((int) $user->id, $request->ip() ?? '');
 
         return redirect('/profile')->with('success', 'Регистрация прошла успешно! Добро пожаловать! Пожалуйста, проверьте и сохраните данные профиля.');
     }

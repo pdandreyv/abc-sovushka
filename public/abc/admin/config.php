@@ -172,6 +172,7 @@ $modules_admin = array(
 			array('module'=>'user_types',),
 			//array('module'=>'user_fields',),
 			array('module'=>'user_socials',),
+			array('module'=>'user_activity_logs',),
 		),
 	),
 /*

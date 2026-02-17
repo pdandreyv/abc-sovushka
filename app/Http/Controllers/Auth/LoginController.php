@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use App\Services\UserActivityLogService;
 
 class LoginController extends Controller
 {
@@ -50,6 +51,7 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, true)) {
             $request->session()->regenerate();
             Log::channel('single')->info('auth_lk_login', ['email' => $email, 'result' => 'success']);
+            UserActivityLogService::logLogin((int) Auth::id(), $request->ip() ?? '');
             return redirect()->intended('/dashboard')->with('success', 'Вы успешно вошли в систему!');
         }
 

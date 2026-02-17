@@ -7,6 +7,8 @@ use App\Models\SubscriptionLevel;
 use App\Models\SubscriptionOrder;
 use App\Models\Topic;
 use App\Models\TopicMaterial;
+use App\Services\UserActivityLogService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class SubjectController extends Controller
@@ -144,6 +146,39 @@ class SubjectController extends Controller
         return response()->json([
             'materials' => $payload,
         ]);
+    }
+
+    /**
+     * Скачивание файла материала с логированием (action 12).
+     */
+    public function downloadMaterial(Request $request, int $material)
+    {
+        $materialModel = TopicMaterial::query()
+            ->where('id', $material)
+            ->where('display', true)
+            ->firstOrFail();
+
+        $levelId = $materialModel->subscription_level_id;
+        if (! (bool) SubscriptionLevel::find($levelId)?->open && ! $this->hasActiveSubscriptionForLevel($levelId)) {
+            abort(403);
+        }
+
+        $type = strtolower((string) $request->query('type', 'pdf'));
+        $type = in_array($type, ['pdf', 'zip'], true) ? $type : 'pdf';
+        $field = $type === 'zip' ? 'zip_file' : 'pdf_file';
+        $folder = $type === 'zip' ? 'zip' : 'pdf';
+        $url = $this->resolveFileUrl($materialModel, $field, $folder);
+        if (! $url) {
+            abort(404);
+        }
+
+        $user = Auth::user();
+        if ($user) {
+            UserActivityLogService::logMaterialDownload($user->id, $material, $request->ip() ?? '');
+            UserActivityLogService::touchLoginRecord($user->id);
+        }
+
+        return redirect()->away(url($url));
     }
 
     private function resolveFileUrl(TopicMaterial $material, string $field, string $folder): ?string

@@ -12,6 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withCommands([
         \App\Console\Commands\ProcessSubscriptionRecurring::class,
+        \App\Console\Commands\CleanUserActivityLogs::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [

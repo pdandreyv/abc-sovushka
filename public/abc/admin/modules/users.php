@@ -100,6 +100,7 @@ $table = array(
 	'type'		=>	$user_types,
 	'last_visit'	=> 'date',
 	'created_at'		=>	'date',
+	'activity_logs'	=>	'<a href="/admin.php?m=user_activity_logs&user={id}">Логи</a>',
 );
 
 function table_login($q,$k) {

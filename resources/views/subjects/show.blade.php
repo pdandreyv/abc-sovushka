@@ -290,6 +290,10 @@
     return '{{ route('viewer.show') }}?doc=' + encodeURIComponent(path);
   }
 
+  function materialDownloadUrl(materialId, type) {
+    return '{{ url('/subjects/material') }}/' + materialId + '/file?type=' + encodeURIComponent(type);
+  }
+
   function renderMaterialsInto(container, items, topic, noAccess) {
     container.innerHTML = '';
 
@@ -337,7 +341,7 @@
       return ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext);
     }
 
-    function buildFileActions(fileUrl) {
+    function buildFileActions(fileUrl, materialId, fileType) {
       if (!fileUrl || (topic && topic.is_blocked)) return '';
 
       const ext = getExtension(fileUrl);
@@ -349,8 +353,9 @@
           '<a class="btn btn-secondary btn-icon" target="_blank" rel="noopener" href="' + viewerUrl(fileUrl) + '" title="Посмотреть">👁</a>'
         );
       }
+      const downloadUrl = materialId != null ? materialDownloadUrl(materialId, fileType) : fileUrl;
       group.push(
-        '<a class="btn btn-primary" target="_blank" rel="noopener" href="' + fileUrl + '" download>Скачать ' + label + '</a>'
+        '<a class="btn btn-primary" target="_blank" rel="noopener" href="' + downloadUrl + '" download>Скачать ' + label + '</a>'
       );
       return '<div class="file-action-group">' + group.join('') + '</div>';
     }
@@ -358,7 +363,7 @@
     items.forEach(function(item) {
       const card = document.createElement('div');
       card.className = 'file-card';
-      const actions = buildFileActions(item.pdf_url) + buildFileActions(item.zip_url);
+      const actions = buildFileActions(item.pdf_url, item.id, 'pdf') + buildFileActions(item.zip_url, item.id, 'zip');
       card.innerHTML =
         '<div class="file-card__top">' +
           '<div class="file-name">' + item.title + '</div>' +
