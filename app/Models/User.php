@@ -81,7 +81,8 @@ class User extends Authenticatable
     protected static function booted(): void
     {
         static::created(function (User $user) {
-            if (!$user->user_code) {
+            $raw = $user->getRawOriginal('user_code');
+            if ($raw === null || $raw === '') {
                 $user->updateQuietly([
                     'user_code' => $user->created_at->format('Ymd') . $user->id,
                 ]);

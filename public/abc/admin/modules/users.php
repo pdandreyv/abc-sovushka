@@ -252,6 +252,8 @@ if ($get['u']=='form' OR $get['id']>0) {
 //v1.4.14 - event_func
 function event_change_users($q) {
 	global $get,$user,$post;
+	// проставить user_code (ID пользователя), если пусто — при создании и при редактировании
+	mysql_fn('query', "UPDATE users SET user_code = CONCAT(DATE_FORMAT(COALESCE(created_at, NOW()), '%Y%m%d'), id) WHERE id = " . (int)$q['id'] . " AND (user_code IS NULL OR user_code = '')");
 	//переавторизация после сохранения своих данных
 	if ($q['id']==$user['id']) {
 		user('re-auth');

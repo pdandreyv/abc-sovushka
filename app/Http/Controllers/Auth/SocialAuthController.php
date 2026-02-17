@@ -585,7 +585,8 @@ class SocialAuthController extends Controller
 
     private function ensureUserCode(User $user): void
     {
-        if ($user->user_code) {
+        $raw = $user->getRawOriginal('user_code');
+        if ($raw !== null && $raw !== '') {
             return;
         }
 
