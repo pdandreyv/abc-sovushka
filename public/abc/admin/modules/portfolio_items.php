@@ -28,11 +28,13 @@ $a18n['date_from'] = 'Период от';
 $a18n['date_to'] = 'Период до';
 $a18n['user_id'] = 'Пользователь (именной сертификат)';
 
+$subscription_levels = mysql_select("SELECT id, title as name FROM subscription_levels ORDER BY sort_order, id", 'array');
+
 $table = array(
 	'id'         => 'sort_order:desc id:desc',
 	'title'      => '',
 	'badge'      => '',
-	'subscription_level_id' => '',
+	'subscription_level_id' => $subscription_levels,
 	'date_from'  => 'date',
 	'date_to'    => 'date',
 	'user_id'    => '',
