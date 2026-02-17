@@ -16,7 +16,7 @@ $a18n['updated_at'] = 'Дата обновления';
 $a18n['user_id'] = 'Пользователь';
 $a18n['ip'] = 'IP';
 $a18n['action'] = 'Действие';
-$a18n['topic_material_id'] = 'ID материала темы';
+$a18n['topic_material'] = 'Материал темы';
 
 $where = '';
 if (isset($get['user']) && (int)$get['user'] > 0) {
@@ -37,11 +37,22 @@ if (isset($get['search']) && $get['search'] !== '') {
 }
 
 $query = "
-    SELECT user_activity_logs.*, u.email
+    SELECT user_activity_logs.*, u.email, tm.title AS topic_material_title
     FROM user_activity_logs
     LEFT JOIN users u ON u.id = user_activity_logs.user_id
+    LEFT JOIN topic_materials tm ON tm.id = user_activity_logs.topic_material_id
     WHERE 1 " . $where . "
 ";
+
+function table_user_activity_log_topic_material($row, $k) {
+    $id = isset($row['topic_material_id']) ? $row['topic_material_id'] : null;
+    $title = isset($row['topic_material_title']) ? trim((string)$row['topic_material_title']) : '';
+    if ($id) {
+        $text = $title !== '' ? htmlspecialchars($title) : '#' . $id;
+        return '<td><a href="/admin.php?m=topic_materials&id=' . (int)$id . '">' . $text . '</a></td>';
+    }
+    return '<td>—</td>';
+}
 
 $filter[] = array('user', "SELECT u.id, u.email name FROM users u INNER JOIN user_activity_logs l ON l.user_id = u.id GROUP BY u.id ORDER BY u.email", 'пользователь');
 $filter[] = array('action', $action_labels, 'действие');
@@ -55,6 +66,6 @@ $table = array(
     'user_id' => '<a href="/admin.php?m=users&id={user_id}">[{user_id}] {email}</a>',
     'ip'      => '',
     'action'  => $action_labels,
-    'topic_material_id' => '',
+    'topic_material' => '::table_user_activity_log_topic_material',
     '_delete' => true,
 );
