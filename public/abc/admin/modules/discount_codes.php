@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($post['display'])) {
 }
 
 $a18n['code'] = 'Код';
-$a18n['valid_until'] = 'Действует до (включительно)';
+$a18n['valid_until'] = 'Действует до';
 $a18n['usage_limit'] = 'Количество использований';
 $a18n['subscription_level_ids'] = 'Уровни подписок';
 $a18n['discount_percent'] = 'Процент скидки';
@@ -50,11 +50,11 @@ $filter[] = array('search');
 $form[] = array('input td3', 'code', array(
 	'help' => 'Уникальный код например: WELCOME10. Регистр не учитывается при проверке.',
 ));
-$form[] = array('input td3', 'discount_percent', array(
+$form[] = array('input td2', 'discount_percent', array(
 	'value' => @$post['discount_percent'] !== '' && @$post['discount_percent'] !== null ? $post['discount_percent'] : 0,
 	'help' => 'Процент скидки 0–100. При 100% подписка бесплатная, на оплату не перенаправляем.',
 ));
-$form[] = array('input td3', 'valid_until', array(
+$form[] = array('input td2', 'valid_until', array(
 	'attr' => 'type="date"',
 	'value' => @$post['valid_until'] ? substr($post['valid_until'], 0, 10) : '',
 	'help' => 'Дата, до которой код действует (включительно)',
@@ -63,11 +63,11 @@ $form[] = array('input td3', 'usage_limit', array(
 	'value' => @$post['usage_limit'] !== '' && @$post['usage_limit'] !== null ? $post['usage_limit'] : 1,
 	'help' => 'Максимум использований кода (всего).',
 ));
+$form[] = array('checkbox', 'display', array(
+	'help' => 'При выключении промокод не действует (код и данные не удаляются).',
+));
 $form[] = array('multicheckbox td12', 'subscription_level_ids', array(
 	'value' => array(true, 'SELECT id, title as name FROM subscription_levels ORDER BY sort_order'),
 	'name' => 'Уровни подписок (к каким применяется код)',
 	'help' => 'Если ни один не выбран — код не применяется ни к каким уровням.',
-));
-$form[] = array('checkbox', 'display', array(
-	'help' => 'При выключении промокод не действует (код и данные не удаляются).',
 ));
