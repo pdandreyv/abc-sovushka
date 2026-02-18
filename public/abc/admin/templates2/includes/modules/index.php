@@ -5,45 +5,43 @@ $date_from = isset($_GET['date_from']) ? trim($_GET['date_from']) : '';
 $date_to   = isset($_GET['date_to'])   ? trim($_GET['date_to'])   : '';
 $has_period = ($date_from !== '' && $date_to !== '');
 
+$date_cond = '';
+$date_paid_cond = '';
 if ($has_period) {
 	$d_from = mysql_res($date_from) . ' 00:00:00';
 	$d_to   = mysql_res($date_to)   . ' 23:59:59';
-
-	// Всего пользователей — зарегистрировались в период
-	$q['totals']['users'] = mysql_select(
-		"SELECT COUNT(id) FROM users WHERE id>1 AND created_at>='".$d_from."' AND created_at<='".$d_to."'",
-		'string'
-	);
-
-	// Новые подписчики — уникальные пользователи, оплатившие подписку в период
-	$q['totals']['new_subscribers'] = mysql_select(
-		"SELECT COUNT(DISTINCT user_id) FROM subscription_orders WHERE paid=1 AND date_paid>='".$d_from."' AND date_paid<='".$d_to."'",
-		'string'
-	);
-
-	// Количество подписок — оплаченные подписки в период
-	$q['totals']['subscriptions'] = mysql_select(
-		"SELECT COUNT(id) FROM subscription_orders WHERE paid=1 AND date_paid>='".$d_from."' AND date_paid<='".$d_to."'",
-		'string'
-	);
-
-	// Неактивные пользователи — у которых нет оплат подписки в этот период (все пользователи минус те, кто платил в период)
-	$total_users = mysql_select("SELECT COUNT(id) FROM users WHERE id>1", 'string');
-	$q['totals']['inactive'] = max(0, (int)$total_users - (int)$q['totals']['new_subscribers']);
-
-	// Сумма оплат за период
-	$sum = mysql_select(
-		"SELECT COALESCE(SUM(sum_subscription), 0) FROM subscription_orders WHERE paid=1 AND date_paid>='".$d_from."' AND date_paid<='".$d_to."'",
-		'string'
-	);
-	$q['totals']['sum'] = $sum !== '' ? number_format((float)$sum, 0, ',', ' ') : '0';
-} else {
-	$q['totals']['users'] = '—';
-	$q['totals']['new_subscribers'] = '—';
-	$q['totals']['subscriptions'] = '—';
-	$q['totals']['inactive'] = '—';
-	$q['totals']['sum'] = '—';
+	$date_cond = " AND created_at>='".$d_from."' AND created_at<='".$d_to."'";
+	$date_paid_cond = " AND date_paid>='".$d_from."' AND date_paid<='".$d_to."'";
 }
+
+// Всего пользователей — за период или за всё время
+$q['totals']['users'] = mysql_select(
+	"SELECT COUNT(id) FROM users WHERE id>1 " . $date_cond,
+	'string'
+);
+
+// Новые подписчики — уникальные пользователи, оплатившие подписку (за период или за всё время)
+$q['totals']['new_subscribers'] = mysql_select(
+	"SELECT COUNT(DISTINCT user_id) FROM subscription_orders WHERE paid=1 " . $date_paid_cond,
+	'string'
+);
+
+// Количество подписок — оплаченные подписки (за период или за всё время)
+$q['totals']['subscriptions'] = mysql_select(
+	"SELECT COUNT(id) FROM subscription_orders WHERE paid=1 " . $date_paid_cond,
+	'string'
+);
+
+// Неактивные пользователи — нет оплат в выбранном периоде (все пользователи минус те, кто платил)
+$total_users = mysql_select("SELECT COUNT(id) FROM users WHERE id>1", 'string');
+$q['totals']['inactive'] = max(0, (int)$total_users - (int)$q['totals']['new_subscribers']);
+
+// Сумма оплат (за период или за всё время)
+$sum = mysql_select(
+	"SELECT COALESCE(SUM(sum_subscription), 0) FROM subscription_orders WHERE paid=1 " . $date_paid_cond,
+	'string'
+);
+$q['totals']['sum'] = $sum !== '' ? number_format((float)$sum, 0, ',', ' ') : '0';
 
 $q['users'] = mysql_select("
 	SELECT *
@@ -91,35 +89,36 @@ function applyPeriod() {
 }
 </script>
 
+<?php $period_hint = $has_period ? 'в выбранный период' : 'за весь период'; ?>
 <div class="row" style="margin-right:-30px; margin-left:-30px;">
 	<div class="col-md-4 col-lg-2">
 		<div class="card card-body">
 			<h3 class="mb-3"><?= $q['totals']['users'] ?><small>Всего пользователей</small></h3>
-			<p class="font-size-11 text-muted mb-0">Зарегистрировались в период</p>
+			<p class="font-size-11 text-muted mb-0">Зарегистрировались <?= $period_hint ?></p>
 		</div>
 	</div>
 	<div class="col-md-4 col-lg-2">
 		<div class="card card-body">
 			<h3 class="mb-3"><?= $q['totals']['new_subscribers'] ?><small>Новых подписчиков</small></h3>
-			<p class="font-size-11 text-muted mb-0">Уникальных пользователей, оплативших в период</p>
+			<p class="font-size-11 text-muted mb-0">Уникальных пользователей, оплативших <?= $period_hint ?></p>
 		</div>
 	</div>
 	<div class="col-md-4 col-lg-2">
 		<div class="card card-body">
 			<h3 class="mb-3"><?= $q['totals']['subscriptions'] ?><small>Подписок</small></h3>
-			<p class="font-size-11 text-muted mb-0">Оплаченных подписок в период</p>
+			<p class="font-size-11 text-muted mb-0">Оплаченных подписок <?= $period_hint ?></p>
 		</div>
 	</div>
 	<div class="col-md-4 col-lg-2">
 		<div class="card card-body">
 			<h3 class="mb-3"><?= $q['totals']['inactive'] ?><small>Неактивные пользователи</small></h3>
-			<p class="font-size-11 text-muted mb-0">Нет оплат подписки в период</p>
+			<p class="font-size-11 text-muted mb-0">Нет оплат подписки <?= $period_hint ?></p>
 		</div>
 	</div>
 	<div class="col-md-4 col-lg-2">
 		<div class="card card-body">
 			<h3 class="mb-3"><?= $q['totals']['sum'] ?><small>Сумма (₽)</small></h3>
-			<p class="font-size-11 text-muted mb-0">Оплаты за период</p>
+			<p class="font-size-11 text-muted mb-0">Оплаты <?= $period_hint ?></p>
 		</div>
 	</div>
 </div>
