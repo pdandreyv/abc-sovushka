@@ -6,6 +6,7 @@ use App\Models\Promotion;
 use App\Models\SubscriptionLevel;
 use App\Models\SubscriptionOrder;
 use App\Models\SubscriptionTariff;
+use App\Services\YooKassaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +14,9 @@ use Illuminate\View\View;
 
 class PromotionController extends Controller
 {
+    public function __construct(
+        private YooKassaService $yookassa
+    ) {}
     /**
      * Страница акции: показываем только при наличии неиспользованной акции у пользователя.
      */
@@ -52,7 +56,7 @@ class PromotionController extends Controller
     }
 
     /**
-     * Создать заказ по акции (привязка карты) и перенаправить на checkout.
+     * Создать заказ по акции (привязка карты) и сразу перенаправить на страницу привязки карты ЮKassa.
      */
     public function createOrder(): RedirectResponse
     {
@@ -89,6 +93,26 @@ class PromotionController extends Controller
             'discount_code' => null,
         ]);
 
-        return redirect()->route('subscriptions.checkout', ['order' => $order->id]);
+        if (!$this->yookassa->isConfigured()) {
+            return redirect()->route('subscriptions.checkout', ['order' => $order->id])
+                ->withErrors(['payment' => 'Оплата через ЮKassa не настроена.']);
+        }
+
+        $returnUrl = route('subscriptions.yookassa.return', ['order_id' => $order->id]);
+        $result = $this->yookassa->createPaymentMethod($returnUrl);
+
+        if (isset($result['error'])) {
+            return redirect()->route('promotion.index')
+                ->withErrors(['payment' => 'ЮKassa: ' . $result['error']]);
+        }
+
+        $order->update(['yookassa_payment_id' => $result['id']]);
+
+        if (!empty($result['confirmation_url'])) {
+            return redirect()->away($result['confirmation_url']);
+        }
+
+        return redirect()->route('promotion.index')
+            ->withErrors(['payment' => 'Не получена ссылка на привязку карты.']);
     }
 }

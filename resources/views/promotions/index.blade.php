@@ -21,28 +21,36 @@
   .promo-subs-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
   }
   .promo-sub-item {
-    display: grid;
-    grid-template-columns: 1fr minmax(200px, auto);
-    align-items: center;
-    gap: 12px;
-    padding: 12px 0;
+    padding: 6px 0;
     border-bottom: 1px dashed #eee;
   }
   .promo-sub-item:last-child { border-bottom: none; }
-  .promo-sub-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-size: 13px;
-    color: #5a5a5a;
-  }
+  .promo-sub-title { font-weight: 500; }
   .promo-attach-block {
     margin-top: 24px;
     padding-top: 20px;
     border-top: 1px solid #e8e8e8;
+  }
+  .promo-attach-block form {
+    margin-bottom: 0;
+  }
+  .promo-attach-hint {
+    margin-top: 10px;
+    margin-bottom: 0;
+    font-size: 14px;
+  }
+  .promo-details {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+    font-size: 14px;
+    color: #5a5a5a;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
   }
   .toast-success {
     position: fixed;
@@ -93,13 +101,6 @@
         @foreach($levels as $level)
         <div class="promo-sub-item">
           <span class="promo-sub-title">{{ $level->title }}</span>
-          <div class="promo-sub-meta">
-            <div>{{ site_lang('lk_subscriptions|active_till', 'Оплачено до:') }} {{ $date_till->format('d.m.Y') }}</div>
-            @if($tariff)
-              <div>{{ site_lang('lk_subscriptions|tariff_label', 'Тариф:') }} {{ $tariff->title }} ({{ number_format((float) $promotion->special_price, 0, ',', ' ') }} {{ site_lang('lk_subscriptions|rubles', '₽') }})</div>
-            @endif
-            <div>{{ site_lang('lk_subscriptions|next_charge', 'Следующее списание:') }} {{ $next_charge_date->format('d.m.Y') }}</div>
-          </div>
         </div>
         @endforeach
       </div>
@@ -109,9 +110,16 @@
           @csrf
           <button type="submit" class="btn btn-primary">{{ site_lang('lk_promotion|attach_card', 'Привязать карту') }}</button>
         </form>
-        <p class="text-muted mt-2 mb-0" style="font-size: 14px;">
+        <p class="text-muted promo-attach-hint">
           {{ site_lang('lk_promotion|attach_hint', 'Привязка карты бесплатна. Вы получите бесплатный период, затем списание по специальной цене.') }}
         </p>
+        <div class="promo-details">
+          <div>{{ site_lang('lk_promotion|free_period_until', 'Бесплатный период до') }} {{ $date_till->format('d.m.Y') }}</div>
+          @if($tariff)
+            <div>{{ site_lang('lk_subscriptions|tariff_label', 'Тариф:') }} {{ $tariff->title }} ({{ number_format((float) $promotion->special_price, 0, ',', ' ') }} {{ site_lang('lk_subscriptions|rubles', '₽') }})</div>
+          @endif
+          <div>{{ site_lang('lk_subscriptions|next_charge', 'Следующее списание:') }} {{ $next_charge_date->format('d.m.Y') }}</div>
+        </div>
       </div>
     </div>
   </div>

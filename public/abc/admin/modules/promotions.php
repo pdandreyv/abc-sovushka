@@ -64,9 +64,9 @@ $form[] = array('checkbox', 'used', array(
 	'help' => 'Отметьте, если акция уже использована (или снимайте галочку для сброса).',
 ));
 $form[] = array('multicheckbox td12', 'subscription_level_ids', array(
-	'value' => array(true, 'SELECT id, title as name FROM subscription_levels ORDER BY sort_order DESC, id DESC'),
+	'value' => array(true, 'SELECT id, title as name FROM subscription_levels WHERE COALESCE(open, 0) = 0 ORDER BY sort_order DESC, id DESC'),
 	'name' => 'Уровни подписки',
-	'help' => 'Выберите уровни, которые входят в акцию.',
+	'help' => 'Выберите уровни, которые входят в акцию. Уровни с галочкой «Открытый раздел» не показываются.',
 ));
 $form[] = array('select td6', 'tariff_id', array(
 	'value' => array(true, 'SELECT id, CONCAT(title, " (", price, " ₽)") as name FROM subscription_tariffs ORDER BY sort_order'),
