@@ -144,7 +144,7 @@
           <div>{{ site_lang('lk_subscriptions|next_charge', 'Следующее списание:') }} {{ \Illuminate\Support\Carbon::parse($rec['date_next_pay'])->format('d.m.Y') }}</div>
           <div>{{ site_lang('lk_subscriptions|summary_total', 'Итого:') }} {{ number_format($rec['sum_next_pay'], 0, ',', ' ') }} {{ site_lang('lk_subscriptions|rubles', '₽') }}</div>
           @if(!empty($rec['card_last4']))
-          <div class="sub-card-info">{{ site_lang('lk_subscriptions|card_number', 'Карта') }} **** {{ $rec['card_last4'] }}</div>
+          <div class="sub-card-info">**** {{ $rec['card_last4'] }}</div>
           @endif
           <div class="sub-meta-actions">
             <form class="js-recurring-toggle-form" method="POST" action="{{ route('subscriptions.recurring.toggle', ['level' => $rec['first_level_id']]) }}" data-confirm-cancel="{{ site_lang('lk_subscriptions|confirm_cancel_autorenew', 'Вы уверены, что хотите отменить автопродление?') }}" data-confirm-enable="{{ site_lang('lk_subscriptions|confirm_enable_autorenew', 'Включить автопродление подписки?') }}">
@@ -230,7 +230,7 @@
                     @endif
                     <div class="sub-meta-actions">
                       @if(!empty($recurringInfo['card_last4']))
-                        <span class="sub-card-info">{{ site_lang('lk_subscriptions|card_number', 'Карта') }} **** {{ $recurringInfo['card_last4'] }}</span>
+                        <span class="sub-card-info">**** {{ $recurringInfo['card_last4'] }}</span>
                       @endif
                       <form class="js-recurring-toggle-form" method="POST" action="{{ route('subscriptions.recurring.toggle', ['level' => $level->id]) }}" data-confirm-cancel="{{ site_lang('lk_subscriptions|confirm_cancel_autorenew', 'Вы уверены, что хотите отменить автопродление?') }}" data-confirm-enable="{{ site_lang('lk_subscriptions|confirm_enable_autorenew', 'Включить автопродление подписки?') }}">
                         @csrf
