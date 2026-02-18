@@ -6,6 +6,7 @@ use App\Models\SubscriptionLevel;
 use App\Models\SubscriptionOrder;
 use App\Models\SubscriptionPaymentLog;
 use App\Models\SubscriptionTariff;
+use App\Services\LetterTemplateService;
 use App\Services\YooKassaService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -17,7 +18,8 @@ class ProcessSubscriptionRecurring extends Command
     protected $description = 'Process recurring subscription payments (YooKassa or test mode)';
 
     public function __construct(
-        private YooKassaService $yookassa
+        private YooKassaService $yookassa,
+        private LetterTemplateService $letterTemplates
     ) {
         parent::__construct();
     }
@@ -112,6 +114,7 @@ class ProcessSubscriptionRecurring extends Command
                     'transaction_id' => 'recurring_' . Str::uuid(),
                     'attempted_at' => now(),
                 ]);
+                $this->sendChargeFailedLetter($order->fresh(), $amount, $attempt, $order->fresh()->errors);
                 $this->error('Recurring payment failed for order #' . $order->id . ': ' . $result['error']);
                 return self::SUCCESS;
             }
@@ -153,9 +156,12 @@ class ProcessSubscriptionRecurring extends Command
             $nextDiscountPercent = $isMultiLevel ? 0 : $this->calculateDiscountPercent($order->user_id, $levelIds);
             $this->createNextOrder($order, $basePrice, $levelId, $nextDiscountPercent, $nextOrderStart->toDateString());
 
+            $this->sendChargeSuccessRenewedLetter($order, $amount, $yookassaPaymentId);
+
             $this->info('Recurring payment successful for order #' . $order->id);
         } else {
             $order->increment('errors');
+            $errorsAfter = $order->fresh()->errors;
 
             SubscriptionPaymentLog::create([
                 'subscription_order_id' => $order->id,
@@ -168,7 +174,9 @@ class ProcessSubscriptionRecurring extends Command
                 'attempted_at' => now(),
             ]);
 
-            $this->error('Recurring payment failed for order #' . $order->id . ' (errors=' . ($order->errors + 1) . ')');
+            $this->sendChargeFailedLetter($order->fresh(), $amount, $attempt, $errorsAfter);
+
+            $this->error('Recurring payment failed for order #' . $order->id . ' (errors=' . $errorsAfter . ')');
         }
 
         return self::SUCCESS;
@@ -283,6 +291,73 @@ class ProcessSubscriptionRecurring extends Command
             'errors' => 0,
             'auto' => true,
         ]);
+    }
+
+    private function sendChargeSuccessRenewedLetter(SubscriptionOrder $order, float $amount, ?string $paymentId): void
+    {
+        $user = $order->user;
+        if (! $user || ! $user->email) {
+            return;
+        }
+        $levelIds = $this->parseLevelIds($order->subscription_level_ids, $order->levels);
+        $planName = SubscriptionLevel::query()
+            ->whereIn('id', $levelIds)
+            ->pluck('title')
+            ->implode(', ') ?: 'Подписка';
+        $nextOrder = SubscriptionOrder::query()
+            ->where('user_id', $order->user_id)
+            ->where('paid', false)
+            ->orderBy('date_next_pay')
+            ->first();
+        $this->letterTemplates->send('charge_success_renewed', $user->email, [
+            'subject' => 'Подписка продлена',
+            'year' => now()->year,
+            'amount' => number_format($amount, 0, ',', ' '),
+            'plan_name' => $planName,
+            'charged_at' => now()->format('d.m.Y H:i'),
+            'access_until' => $order->date_till ? $order->date_till->format('d.m.Y') : '',
+            'next_charge_at' => $nextOrder && $nextOrder->date_next_pay ? $nextOrder->date_next_pay->format('d.m.Y') : '',
+            'payment_id' => $paymentId ?? (string) $order->id,
+            'cabinet_url' => route('subscriptions.index'),
+        ]);
+    }
+
+    private function sendChargeFailedLetter(SubscriptionOrder $order, float $amount, int $attemptNumber, int $errorsAfter): void
+    {
+        $user = $order->user;
+        if (! $user || ! $user->email) {
+            return;
+        }
+        $levelIds = $this->parseLevelIds($order->subscription_level_ids, $order->levels);
+        $planName = SubscriptionLevel::query()
+            ->whereIn('id', $levelIds)
+            ->pluck('title')
+            ->implode(', ') ?: 'Подписка';
+        $failReason = $this->yookassa->isConfigured() ? 'Платёж не прошёл в ЮKassa' : 'Ошибка списания';
+        $updatePaymentUrl = route('profile') . '#payment'; // или отдельная страница обновления карты
+
+        if ($errorsAfter >= 3) {
+            $this->letterTemplates->send('access_suspended_after_3_attempts', $user->email, [
+                'plan_name' => $planName,
+                'amount' => number_format($amount, 0, ',', ' '),
+                'fail_reason' => $failReason,
+                'attempts_total' => '3',
+                'last_attempt_at' => now()->format('d.m.Y H:i'),
+                'update_payment_url' => $updatePaymentUrl,
+            ]);
+        } else {
+            $attemptsLeft = 3 - $errorsAfter;
+            $nextAttemptAt = now()->addDay()->format('d.m.Y');
+            $this->letterTemplates->send('charge_failed_attempts_left', $user->email, [
+                'plan_name' => $planName,
+                'amount' => number_format($amount, 0, ',', ' '),
+                'fail_reason' => $failReason,
+                'attempt_number' => (string) $attemptNumber,
+                'attempts_left' => (string) $attemptsLeft,
+                'next_attempt_at' => $nextAttemptAt,
+                'update_payment_url' => $updatePaymentUrl,
+            ]);
+        }
     }
 
     private function parseLevelIds($subscriptionLevelIds, ?string $levels = null): array

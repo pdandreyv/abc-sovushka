@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\LetterTemplateService;
 use App\Services\UserActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class RegisterController extends Controller
 {
@@ -51,9 +54,48 @@ class RegisterController extends Controller
             'remind' => DB::raw('CURRENT_TIMESTAMP')
         ]);
 
+        $confirmCode = Str::upper(Str::random(6));
+        $confirmUntil = now()->addHours(24);
+        Cache::put('registration_confirm:' . $user->email, [
+            'code' => $confirmCode,
+            'user_id' => $user->id,
+        ], $confirmUntil);
+
+        app(LetterTemplateService::class)->send('registration_confirm', $user->email, [
+            'subject' => 'Подтвердите регистрацию в «Совушкина школа»',
+            'year' => now()->year,
+            'user_name' => trim($user->first_name . ' ' . $user->last_name) ?: null,
+            'confirm_code' => $confirmCode,
+            'confirm_until' => $confirmUntil->format('d.m.Y H:i'),
+            'confirm_url' => route('register.confirm', [
+                'email' => $user->email,
+                'code' => $confirmCode,
+            ]),
+        ]);
+
         Auth::login($user, true);
         UserActivityLogService::logLogin((int) $user->id, $request->ip() ?? '');
 
         return redirect('/profile')->with('success', 'Регистрация прошла успешно! Добро пожаловать! Пожалуйста, проверьте и сохраните данные профиля.');
+    }
+
+    /**
+     * Подтверждение email по ссылке из письма.
+     */
+    public function confirmEmail(Request $request)
+    {
+        $email = $request->query('email');
+        $code = $request->query('code');
+        if (! $email || ! $code) {
+            return redirect()->route('login')->withErrors(['confirm' => 'Неверная ссылка подтверждения.']);
+        }
+        $key = 'registration_confirm:' . $email;
+        $data = Cache::get($key);
+        if (! $data || ! isset($data['code']) || ! hash_equals($data['code'], $code)) {
+            return redirect()->route('login')->withErrors(['confirm' => 'Код подтверждения неверный или истёк.']);
+        }
+        User::where('id', $data['user_id'])->update(['email_verified_at' => now()]);
+        Cache::forget($key);
+        return redirect()->route('login')->with('success', 'Email успешно подтверждён. Можете войти.');
     }
 }

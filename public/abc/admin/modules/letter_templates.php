@@ -4,16 +4,20 @@
  * v1.4.14 - event_func
  * v1.4.17 - сокращение параметров form
  * v1.4.71 - косяк при быстром редактировании
+ * Шаблоны: название = тема письма (рус.), контент в .tpl, без кода в форме.
  */
 
 $a18n['name'] = '';
 
-//варианты шаблона письма /templates/includes/letter_templates/
 $template = array(
 	1 => 'основной шаблон'
 );
 
 $tabs = mysql_select("SELECT id,name FROM languages ORDER BY `rank` DESC",'array');
+
+// Дефолты отправителя
+$default_sender_name = 'Совушкина школа';
+$default_sender = 'info@kssovushka.ru';
 
 if ($get['u']=='edit') {
 	foreach ($tabs as $k=>$v) {
@@ -21,22 +25,26 @@ if ($get['u']=='edit') {
 	}
 }
 
-//v1.4.14 - event_func
+//v1.4.14 - event_func: сохраняем тему и текст в .tpl (без PHP-кода)
 function event_change_letter_templates($q) {
 	global $tabs;
 
-	$path = ROOT_DIR.'files/letter_templates/'.$q['name'].'/';
+	$id = isset($q['id']) ? (int)$q['id'] : 0;
+	if (!$id) return;
+	$row = mysql_select("SELECT slug, name FROM letter_templates WHERE id=".$id, 'row');
+	$pathBase = !empty($row['slug']) ? $row['slug'] : $row['name'];
+	$path = ROOT_DIR.'files/letter_templates/'.$pathBase.'/';
 	if (is_dir($path) || mkdir($path,0755,true)) {
 		foreach ($tabs as $k=>$v) {
-			//v1.4.71 исключение для быстрого редактирования
-			if (@$_POST['text'.$k]) {
-				if (is_dir($path . $k) || mkdir($path . $k, 0755, true)) {
-					$fp = fopen($path . $k . '/subject.php', 'w');
-					fwrite($fp, @$_POST['subject' . $k]);
-					fclose($fp);
-					$fp = fopen($path . $k . '/text.php', 'w');
-					fwrite($fp, @$_POST['text' . $k]);
-					fclose($fp);
+			if (isset($_POST['subject'.$k]) || isset($_POST['text'.$k])) {
+				$langDir = $path . $k . '/';
+				if (is_dir($langDir) || mkdir($langDir, 0755, true)) {
+					// тема письма — чистый текст в subject.tpl
+					$subj = isset($_POST['subject'.$k]) ? $_POST['subject'.$k] : '';
+					file_put_contents($langDir . 'subject.tpl', $subj);
+					// тело письма — HTML в body.tpl
+					$body = isset($_POST['text'.$k]) ? $_POST['text'.$k] : '';
+					file_put_contents($langDir . 'body.tpl', $body);
 				}
 			}
 		}
@@ -45,7 +53,6 @@ function event_change_letter_templates($q) {
 
 $table = array(
 	'id'		=>	'name id',
-	//'template'	=>	$template,
 	'name'		=>	'{name}',
 	'sender_name'	=>	'',
 	'sender'	=>	'',
@@ -55,50 +62,45 @@ $table = array(
 
 $query = "
 	SELECT *,
-	IF (sender_name='','".$config['sender_name']."',sender_name) sender_name,
-	IF (sender='','".$config['sender']."',sender) sender,
-	IF (receiver='','".$config['receiver']."',receiver) receiver
+	IF (sender_name='','".addslashes($default_sender_name)."',sender_name) sender_name,
+	IF (sender='','".addslashes($default_sender)."',sender) sender,
+	IF (receiver='','',receiver) receiver
 	FROM letter_templates
 	WHERE 1
 ";
 
-
+// Загрузка темы и текста из .tpl (чистый текст/HTML, без кода)
 if (($get['u']=='form' OR $get['u']=='') AND $get['id']>0) {
-	if (@$post['name']) {
+	$row = mysql_select("SELECT slug, name FROM letter_templates WHERE id=".intval($get['id']), 'row');
+	$pathBase = $row ? (!empty($row['slug']) ? $row['slug'] : $row['name']) : '';
+	if ($pathBase) {
+		$path = ROOT_DIR . 'files/letter_templates/' . $pathBase . '/';
 		foreach ($tabs as $k => $v) {
-			$path = ROOT_DIR . 'files/letter_templates/' . $post['name'] . '/';
 			$post['subject' . $k] = '';
-			if (is_file($path . $k . '/subject.php')) {
-				$handle = @fopen($path . $k . '/subject.php', "r");
-				if ($handle) {
-					while (($buffer = fgets($handle, 4096)) !== false) $post['subject' . $k] .= $buffer;
-					fclose($handle);
-				}
+			$subjFile = $path . $k . '/subject.tpl';
+			if (is_file($subjFile)) {
+				$post['subject' . $k] = file_get_contents($subjFile);
 			}
 			$post['text' . $k] = '';
-			if (is_file($path . $k . '/text.php')) {
-				$handle = @fopen($path . $k . '/text.php', "r");
-				if ($handle) {
-					while (($buffer = fgets($handle, 4096)) !== false) $post['text' . $k] .= $buffer;
-					fclose($handle);
-				}
+			$bodyFile = $path . $k . '/body.tpl';
+			if (is_file($bodyFile)) {
+				$post['text' . $k] = file_get_contents($bodyFile);
 			}
 		}
 	}
 }
 
-$form[1][] = array('input td3','name',);
-//$form[1][] = array('select td3','template',array('value'=>array(true,$template,'')));
+// Название = тема письма (отображается как тема при получении)
+$form[1][] = array('input td6','name', array('name'=>'Название (тема письма)'));
 $form[1][] = array('input td6','description');
-$form[1][] = array('input td3','sender_name',array('help'=>'имя отправителя письмо с сервера','attr'=>'placeholder="'.$config['sender_name'].'"'));
-$form[1][] = array('input td3','sender',array('help'=>'email отправителя письмо с сервера','attr'=>'placeholder="'.$config['sender'].'"'));
-$form[1][] = array('input td3','receiver',array('help'=>'email получателя письма, если он не задан в модуле','attr'=>'placeholder="'.$config['receiver'].'"'));
+$form[1][] = array('input td3','sender_name', array('help'=>'имя отправителя','attr'=>'placeholder="'.$default_sender_name.'"'));
+$form[1][] = array('input td3','sender', array('help'=>'email отправителя','attr'=>'placeholder="'.$default_sender.'"'));
+$form[1][] = array('input td3','receiver', array('help'=>'оставьте пустым, если получатель задаётся при отправке','attr'=>'placeholder="пусто"'));
 $form[1][] = 'clear';
 
 foreach ($tabs as $k=>$v) {
-	$form[$k][] = array('input td12','subject'.$k,array('name'=>'тема письма'));
-	$form[$k][] = '<div>Настройка текста в шапке и подвале письем в <a target="_blank" href="?m=languages#6">словаре</a></div>';
-	$form[$k][] = array('textarea td12','text'.$k,array('name'=>'текст письма','attr'=>'style="height:400px"'));
+	$form[$k][] = array('input td12','subject'.$k, array('name'=>'Тема письма (как при получении)'));
+	$form[$k][] = array('tinymce td12','text'.$k, array('name'=>'Текст письма (HTML)','attr'=>'style="height:400px"'));
 }
 
-$content = '<br />Здесь можно указать индивидуально отправителя и получателя письма, глобальная настройка <a href="/admin.php?m=config">тут</a>';
+$content = '<br />Название шаблона должно совпадать с темой письма. Отправитель по умолчанию: '.$default_sender_name.' &lt;'.$default_sender.'&gt;. Глобальная настройка <a href="/admin.php?m=config">тут</a>.';

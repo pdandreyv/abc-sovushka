@@ -1,0 +1,17 @@
+Оплата получена. Доступ активирован/продлён.
+
+Сумма: {{amount}}
+Тариф/доступ: {{plan_name}}
+Дата оплаты: {{paid_at}}
+Период доступа: {{access_period}}
+Следующий платёж: {{next_charge_at}}
+Способ оплаты: {{payment_method}}
+Операция: {{payment_id}}
+
+Кабинет: {{cabinet_url}}
+
+Служба заботы:
+Telegram: https://t.me/KSsovushka
+VK: https://vk.com/im/convo/-93773680?entrypoint=community_page&tab=all
+Max: https://max.ru/u/f9LHodD0cOKN6iyDGVIwGhlm5hmSuDifofKRTR9R4jmtBJqhr4qFtQh8WNs
+☎ 8-800-100-20-64 (бесплатный звонок по России)

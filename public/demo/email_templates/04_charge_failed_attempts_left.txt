@@ -1,0 +1,12 @@
+Не удалось списать оплату за {{plan_name}} на сумму {{amount}}.
+Причина: {{fail_reason}}
+Попытка №{{attempt_number}}, осталось попыток: {{attempts_left}}
+Следующая попытка: {{next_attempt_at}}
+
+Обновить оплату: {{update_payment_url}}
+
+Служба заботы:
+Telegram: https://t.me/KSsovushka
+VK: https://vk.com/im/convo/-93773680?entrypoint=community_page&tab=all
+Max: https://max.ru/u/f9LHodD0cOKN6iyDGVIwGhlm5hmSuDifofKRTR9R4jmtBJqhr4qFtQh8WNs
+☎ 8-800-100-20-64 (бесплатный звонок по России)

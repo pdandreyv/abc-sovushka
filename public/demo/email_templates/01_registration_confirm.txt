@@ -1,0 +1,13 @@
+Подтвердите регистрацию в «Совушкина школа».
+
+Чтобы завершить регистрацию, перейдите по ссылке:
+{{confirm_url}}
+
+Или введите код: {{confirm_code}}
+Ссылка действует до: {{confirm_until}}
+
+Служба заботы:
+Telegram: https://t.me/KSsovushka
+VK: https://vk.com/im/convo/-93773680?entrypoint=community_page&tab=all
+Max: https://max.ru/u/f9LHodD0cOKN6iyDGVIwGhlm5hmSuDifofKRTR9R4jmtBJqhr4qFtQh8WNs
+☎ 8-800-100-20-64 (бесплатный звонок по России)

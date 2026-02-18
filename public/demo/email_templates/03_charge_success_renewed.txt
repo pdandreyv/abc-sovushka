@@ -1,0 +1,16 @@
+Подписка продлена.
+
+Сумма: {{amount}}
+Тариф: {{plan_name}}
+Дата списания: {{charged_at}}
+Доступ до: {{access_until}}
+Следующее списание: {{next_charge_at}}
+Операция: {{payment_id}}
+
+Кабинет: {{cabinet_url}}
+
+Служба заботы:
+Telegram: https://t.me/KSsovushka
+VK: https://vk.com/im/convo/-93773680?entrypoint=community_page&tab=all
+Max: https://max.ru/u/f9LHodD0cOKN6iyDGVIwGhlm5hmSuDifofKRTR9R4jmtBJqhr4qFtQh8WNs
+☎ 8-800-100-20-64 (бесплатный звонок по России)

@@ -8,6 +8,7 @@ use App\Models\SubscriptionOrder;
 use App\Models\SubscriptionPaymentLog;
 use App\Models\Promotion;
 use App\Models\SubscriptionTariff;
+use App\Services\LetterTemplateService;
 use App\Services\YooKassaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -18,7 +19,8 @@ use Illuminate\Support\Str;
 class SubscriptionPaymentController extends Controller
 {
     public function __construct(
-        private YooKassaService $yookassa
+        private YooKassaService $yookassa,
+        private LetterTemplateService $letterTemplates
     ) {}
 
     public function show(Request $request)
@@ -286,6 +288,8 @@ class SubscriptionPaymentController extends Controller
                 );
             }
         });
+
+        $this->sendPaymentSuccessLetter($order);
     }
 
     /**
@@ -350,6 +354,8 @@ class SubscriptionPaymentController extends Controller
 
             $promotion->update(['used' => true, 'used_at' => now()]);
         });
+
+        $this->sendPaymentSuccessLetter($order);
     }
 
     public function create(Request $request)
@@ -548,6 +554,8 @@ class SubscriptionPaymentController extends Controller
                 ->withErrors(['payment' => 'Не удалось обработать оплату. Проверьте данные и попробуйте снова.']);
         }
 
+        $this->sendPaymentSuccessLetter($order->fresh());
+
         return redirect()->route('subscriptions.index')
             ->with('success', 'Оплата прошла успешно. Подписки активированы.');
     }
@@ -645,6 +653,37 @@ class SubscriptionPaymentController extends Controller
             'card_last4' => $cardLast4,
             'errors' => 0,
             'auto' => true,
+        ]);
+    }
+
+    private function sendPaymentSuccessLetter(SubscriptionOrder $order): void
+    {
+        $user = $order->user;
+        if (! $user || ! $user->email) {
+            return;
+        }
+        $levelIds = $this->parseLevelIds($order->subscription_level_ids, $order->levels);
+        $planNames = SubscriptionLevel::query()
+            ->whereIn('id', $levelIds)
+            ->pluck('title')
+            ->toArray();
+        $planName = implode(', ', $planNames) ?: 'Подписка';
+        $nextOrder = SubscriptionOrder::query()
+            ->where('user_id', $order->user_id)
+            ->where('paid', false)
+            ->orderBy('date_next_pay')
+            ->first();
+        $this->letterTemplates->send('payment_success', $user->email, [
+            'subject' => 'Оплата получена. Доступ активирован',
+            'year' => now()->year,
+            'amount' => number_format((float) $order->sum_subscription, 0, ',', ' '),
+            'plan_name' => $planName,
+            'paid_at' => $order->date_paid ? $order->date_paid->format('d.m.Y H:i') : now()->format('d.m.Y H:i'),
+            'access_period' => $order->date_till ? $order->date_till->format('d.m.Y') : '',
+            'next_charge_at' => $nextOrder && $nextOrder->date_next_pay ? $nextOrder->date_next_pay->format('d.m.Y') : '',
+            'payment_method' => 'Банковская карта',
+            'payment_id' => $order->yookassa_payment_id ?? (string) $order->id,
+            'cabinet_url' => route('subscriptions.index'),
         ]);
     }
 

@@ -26,8 +26,11 @@
  * v1.3.39 - проверка валидности почты
  */
 function mailer($template,$language,$q,$receiver=false,$sender=false,$reply=false,$files=false) {
-	//echo "SELECT * FROM letter_templates WHERE name='".$template."'";
-	if ($letter = mysql_select("SELECT * FROM letter_templates WHERE name='".$template."'",'row')) {
+	// поиск по slug или по name (для обратной совместимости)
+	$template_esc = addslashes($template);
+	$letter = mysql_select("SELECT * FROM letter_templates WHERE slug='".$template_esc."' OR name='".$template_esc."' LIMIT 1",'row');
+	if ($letter) {
+		$path_base = !empty($letter['slug']) ? $letter['slug'] : $letter['name'];
 		global $lang,$config,$modules;
 		if ($receiver==false) $receiver = $letter['receiver'] ? $letter['receiver'] : $config['receiver'];
 		$sender_name = '';
@@ -50,18 +53,15 @@ function mailer($template,$language,$q,$receiver=false,$sender=false,$reply=fals
 				$sender_email = $sender;
 			}
 		}
-		//print_r($letter);
 
-		//чтобы с админки отправлялись письма
-		//v1.4.0 - html_render в админке
 		$style = $config['style'];
 		$config['style'] = 'templates';
 
 		ob_start();
-		include (ROOT_DIR.'files/letter_templates/'.$letter['name'].'/'.$language.'/subject.php');
+		include (ROOT_DIR.'files/letter_templates/'.$path_base.'/'.$language.'/subject.php');
 		$subject = ob_get_clean();
-		ob_start(); // echo to buffer, not screen
-		include (ROOT_DIR.'files/letter_templates/'.$letter['name'].'/'.$language.'/text.php');
+		ob_start();
+		include (ROOT_DIR.'files/letter_templates/'.$path_base.'/'.$language.'/text.php');
 		$text = ob_get_clean(); // get buffer contentshtml_array('letter_templates/'.$q);
 		//echo '<b>'.$subject.'</b><br />'.$text.'<br /><br />';
 		if ($letter['template']) {

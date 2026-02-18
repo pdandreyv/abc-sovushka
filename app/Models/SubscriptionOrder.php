@@ -29,6 +29,7 @@ class SubscriptionOrder extends Model
         'auto',
         'tariff',
         'date_till',
+        'access_ended_notified_at',
     ];
 
     protected $casts = [
@@ -44,6 +45,7 @@ class SubscriptionOrder extends Model
         'auto' => 'boolean',
         'tariff' => 'integer',
         'date_till' => 'date',
+        'access_ended_notified_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

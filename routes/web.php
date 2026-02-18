@@ -33,6 +33,7 @@ Route::get('/login', function () {
 Route::post('/login', [LoginController::class, 'login']);
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
+Route::get('/register/confirm', [RegisterController::class, 'confirmEmail'])->name('register.confirm');
 Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 
 // Социальная авторизация
