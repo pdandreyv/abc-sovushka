@@ -40,7 +40,8 @@ class YooKassaService
      */
     public function createPayment(array $params): array
     {
-        $amount = number_format((float) $params['amount'], 2, '.', '');
+        $amountRub = (int) ceil((float) ($params['amount'] ?? 0));
+        $amount = number_format($amountRub, 2, '.', '');
         $returnUrl = $params['return_url'] ?? '';
         $description = $params['description'] ?? 'Оплата подписки';
         $orderId = (int) ($params['order_id'] ?? 0);
@@ -167,7 +168,8 @@ class YooKassaService
      */
     public function createRecurringPayment(string $paymentMethodId, float $amount, string $description, array $receiptParams = []): array
     {
-        $amountStr = number_format($amount, 2, '.', '');
+        $amountRub = (int) ceil($amount);
+        $amountStr = number_format($amountRub, 2, '.', '');
         $body = [
             'amount' => [
                 'value' => $amountStr,

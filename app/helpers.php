@@ -214,6 +214,20 @@ if (!function_exists('lk_my_subscription_levels')) {
     }
 }
 
+if (!function_exists('price_rub_ceil')) {
+    /**
+     * Округление суммы в рублях в большую сторону до целого (без копеек).
+     *
+     * @param float|int|string $value сумма
+     * @return int целое число рублей
+     */
+    function price_rub_ceil($value): int
+    {
+        $v = (float) $value;
+        return (int) ceil($v);
+    }
+}
+
 if (!function_exists('plural_ru')) {
     /**
      * Склонение для русского языка (1, 2-4, 5+).

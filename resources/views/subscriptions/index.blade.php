@@ -274,7 +274,7 @@
               @elseif($tariff->days == 30)
                 <span class="tariff-note"></span>
               @else
-                <span class="tariff-note">(по {{ number_format($tariff->price / ($tariff->days / 30), 0, ',', ' ') }} ₽/мес.)</span>
+                <span class="tariff-note">(по {{ number_format((int) ceil($tariff->price / max(1, $tariff->days / 30)), 0, ',', ' ') }} ₽/мес.)</span>
               @endif
             </span>
             <span class="tariff-price">{{ number_format($tariff->price, 0, ',', ' ') }} ₽</span>
@@ -530,13 +530,13 @@
     state.selectedSubs = new Set(selectedIds);
     const tariff = TARIFFS.find((t) => t.id == state.tariffId) || null;
 
-    const pricePerSub = tariff ? tariff.price : 0;
+    const pricePerSub = tariff ? Number(tariff.price) : 0;
     const subtotal = count * pricePerSub;
 
     let discountPercent = getDiscountPercent(count + ACTIVE_COUNT);
     if (state.appliedPromo != null) discountPercent = state.appliedPromo.discount_percent;
-    const discount = Math.round(subtotal * (discountPercent / 100));
-    const total = subtotal - discount;
+    const discount = Math.ceil(subtotal * (discountPercent / 100));
+    const total = Math.max(0, subtotal - discount);
 
     // Обновить UI
     $("#sumCount").textContent = String(count);

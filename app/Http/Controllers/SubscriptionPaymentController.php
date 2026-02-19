@@ -249,7 +249,7 @@ class SubscriptionPaymentController extends Controller
             return;
         }
 
-        $pricePerSub = $count > 0 ? round(((float) $order->sum_without_discount) / $count, 2) : 0;
+        $pricePerSub = $count > 0 ? price_rub_ceil(((float) $order->sum_without_discount) / $count) : 0;
         $updateData = [
             'paid' => true,
             'date_paid' => now(),
@@ -303,7 +303,7 @@ class SubscriptionPaymentController extends Controller
         }
 
         $freeDays = (int) $promotion->free_days;
-        $specialPrice = (float) $promotion->special_price;
+        $specialPrice = price_rub_ceil($promotion->special_price);
         $today = Carbon::today();
         $dateTill = $today->copy()->addDays($freeDays);
         $nextChargeDate = $today->copy()->addDays(max(0, $freeDays - 1));
@@ -380,10 +380,10 @@ class SubscriptionPaymentController extends Controller
                 ->withErrors(['levels' => 'Некорректный набор подписок.']);
         }
 
-        $pricePerSub = (float) $tariff->price;
+        $pricePerSub = price_rub_ceil($tariff->price);
         $subtotal = $pricePerSub * count($levelIds);
         $discountPercent = $this->calculateDiscountPercent($user->id, $levelIds);
-        $discount = round($subtotal * ($discountPercent / 100), 2);
+        $discount = price_rub_ceil($subtotal * ($discountPercent / 100));
         $total = max(0, $subtotal - $discount);
         $appliedCode = null;
 
@@ -391,7 +391,7 @@ class SubscriptionPaymentController extends Controller
             $promo = $this->resolvePromoCode(trim($data['discount_code']), $levelIds, $user->id);
             if ($promo) {
                 $appliedCode = $promo->code;
-                $discount = round($subtotal * ($promo->discount_percent / 100), 2);
+                $discount = price_rub_ceil($subtotal * ($promo->discount_percent / 100));
                 $total = max(0, $subtotal - $discount);
             }
         }
@@ -486,8 +486,8 @@ class SubscriptionPaymentController extends Controller
         }
 
         $count = count($levels);
-        $perLevelPaidAmount = $count > 0 ? round(((float) $order->sum_subscription) / $count, 2) : 0;
-        $pricePerSub = $count > 0 ? round(((float) $order->sum_without_discount) / $count, 2) : 0;
+        $perLevelPaidAmount = $count > 0 ? price_rub_ceil(((float) $order->sum_subscription) / $count) : 0;
+        $pricePerSub = $count > 0 ? price_rub_ceil(((float) $order->sum_without_discount) / $count) : 0;
 
         try {
             DB::transaction(function () use (
@@ -633,7 +633,8 @@ class SubscriptionPaymentController extends Controller
             return;
         }
 
-        $discount = round($pricePerSub * ($discountPercent / 100), 2);
+        $pricePerSub = price_rub_ceil($pricePerSub);
+        $discount = price_rub_ceil($pricePerSub * ($discountPercent / 100));
         $nextAmount = max(0, $pricePerSub - $discount);
 
         SubscriptionOrder::create([

@@ -43,7 +43,7 @@ class SubscriptionController extends Controller
             return [
                 'id' => $tariff->id,
                 'title' => $tariff->title,
-                'price' => (float)$tariff->price,
+                'price' => price_rub_ceil($tariff->price),
                 'days' => $tariff->days,
             ];
         })->values()->all();

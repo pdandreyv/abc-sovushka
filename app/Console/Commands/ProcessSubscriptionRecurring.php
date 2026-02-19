@@ -67,14 +67,14 @@ class ProcessSubscriptionRecurring extends Command
 
         if ($isMultiLevel) {
             // Акция: несколько подписок одним заказом — списываем фиксированную сумму (sum_next_pay), без скидки.
-            $basePrice = (float) ($order->sum_next_pay ?: $order->sum_without_discount ?: 0);
+            $basePrice = price_rub_ceil($order->sum_next_pay ?: $order->sum_without_discount ?: 0);
             $discountPercent = 0;
             $discount = 0;
             $amount = $basePrice;
         } else {
-            $basePrice = $this->resolveBasePrice($order, $levelId);
+            $basePrice = price_rub_ceil($this->resolveBasePrice($order, $levelId));
             $discountPercent = $this->calculateDiscountPercent($order->user_id, [$levelId]);
-            $discount = round($basePrice * ($discountPercent / 100), 2);
+            $discount = price_rub_ceil($basePrice * ($discountPercent / 100));
             $amount = max(0, $basePrice - $discount);
         }
 
@@ -265,12 +265,13 @@ class ProcessSubscriptionRecurring extends Command
 
     private function createNextOrder(SubscriptionOrder $order, float $basePrice, int $levelId, int $discountPercent, ?string $periodEndDate = null): void
     {
+        $basePrice = price_rub_ceil($basePrice);
         $days = (int) $order->days;
         $currentTill = $periodEndDate ? Carbon::parse($periodEndDate) : Carbon::parse($order->date_till);
         $nextTill = $currentTill->copy()->addDays($days);
 
         // Используем тот же процент скидки, что и для текущей оплаты (набор активных уровней после оплаты тот же)
-        $nextDiscount = round($basePrice * ($discountPercent / 100), 2);
+        $nextDiscount = price_rub_ceil($basePrice * ($discountPercent / 100));
         $nextAmount = max(0, $basePrice - $nextDiscount);
 
         SubscriptionOrder::create([

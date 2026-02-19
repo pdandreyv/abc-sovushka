@@ -85,7 +85,7 @@ class PromotionController extends Controller
             'paid' => false,
             'date_subscription' => now()->toDateString(),
             'sum_subscription' => 0,
-            'sum_without_discount' => (float) $promotion->special_price,
+            'sum_without_discount' => price_rub_ceil($promotion->special_price),
             'days' => $promotion->free_days,
             'tariff' => $promotion->tariff_id,
             'errors' => 0,
