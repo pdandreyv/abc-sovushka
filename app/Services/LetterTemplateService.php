@@ -89,15 +89,19 @@ class LetterTemplateService
         $subject = $this->substitute(file_get_contents($subjectFile), $variables, false);
         $body = $this->substitute(file_get_contents($bodyFile), $variables, true);
 
-        $senderEmail = ! empty($row->sender) ? $row->sender : config('mail.from.address');
-        $senderName = ! empty($row->sender_name) ? $row->sender_name : config('mail.from.name', config('app.name'));
+        // Для истории в letters сохраняем отправителя из шаблона (если задан)
+        $senderEmailForLetter = ! empty($row->sender) ? $row->sender : config('mail.from.address');
+        $senderNameForLetter = ! empty($row->sender_name) ? $row->sender_name : config('mail.from.name', config('app.name'));
+        // Для фактической отправки всегда используем адрес из .env — иначе письма с другого домена (например info@kssovushka.ru) могут не доходить из-за SPF/фильтров
+        $senderEmail = config('mail.from.address');
+        $senderName = config('mail.from.name', config('app.name'));
 
         $now = now()->format('Y-m-d H:i:s');
         $letter = [
             'date' => $now,
             'date_sent' => $now,
-            'sender' => $senderEmail,
-            'sender_name' => $senderName,
+            'sender' => $senderEmailForLetter,
+            'sender_name' => $senderNameForLetter,
             'receiver' => $receiver,
             'subject' => $subject,
             'text' => $body,
