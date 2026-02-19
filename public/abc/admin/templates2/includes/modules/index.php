@@ -3,15 +3,19 @@ $q = array();
 
 $date_from = isset($_GET['date_from']) ? trim($_GET['date_from']) : '';
 $date_to   = isset($_GET['date_to'])   ? trim($_GET['date_to'])   : '';
-$has_period = ($date_from !== '' && $date_to !== '');
+$has_period = ($date_from !== '' || $date_to !== '');
 
 $date_cond = '';
 $date_paid_cond = '';
-if ($has_period) {
+if ($date_from !== '') {
 	$d_from = mysql_res($date_from) . ' 00:00:00';
-	$d_to   = mysql_res($date_to)   . ' 23:59:59';
-	$date_cond = " AND created_at>='".$d_from."' AND created_at<='".$d_to."'";
-	$date_paid_cond = " AND date_paid>='".$d_from."' AND date_paid<='".$d_to."'";
+	$date_cond .= " AND created_at>='".$d_from."'";
+	$date_paid_cond .= " AND date_paid>='".$d_from."'";
+}
+if ($date_to !== '') {
+	$d_to = mysql_res($date_to) . ' 23:59:59';
+	$date_cond .= " AND created_at<='".$d_to."'";
+	$date_paid_cond .= " AND date_paid<='".$d_to."'";
 }
 
 // Всего пользователей — за период или за всё время
