@@ -50,14 +50,17 @@ class LetterTemplateService
         $senderEmail = ! empty($row->sender) ? $row->sender : config('mail.from.address');
         $senderName = ! empty($row->sender_name) ? $row->sender_name : config('mail.from.name', config('app.name'));
 
+        $now = now()->format('Y-m-d H:i:s');
         $letter = [
-            'date' => now()->format('Y-m-d H:i:s'),
-            'date_sent' => now()->format('Y-m-d H:i:s'),
+            'date' => $now,
+            'date_sent' => $now,
             'sender' => $senderEmail,
             'sender_name' => $senderName,
             'receiver' => $receiver,
             'subject' => $subject,
             'text' => $body,
+            'created_at' => $now,
+            'updated_at' => $now,
         ];
         DB::table('letters')->insert($letter);
 
