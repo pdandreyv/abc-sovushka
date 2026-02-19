@@ -47,6 +47,10 @@ return [
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+            // При MAIL_ENCRYPTION=null/пусто не использовать STARTTLS (порт 25, локальный MTA)
+            'auto_tls' => env('MAIL_AUTO_TLS', in_array(env('MAIL_ENCRYPTION'), ['tls', 'ssl'], true) ? 'true' : 'false'),
+            // Отключить проверку SSL-сертификата (для локального MTA или самоподписанного сертификата)
+            'verify_peer' => env('MAIL_VERIFY_PEER', 'false'),
         ],
 
         'ses' => [
