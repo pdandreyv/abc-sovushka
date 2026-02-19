@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -13,6 +14,16 @@ use Illuminate\Support\Facades\Mail;
 class LetterTemplateService
 {
     private string $templatesPath;
+
+    /** Соответствие slug -> начало name для поиска в БД, если slug пустой (старая админка). */
+    private const SLUG_TO_NAME_PREFIX = [
+        'registration_confirm' => 'Подтвердите регистрацию',
+        'payment_success' => 'Оплата получена',
+        'charge_success_renewed' => 'Подписка продлена',
+        'charge_failed_attempts_left' => 'Не удалось списать',
+        'access_ended_after_cancel' => 'Доступ завершён',
+        'access_suspended_after_3_attempts' => 'Доступ приостановлен',
+    ];
 
     public function __construct()
     {
@@ -31,16 +42,40 @@ class LetterTemplateService
     public function send(string $templateSlug, string $receiver, array $variables = [], int $languageId = 1): bool
     {
         $row = DB::table('letter_templates')->where('slug', $templateSlug)->first();
+        $pathBase = $templateSlug;
+
+        if ($row) {
+            $pathBase = ! empty($row->slug) ? $row->slug : $templateSlug;
+        } else {
+            $prefix = self::SLUG_TO_NAME_PREFIX[$templateSlug] ?? null;
+            if ($prefix !== null) {
+                $row = DB::table('letter_templates')->where('name', 'like', $prefix . '%')->first();
+                if ($row) {
+                    $pathBase = $templateSlug;
+                }
+            }
+        }
+
         if (! $row) {
+            Log::warning('LetterTemplateService: шаблон не найден в letter_templates', [
+                'slug' => $templateSlug,
+                'receiver' => $receiver,
+            ]);
             return false;
         }
 
-        $pathBase = $row->slug ?: $row->name;
         $dir = $this->templatesPath . '/' . $pathBase . '/' . $languageId;
         $subjectFile = $dir . '/subject.tpl';
         $bodyFile = $dir . '/body.tpl';
 
         if (! is_file($subjectFile) || ! is_file($bodyFile)) {
+            Log::warning('LetterTemplateService: файлы шаблона не найдены', [
+                'slug' => $templateSlug,
+                'path_base' => $pathBase,
+                'subject_file' => $subjectFile,
+                'body_file' => $bodyFile,
+                'receiver' => $receiver,
+            ]);
             return false;
         }
 

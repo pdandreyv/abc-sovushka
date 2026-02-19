@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class RegisterController extends Controller
@@ -61,7 +62,7 @@ class RegisterController extends Controller
             'user_id' => $user->id,
         ], $confirmUntil);
 
-        app(LetterTemplateService::class)->send('registration_confirm', $user->email, [
+        $letterSent = app(LetterTemplateService::class)->send('registration_confirm', $user->email, [
             'subject' => 'Подтвердите регистрацию в «Совушкина школа»',
             'year' => now()->year,
             'user_name' => trim($user->first_name . ' ' . $user->last_name) ?: null,
@@ -72,6 +73,12 @@ class RegisterController extends Controller
                 'code' => $confirmCode,
             ]),
         ]);
+        if (! $letterSent) {
+            Log::warning('Регистрация: письмо подтверждения не отправлено', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ]);
+        }
 
         Auth::login($user, true);
         UserActivityLogService::logLogin((int) $user->id, $request->ip() ?? '');
