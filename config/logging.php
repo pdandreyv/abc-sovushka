@@ -81,13 +81,6 @@ return [
             'replace_placeholders' => true,
         ],
 
-        'registration' => [
-            'driver' => 'single',
-            'path' => storage_path('logs/registration.log'),
-            'level' => env('LOG_LEVEL', 'debug'),
-            'replace_placeholders' => true,
-        ],
-
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),

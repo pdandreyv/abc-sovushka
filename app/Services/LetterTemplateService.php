@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -41,13 +40,6 @@ class LetterTemplateService
      */
     public function send(string $templateSlug, string $receiver, array $variables = [], int $languageId = 1): bool
     {
-        $regLog = Log::channel('registration');
-        $ctx = ['slug' => $templateSlug, 'receiver' => $receiver];
-
-        if ($templateSlug === 'registration_confirm') {
-            $regLog->info('LetterTemplateService: начало отправки', $ctx);
-        }
-
         $row = DB::table('letter_templates')->where('slug', $templateSlug)->first();
         $pathBase = $templateSlug;
 
@@ -64,11 +56,6 @@ class LetterTemplateService
         }
 
         if (! $row) {
-            $msg = 'LetterTemplateService: шаблон не найден в letter_templates';
-            Log::warning($msg, $ctx);
-            if ($templateSlug === 'registration_confirm') {
-                $regLog->warning($msg, $ctx);
-            }
             return false;
         }
 
@@ -77,12 +64,6 @@ class LetterTemplateService
         $bodyFile = $dir . '/body.tpl';
 
         if (! is_file($subjectFile) || ! is_file($bodyFile)) {
-            $msg = 'LetterTemplateService: файлы шаблона не найдены';
-            $fileCtx = $ctx + ['path_base' => $pathBase, 'subject_file' => $subjectFile, 'body_file' => $bodyFile];
-            Log::warning($msg, $fileCtx);
-            if ($templateSlug === 'registration_confirm') {
-                $regLog->warning($msg, $fileCtx);
-            }
             return false;
         }
 
@@ -111,15 +92,7 @@ class LetterTemplateService
 
         try {
             DB::table('letters')->insert($letter);
-            if ($templateSlug === 'registration_confirm') {
-                $regLog->info('LetterTemplateService: запись в letters создана');
-            }
         } catch (\Throwable $e) {
-            $errCtx = $ctx + ['message' => $e->getMessage()];
-            Log::error('LetterTemplateService: ошибка вставки в letters', $errCtx);
-            if ($templateSlug === 'registration_confirm') {
-                $regLog->error('LetterTemplateService: ошибка вставки в letters', $errCtx);
-            }
             report($e);
             return false;
         }
@@ -130,16 +103,8 @@ class LetterTemplateService
                     ->subject($subject)
                     ->from($senderEmail, $senderName);
             });
-            if ($templateSlug === 'registration_confirm') {
-                $regLog->info('LetterTemplateService: Mail::html выполнен успешно', $ctx);
-            }
             return true;
         } catch (\Throwable $e) {
-            $errCtx = $ctx + ['message' => $e->getMessage()];
-            Log::error('LetterTemplateService: ошибка отправки почты', $errCtx);
-            if ($templateSlug === 'registration_confirm') {
-                $regLog->error('LetterTemplateService: ошибка отправки почты', $errCtx);
-            }
             report($e);
             return false;
         }
