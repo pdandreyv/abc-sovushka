@@ -29,31 +29,68 @@ class RegisterController extends Controller
      */
     public function register(Request $request)
     {
-        $request->validate([
-            'last_name' => 'required|string|max:255',
-            'first_name' => 'required|string|max:255',
-            'middle_name' => 'nullable|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ], [
-            'last_name.required' => 'Поле Фамилия обязательно для заполнения.',
-            'first_name.required' => 'Поле Имя обязательно для заполнения.',
-            'email.required' => 'Поле Email обязательно для заполнения.',
-            'email.email' => 'Email должен быть действительным адресом электронной почты.',
-            'email.unique' => 'Пользователь с таким email уже зарегистрирован.',
-            'password.required' => 'Поле Пароль обязательно для заполнения.',
-            'password.min' => 'Пароль должен содержать минимум 8 символов.',
-            'password.confirmed' => 'Пароли не совпадают.',
-        ]);
+        $regLog = Log::channel('registration');
+        $regLog->info('Регистрация: начало', ['email' => $request->input('email')]);
 
-        $user = User::create([
-            'last_name' => $request->last_name,
-            'first_name' => $request->first_name,
-            'middle_name' => $request->middle_name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'remind' => DB::raw('CURRENT_TIMESTAMP')
-        ]);
+        try {
+            $this->performRegister($request, $regLog);
+        } catch (\Throwable $e) {
+            $regLog->error('Регистрация: исключение', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            throw $e;
+        }
+
+        return redirect('/profile')->with('success', 'Регистрация прошла успешно! Добро пожаловать! Пожалуйста, проверьте и сохраните данные профиля.');
+    }
+
+    private function performRegister(Request $request, \Psr\Log\LoggerInterface $regLog): void
+    {
+        try {
+            $request->validate([
+                'last_name' => 'required|string|max:255',
+                'first_name' => 'required|string|max:255',
+                'middle_name' => 'nullable|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => 'required|string|min:8|confirmed',
+            ], [
+                'last_name.required' => 'Поле Фамилия обязательно для заполнения.',
+                'first_name.required' => 'Поле Имя обязательно для заполнения.',
+                'email.required' => 'Поле Email обязательно для заполнения.',
+                'email.email' => 'Email должен быть действительным адресом электронной почты.',
+                'email.unique' => 'Пользователь с таким email уже зарегистрирован.',
+                'password.required' => 'Поле Пароль обязательно для заполнения.',
+                'password.min' => 'Пароль должен содержать минимум 8 символов.',
+                'password.confirmed' => 'Пароли не совпадают.',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $regLog->info('Регистрация: ошибка валидации', [
+                'email' => $request->input('email'),
+                'errors' => $e->errors(),
+            ]);
+            throw $e;
+        }
+
+        try {
+            $user = User::create([
+                'last_name' => $request->last_name,
+                'first_name' => $request->first_name,
+                'middle_name' => $request->middle_name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'remind' => DB::raw('CURRENT_TIMESTAMP')
+            ]);
+        } catch (\Throwable $e) {
+            $regLog->error('Регистрация: ошибка создания пользователя', [
+                'email' => $request->input('email'),
+                'message' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+
+        $regLog->info('Регистрация: пользователь создан', ['user_id' => $user->id, 'email' => $user->email]);
 
         $confirmCode = Str::upper(Str::random(6));
         $confirmUntil = now()->addHours(24);
@@ -62,6 +99,7 @@ class RegisterController extends Controller
             'user_id' => $user->id,
         ], $confirmUntil);
 
+        $regLog->info('Регистрация: отправка письма подтверждения', ['user_id' => $user->id, 'email' => $user->email]);
         $letterSent = app(LetterTemplateService::class)->send('registration_confirm', $user->email, [
             'subject' => 'Подтвердите регистрацию в «Совушкина школа»',
             'year' => now()->year,
@@ -74,16 +112,16 @@ class RegisterController extends Controller
             ]),
         ]);
         if (! $letterSent) {
-            Log::warning('Регистрация: письмо подтверждения не отправлено', [
+            $regLog->warning('Регистрация: письмо подтверждения не отправлено (send вернул false)', [
                 'user_id' => $user->id,
                 'email' => $user->email,
             ]);
+        } else {
+            $regLog->info('Регистрация: письмо подтверждения отправлено', ['user_id' => $user->id, 'email' => $user->email]);
         }
 
         Auth::login($user, true);
         UserActivityLogService::logLogin((int) $user->id, $request->ip() ?? '');
-
-        return redirect('/profile')->with('success', 'Регистрация прошла успешно! Добро пожаловать! Пожалуйста, проверьте и сохраните данные профиля.');
     }
 
     /**
