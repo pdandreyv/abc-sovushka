@@ -16,6 +16,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\ViewerController;
 use App\Http\Controllers\PromotionController;
+use App\Http\Controllers\TestMailController;
 
 // Главная страница - форма входа
 Route::get('/', function (Request $request) {
@@ -89,6 +90,10 @@ Route::middleware('auth')->group(function () {
 
     // Просмотр файлов
     Route::get('/viewer', [ViewerController::class, 'show'])->name('viewer.show');
+
+    // Тестовое письмо (только для администраторов)
+    Route::get('/test-mail', [TestMailController::class, 'index'])->name('test-mail.index');
+    Route::post('/test-mail', [TestMailController::class, 'send'])->name('test-mail.send');
 });
 
 // Webhook ЮKassa (без auth; URL указать в ЛК: Интеграция → HTTP-уведомления)
