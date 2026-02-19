@@ -36,7 +36,7 @@ $a18n['auto'] = 'Автопродление';
 $table = array(
 	'id'		=>	'created_at:desc id',
 	'email'		=>	'',
-	'subscription_level_ids'	=>	'',
+	'subscription_level_ids'	=>	'{level_titles}',
 	'date_subscription'	=>	'date',
 	'sum_subscription'	=>	'',
 	'sum_without_discount'	=>	'',
@@ -68,7 +68,9 @@ $query = "
 	SELECT subscription_orders.*,
 		users.first_name,
 		users.last_name,
-		users.email
+		users.email,
+		(SELECT GROUP_CONCAT(sl.title ORDER BY sl.id) FROM subscription_levels sl
+		 WHERE FIND_IN_SET(sl.id, COALESCE(NULLIF(TRIM(subscription_orders.subscription_level_ids), ''), subscription_orders.levels, '0'))) AS level_titles
 	FROM subscription_orders
 	LEFT JOIN users ON users.id = subscription_orders.user_id
 	WHERE 1 ".$where."
@@ -82,8 +84,10 @@ $form[] = array('select td6','user_id',array(
 	'attr'=>'data-url="/admin.php?m=subscription_orders&u=get_users" data-min-input="1"',
 	'help'=>'Выберите пользователя'
 ));
-$form[] = array('input td6','subscription_level_ids',array(
-	'help'=>'ID уровней подписок (например: 1,2,3)'
+$form[] = array('multicheckbox td12', 'subscription_level_ids', array(
+	'value' => array(true, 'SELECT id, title as name FROM subscription_levels ORDER BY sort_order, id'),
+	'name'  => 'Уровни подписок',
+	'help'  => 'Выберите уровни подписок по названию. Сохраняются как ID через запятую.',
 ));
 $form[] = array('input td3','date_subscription',array(
 	'attr'=>'type="date"',
