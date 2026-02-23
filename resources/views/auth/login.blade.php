@@ -20,7 +20,7 @@
                 <div class="tab-switcher">
                     <div id="tab-login" class="active" onclick="switchTab('login')">{{ site_lang('auth|tab_login', 'Вход') }}</div>
                     <div id="tab-register" onclick="switchTab('register')">{{ site_lang('auth|tab_register', 'Регистрация') }}</div>
-                    <div id="tab-forgot" onclick="switchTab('forgot')">{{ site_lang('auth|tab_forgot', 'Забыли пароль?') }}</div>
+                    <div id="tab-forgot" class="tab-forgot-hidden" onclick="switchTab('forgot')">{{ site_lang('auth|tab_forgot', 'Забыли пароль?') }}</div>
                 </div>
             <div id="login-box">
                 <h2>{{ site_lang('auth|login_heading', 'Вход в личный кабинет') }}</h2>
@@ -236,6 +236,9 @@ if (localStorage.getItem("cookieAccepted")) {
         loginTab.classList.toggle('active', tab === 'login');
         registerTab.classList.toggle('active', tab === 'register');
         forgotTab.classList.toggle('active', tab === 'forgot');
+        if (tab === 'forgot') {
+            forgotTab.classList.remove('tab-forgot-hidden');
+        }
         loginBox.style.display = tab === 'login' ? 'block' : 'none';
         registerBox.style.display = tab === 'register' ? 'block' : 'none';
         forgotBox.style.display = tab === 'forgot' ? 'block' : 'none';
