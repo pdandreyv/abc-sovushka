@@ -337,29 +337,19 @@ class ProcessSubscriptionRecurring extends Command
         $failReason = $this->yookassa->isConfigured() ? 'Платёж не прошёл в ЮKassa' : 'Ошибка списания';
         $updatePaymentUrl = route('profile.show') . '#payment';
 
-        if ($errorsAfter >= 3) {
-            $this->letterTemplates->send('access_suspended_after_3_attempts', $user->email, [
-                'plan_name' => $planName,
-                'amount' => number_format($amount, 0, ',', ' '),
-                'fail_reason' => $failReason,
-                'attempts_total' => '3',
-                'last_attempt_at' => now()->format('d.m.Y H:i'),
-                'update_payment_url' => $updatePaymentUrl,
-            ]);
-        } else {
-            $attemptsLeft = 3 - $errorsAfter;
-            $nextAttemptAt = now()->addDay()->format('d.m.Y');
-            $this->letterTemplates->send('charge_failed_attempts_left', $user->email, [
-                'year' => now()->year,
-                'plan_name' => $planName,
-                'amount' => number_format($amount, 0, ',', ' '),
-                'fail_reason' => $failReason,
-                'attempt_number' => (string) $attemptNumber,
-                'attempts_left' => (string) $attemptsLeft,
-                'next_attempt_at' => $nextAttemptAt,
-                'update_payment_url' => $updatePaymentUrl,
-            ]);
-        }
+        // Всегда отправляем только P4 (остались попытки). P6 не отправляем: 3-я неудача будет когда тариф уже не действует, пользователь получит P5 (доступ завершён).
+        $attemptsLeft = max(0, 3 - $errorsAfter);
+        $nextAttemptAt = $attemptsLeft > 0 ? now()->addDay()->format('d.m.Y') : '—';
+        $this->letterTemplates->send('charge_failed_attempts_left', $user->email, [
+            'year' => now()->year,
+            'plan_name' => $planName,
+            'amount' => number_format($amount, 0, ',', ' '),
+            'fail_reason' => $failReason,
+            'attempt_number' => (string) $attemptNumber,
+            'attempts_left' => (string) $attemptsLeft,
+            'next_attempt_at' => $nextAttemptAt,
+            'update_payment_url' => $updatePaymentUrl,
+        ]);
     }
 
     private function parseLevelIds($subscriptionLevelIds, ?string $levels = null): array

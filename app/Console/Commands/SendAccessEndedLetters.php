@@ -37,6 +37,7 @@ class SendAccessEndedLetters extends Command
                 ->pluck('title')
                 ->implode(', ') ?: 'Подписка';
             $letterTemplates->send('access_ended_after_cancel', $user->email, [
+                'year' => now()->year,
                 'plan_name' => $planName,
                 'access_until' => $order->date_till ? $order->date_till->format('d.m.Y') : '',
                 'renew_url' => route('subscriptions.index'),
