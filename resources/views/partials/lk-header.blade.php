@@ -26,6 +26,15 @@
         {{ site_lang('lk_dashboard|status_none', 'Подписок нет: выбрать / оформить') }}
       @endif
     </a>
-    <img alt="Поддержка" src="{{ asset('images/support_icon.png') }}"/>
+    @php
+    $maxChatUrl = 'https://max.ru/u/f9LHodD0cOKN6iyDGVIwGhlm5hmSuDifofKRTR9R4jmtBJqhr4qFtQh8WNs';
+    $maxInitialText = auth()->check()
+      ? rawurlencode('САЙТ-ПОДПИСКИ ID:' . auth()->id())
+      : rawurlencode('САЙТ-ПОДПИСКИ');
+    $maxLink = $maxChatUrl . (str_contains($maxChatUrl, '?') ? '&' : '?') . 'text=' . $maxInitialText;
+  @endphp
+    <a href="{{ $maxLink }}" target="_blank" rel="noopener noreferrer" class="header-help-link" title="{{ site_lang('lk_dashboard|help', 'Помощь') }}">
+      <img alt="{{ site_lang('lk_dashboard|help', 'Помощь') }}" src="{{ asset('images/support_icon.png') }}"/>
+    </a>
   </div>
 </div>

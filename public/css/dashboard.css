@@ -212,6 +212,20 @@ body {
   width: auto;
   object-fit: contain;
 }
+.header-help-link {
+  display: inline-flex;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: opacity 0.2s;
+}
+.header-help-link:hover {
+  opacity: 0.85;
+}
+.header-help-link:focus {
+  outline: 2px solid var(--blue, #004aad);
+  outline-offset: 2px;
+}
 .subscription-status {
   background-color: var(--accent);
   color: white;
