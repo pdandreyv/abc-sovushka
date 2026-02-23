@@ -22,6 +22,7 @@ body {
   display: flex;
   min-height: 100vh;
   background-color: white;
+  padding-bottom: 56px; /* место под фиксированный футер */
 }
 .container {
   display: flex;
@@ -287,6 +288,61 @@ body {
   }
 }
 
+/* Футер (копирайт и ссылки) на страницах входа/сброса пароля */
+.dashboard-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #f5f5f5;
+  border-top: 1px solid #e0e0e0;
+  padding: 12px 20px;
+  z-index: 100;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.footer-copyright {
+  flex-shrink: 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.footer-links a {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
+}
+
+.footer-separator {
+  color: #d1d5db;
+  margin: 0 2px;
+  font-size: 12px;
+}
+
 @media (max-width: 768px) {
   body {
     flex-direction: column;
@@ -301,5 +357,15 @@ body {
   }
   .form-box {
     max-width: 100%;
+  }
+  .footer-content {
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+    font-size: 12px;
+  }
+  .footer-copyright,
+  .footer-links a {
+    font-size: 12px;
   }
 }
