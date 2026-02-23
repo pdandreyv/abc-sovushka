@@ -677,7 +677,7 @@ class SubscriptionPaymentController extends Controller
         $this->letterTemplates->send('payment_success', $user->email, [
             'subject' => 'Оплата получена. Доступ активирован',
             'year' => now()->year,
-            'amount' => number_format((float) $order->sum_subscription, 0, ',', ' '),
+            'amount' => number_format((float) $order->sum_subscription, 0, ',', ' ') . ' р',
             'plan_name' => $planName,
             'paid_at' => $order->date_paid ? $order->date_paid->format('d.m.Y H:i') : now()->format('d.m.Y H:i'),
             'access_period' => $order->date_till ? $order->date_till->format('d.m.Y') : '',
