@@ -73,41 +73,35 @@ class SubscriptionController extends Controller
             ->whereNotNull('date_next_pay')
             ->whereNotNull('levels')
             ->orderBy('date_next_pay')
-            ->get(['id', 'levels', 'subscription_level_ids', 'date_next_pay', 'sum_next_pay', 'auto', 'card_last4']);
+            ->get(['id', 'levels', 'subscription_level_ids', 'date_next_pay', 'sum_next_pay', 'auto', 'card_last4', 'tariff']);
 
         $recurringByLevel = [];
-        $recurringMultiLevel = [];
         $levelsById = $levels->keyBy('id');
 
         foreach ($recurringOrders as $order) {
             $levelIds = $this->parseLevelIds($order->subscription_level_ids, $order->levels);
-            if (count($levelIds) > 1) {
-                $titles = [];
-                foreach ($levelIds as $lid) {
-                    $l = $levelsById->get($lid);
-                    $titles[] = $l ? $l->title : (string) $lid;
-                }
-                $recurringMultiLevel[] = [
-                    'order_id' => $order->id,
-                    'level_titles' => $titles,
-                    'sum_next_pay' => (float) ($order->sum_next_pay ?? 0),
-                    'date_next_pay' => $order->date_next_pay,
-                    'auto' => (bool) $order->auto,
-                    'card_last4' => $order->card_last4,
-                    'first_level_id' => (int) $levelIds[0],
-                ];
-                continue;
-            }
+            $tariffModel = $tariffs->firstWhere('id', $order->tariff);
+            $tariffTitle = $tariffModel ? $tariffModel->title : '1 месяц';
+            $sumNextPay = (float) ($order->sum_next_pay ?? 0);
+            $isPromotion = count($levelIds) > 1;
+            $firstLevelId = (int) $levelIds[0];
+
+            $recData = [
+                'order_id' => $order->id,
+                'date_next_pay' => $order->date_next_pay,
+                'sum_next_pay' => $sumNextPay,
+                'auto' => (bool) $order->auto,
+                'card_last4' => $order->card_last4,
+                'first_level_id' => $firstLevelId,
+                'is_promotion' => $isPromotion,
+                'tariff_title' => $tariffTitle,
+            ];
+
             foreach ($levelIds as $levelId) {
                 if (isset($recurringByLevel[$levelId])) {
                     continue;
                 }
-                $recurringByLevel[$levelId] = [
-                    'order_id' => $order->id,
-                    'date_next_pay' => $order->date_next_pay,
-                    'auto' => (bool) $order->auto,
-                    'card_last4' => $order->card_last4,
-                ];
+                $recurringByLevel[$levelId] = $recData;
             }
         }
 
@@ -117,8 +111,7 @@ class SubscriptionController extends Controller
             'subscriptionsData',
             'tariffsData',
             'activeByLevel',
-            'recurringByLevel',
-            'recurringMultiLevel'
+            'recurringByLevel'
         ));
     }
 

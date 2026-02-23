@@ -131,37 +131,6 @@
       {{ site_lang('lk_subscriptions|hint', 'Выберите нужные подписки и тариф — итоговая сумма и скидка пересчитаются автоматически.') }}
     </p>
 
-    @if(!empty($recurringMultiLevel))
-    <div class="step-card recurring-multi-block" style="margin-bottom: 20px;">
-      <div class="step-title">{{ site_lang('lk_promotion|recurring_multi_title', 'Акционная подписка') }}</div>
-      @foreach($recurringMultiLevel as $rec)
-      <div class="sub-option sub-option--meta">
-        <div class="sub-left-col">
-          <span class="sub-title">{{ implode(', ', $rec['level_titles']) }}</span>
-        </div>
-        <div class="sub-details">
-        <div class="sub-meta">
-          <div>{{ site_lang('lk_subscriptions|next_charge', 'Следующее списание:') }} {{ \Illuminate\Support\Carbon::parse($rec['date_next_pay'])->format('d.m.Y') }}</div>
-          <div>{{ site_lang('lk_subscriptions|summary_total', 'Итого:') }} {{ number_format($rec['sum_next_pay'], 0, ',', ' ') }} {{ site_lang('lk_subscriptions|rubles', '₽') }}</div>
-          @if(!empty($rec['card_last4']))
-          <div class="sub-card-info">**** {{ $rec['card_last4'] }}</div>
-          @endif
-          <div class="sub-meta-actions">
-            <form class="js-recurring-toggle-form" method="POST" action="{{ route('subscriptions.recurring.toggle', ['level' => $rec['first_level_id']]) }}" data-confirm-cancel="{{ site_lang('lk_subscriptions|confirm_cancel_autorenew', 'Вы уверены, что хотите отменить автопродление?') }}" data-confirm-enable="{{ site_lang('lk_subscriptions|confirm_enable_autorenew', 'Включить автопродление подписки?') }}">
-              @csrf
-              <input type="hidden" name="enable" value="{{ $rec['auto'] ? 0 : 1 }}">
-              <button class="sub-recurring-link sub-recurring-link--{{ $rec['auto'] ? 'cancel' : 'enable' }}" type="submit">
-                {{ $rec['auto'] ? site_lang('lk_subscriptions|cancel_autorenew', 'Отменить автопродление') : site_lang('lk_subscriptions|enable_autorenew', 'Включить автопродление') }}
-              </button>
-            </form>
-          </div>
-        </div>
-        </div>
-      </div>
-      @endforeach
-    </div>
-    @endif
-
     <!-- ===== ТРИ ШАГА ВЫБОРА: подписки → тариф → скидка ===== -->
     <div id="subscriptionsApp" class="steps-grid">
       <!-- Шаг 1 -->
@@ -209,16 +178,28 @@
               $activeTariff = $activeInfo && !empty($activeInfo['tariff_id']) ? $tariffs->firstWhere('id', $activeInfo['tariff_id']) : null;
             @endphp
             <div class="sub-details">
-              @if($activeInfo)
+              @if($activeInfo || $recurringInfo)
                 <div class="sub-meta">
+                  @if($activeInfo)
                   <div>
                     {{ site_lang('lk_subscriptions|active_till', 'Оплачено до:') }}
                     {{ \Illuminate\Support\Carbon::parse($activeInfo['date_till'])->format('d.m.Y') }}
                   </div>
-                  @if($activeTariff)
+                  @endif
+                  @if($recurringInfo && !empty($recurringInfo['is_promotion']))
+                    <div>
+                      {{ site_lang('lk_subscriptions|tariff_label', 'Тариф:') }}
+                      {{ $recurringInfo['tariff_title'] }} ({{ number_format($recurringInfo['sum_next_pay'], 0, ',', ' ') }} {{ site_lang('lk_subscriptions|rubles', '₽') }} {{ site_lang('lk_promotion|promo_label', 'акция') }})
+                    </div>
+                  @elseif($activeTariff)
                     <div>
                       {{ site_lang('lk_subscriptions|tariff_label', 'Тариф:') }}
                       {{ $activeTariff->title }} ({{ number_format((float) $activeTariff->price, 0, ',', ' ') }} {{ site_lang('lk_subscriptions|rubles', '₽') }})
+                    </div>
+                  @elseif($recurringInfo)
+                    <div>
+                      {{ site_lang('lk_subscriptions|tariff_label', 'Тариф:') }}
+                      {{ $recurringInfo['tariff_title'] }} ({{ number_format($recurringInfo['sum_next_pay'], 0, ',', ' ') }} {{ site_lang('lk_subscriptions|rubles', '₽') }})
                     </div>
                   @endif
                     @if($recurringInfo)
@@ -232,7 +213,7 @@
                       @if(!empty($recurringInfo['card_last4']))
                         <span class="sub-card-info">**** {{ $recurringInfo['card_last4'] }}</span>
                       @endif
-                      <form class="js-recurring-toggle-form" method="POST" action="{{ route('subscriptions.recurring.toggle', ['level' => $level->id]) }}" data-confirm-cancel="{{ site_lang('lk_subscriptions|confirm_cancel_autorenew', 'Вы уверены, что хотите отменить автопродление?') }}" data-confirm-enable="{{ site_lang('lk_subscriptions|confirm_enable_autorenew', 'Включить автопродление подписки?') }}">
+                      <form class="js-recurring-toggle-form" method="POST" action="{{ route('subscriptions.recurring.toggle', ['level' => $recurringInfo['first_level_id']]) }}" data-confirm-cancel="{{ site_lang('lk_subscriptions|confirm_cancel_autorenew', 'Вы уверены, что хотите отменить автопродление?') }}" data-confirm-enable="{{ site_lang('lk_subscriptions|confirm_enable_autorenew', 'Включить автопродление подписки?') }}">
                         @csrf
                         <input type="hidden" name="enable" value="{{ $recurringInfo['auto'] ? 0 : 1 }}">
                         <button class="sub-recurring-link sub-recurring-link--{{ $recurringInfo['auto'] ? 'cancel' : 'enable' }}" type="submit">
