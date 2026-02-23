@@ -17,7 +17,7 @@ class SubscriptionTariff extends Model
     ];
 
     protected $casts = [
-        'price' => 'decimal:2',
+        'price' => 'integer',
         'days' => 'integer',
         'rating' => 'integer',
         'is_visible' => 'boolean',

@@ -44,7 +44,8 @@ $filter[] = array('search');
 $form[] = array('input td8','title');
 $form[] = array('input td2','price',array(
 	'help'=>'Цена в рублях',
-	'value'=>@$post['price'] ? $post['price'] : 0
+	'value'=>@$post['price'] !== '' && @$post['price'] !== null ? (int)$post['price'] : 0,
+	'attr'=>'type="number" min="0" step="1"'
 ));
 $form[] = array('input td4','price_phrase',array(
 	'help'=>'Например: по 214 ₽/мес.'

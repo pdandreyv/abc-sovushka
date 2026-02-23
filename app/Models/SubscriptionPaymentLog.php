@@ -21,7 +21,7 @@ class SubscriptionPaymentLog extends Model
     ];
 
     protected $casts = [
-        'amount' => 'decimal:2',
+        'amount' => 'integer',
         'response_data' => 'array',
         'attempted_at' => 'datetime',
     ];

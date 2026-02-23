@@ -67,7 +67,8 @@ $form[] = array('select td3','status',array(
 ));
 $form[] = array('input td3','amount',array(
 	'help'=>'Сумма в рублях',
-	'value'=>@$post['amount'] ? $post['amount'] : 0
+	'value'=>@$post['amount'] !== '' && @$post['amount'] !== null ? (int)$post['amount'] : 0,
+	'attr'=>'type="number" min="0" step="1"'
 ));
 $form[] = array('input td6','payment_provider',array(
 	'help'=>'Название платежного провайдера'

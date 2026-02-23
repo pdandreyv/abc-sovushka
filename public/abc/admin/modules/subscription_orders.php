@@ -96,11 +96,13 @@ $form[] = array('input td3','date_subscription',array(
 ));
 $form[] = array('input td3','sum_subscription',array(
 	'help'=>'Сумма в рублях',
-	'value'=>@$post['sum_subscription'] ? $post['sum_subscription'] : 0
+	'value'=>@$post['sum_subscription'] !== '' && @$post['sum_subscription'] !== null ? (int)$post['sum_subscription'] : 0,
+	'attr'=>'type="number" min="0" step="1"'
 ));
 $form[] = array('input td3','sum_without_discount',array(
 	'help'=>'Сумма в рублях без скидки',
-	'value'=>@$post['sum_without_discount'] ? $post['sum_without_discount'] : 0
+	'value'=>@$post['sum_without_discount'] !== '' && @$post['sum_without_discount'] !== null ? (int)$post['sum_without_discount'] : 0,
+	'attr'=>'type="number" min="0" step="1"'
 ));
 $form[] = array('input td3','discount_code',array(
 	'help'=>'Промокод (строка), если был применён при оформлении'
@@ -114,7 +116,9 @@ $form[] = array('input td3','date_next_pay',array(
 	'help'=>'Дата следующего списания (можно менять)'
 ));
 $form[] = array('input td3','sum_next_pay',array(
-	'value'=>@$post['sum_next_pay'] ? $post['sum_next_pay'] : 0
+	'help'=>'Сумма следующего платежа в рублях',
+	'value'=>@$post['sum_next_pay'] !== '' && @$post['sum_next_pay'] !== null ? (int)$post['sum_next_pay'] : 0,
+	'attr'=>'type="number" min="0" step="1"'
 ));
 $form[] = array('input td6','hash',array(
 	'help'=>'Хеш карты для рекуррентного платежа'

@@ -73,8 +73,9 @@ $form[] = array('select td6', 'tariff_id', array(
 	'help' => 'Тариф, по которому будет списание после бесплатных дней.',
 ));
 $form[] = array('input td3', 'special_price', array(
-	'value' => @$post['special_price'] !== '' && @$post['special_price'] !== null ? $post['special_price'] : 0,
-	'help' => 'Специальная цена за выбранный тариф (отображается в скобках на сайте).',
+	'value' => @$post['special_price'] !== '' && @$post['special_price'] !== null ? (int)$post['special_price'] : 0,
+	'help' => 'Специальная цена за выбранный тариф в рублях.',
+	'attr' => 'type="number" min="0" step="1"',
 ));
 $form[] = array('input td3', 'free_days', array(
 	'value' => @$post['free_days'] !== '' && @$post['free_days'] !== null ? $post['free_days'] : 0,

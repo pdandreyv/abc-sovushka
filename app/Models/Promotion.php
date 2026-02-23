@@ -18,7 +18,7 @@ class Promotion extends Model
     ];
 
     protected $casts = [
-        'special_price' => 'decimal:2',
+        'special_price' => 'integer',
         'free_days' => 'integer',
         'used' => 'boolean',
         'used_at' => 'datetime',
