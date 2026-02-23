@@ -335,7 +335,7 @@ class ProcessSubscriptionRecurring extends Command
             ->pluck('title')
             ->implode(', ') ?: 'Подписка';
         $failReason = $this->yookassa->isConfigured() ? 'Платёж не прошёл в ЮKassa' : 'Ошибка списания';
-        $updatePaymentUrl = route('profile') . '#payment'; // или отдельная страница обновления карты
+        $updatePaymentUrl = route('profile.show') . '#payment';
 
         if ($errorsAfter >= 3) {
             $this->letterTemplates->send('access_suspended_after_3_attempts', $user->email, [
@@ -350,6 +350,7 @@ class ProcessSubscriptionRecurring extends Command
             $attemptsLeft = 3 - $errorsAfter;
             $nextAttemptAt = now()->addDay()->format('d.m.Y');
             $this->letterTemplates->send('charge_failed_attempts_left', $user->email, [
+                'year' => now()->year,
                 'plan_name' => $planName,
                 'amount' => number_format($amount, 0, ',', ' '),
                 'fail_reason' => $failReason,

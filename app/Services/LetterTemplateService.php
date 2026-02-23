@@ -16,7 +16,7 @@ class LetterTemplateService
 
     /** Соответствие slug -> начало name для поиска в БД, если slug пустой (старая админка). */
     private const SLUG_TO_NAME_PREFIX = [
-        'registration_confirm' => 'Подтвердите регистрацию',
+        'registration_confirm' => 'Поздравляем с регистрацией',
         'payment_success' => 'Оплата получена',
         'charge_success_renewed' => 'Подписка продлена',
         'charge_failed_attempts_left' => 'Не удалось списать',

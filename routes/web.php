@@ -35,7 +35,6 @@ Route::get('/login', function () {
 Route::post('/login', [LoginController::class, 'login']);
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
-Route::get('/register/confirm', [RegisterController::class, 'confirmEmail'])->name('register.confirm');
 Route::post('/password/email', [ForgotPasswordController::class, 'sendResetLink'])->name('password.email');
 Route::get('/reset-password', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])->name('password.update');

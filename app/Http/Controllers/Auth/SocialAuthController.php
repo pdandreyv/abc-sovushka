@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\LetterTemplateService;
 use App\Services\UserActivityLogService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use GuzzleHttp\Client;
@@ -95,15 +97,26 @@ class SocialAuthController extends Controller
             } else {
                 // Создаем нового пользователя
                 $nameParts = $this->parseName($socialUser->getName());
+                $email = $socialUser->getEmail() ?: null;
+                $plainPassword = str()->random(12);
 
                 $user = User::create([
                     'first_name' => $nameParts['first_name'] ?? '',
                     'last_name' => $nameParts['last_name'] ?? '',
-                    'email' => $socialUser->getEmail() ?: null,
+                    'email' => $email,
                     'social_id' => $socialUser->getId(),
                     'social_provider' => $provider,
-                    'password' => bcrypt(str()->random(32)), // Генерируем случайный пароль
+                    'password' => Hash::make($plainPassword),
                 ]);
+
+                if ($email) {
+                    app(LetterTemplateService::class)->send('registration_confirm', $email, [
+                        'year' => now()->year,
+                        'user_name' => trim(($nameParts['first_name'] ?? '') . ' ' . ($nameParts['last_name'] ?? '')) ?: null,
+                        'login' => $email,
+                        'password' => $plainPassword,
+                    ]);
+                }
             }
         }
 
@@ -214,14 +227,24 @@ class SocialAuthController extends Controller
             $user->social_provider = $provider;
             $user->save();
         } else {
+            $plainPassword = str()->random(12);
             $user = User::create([
                 'first_name' => $firstName ?? '',
                 'last_name' => $lastName ?? '',
                 'email' => $email ?: null,
                 'social_id' => $socialId,
                 'social_provider' => $provider,
-                'password' => bcrypt(str()->random(32)),
+                'password' => Hash::make($plainPassword),
             ]);
+
+            if ($email) {
+                app(LetterTemplateService::class)->send('registration_confirm', $email, [
+                    'year' => now()->year,
+                    'user_name' => trim(($firstName ?? '') . ' ' . ($lastName ?? '')) ?: null,
+                    'login' => $email,
+                    'password' => $plainPassword,
+                ]);
+            }
         }
 
         Auth::login($user, true);
@@ -343,14 +366,24 @@ class SocialAuthController extends Controller
             $user->social_provider = 'telegram';
             $user->save();
         } else {
+            $plainPassword = str()->random(12);
             $user = User::create([
                 'first_name' => $firstName,
                 'last_name' => $lastName,
                 'email' => $email,
                 'social_id' => $telegramId,
                 'social_provider' => 'telegram',
-                'password' => bcrypt(str()->random(32)),
+                'password' => Hash::make($plainPassword),
             ]);
+
+            if ($email) {
+                app(LetterTemplateService::class)->send('registration_confirm', $email, [
+                    'year' => now()->year,
+                    'user_name' => trim($firstName . ' ' . $lastName) ?: null,
+                    'login' => $email,
+                    'password' => $plainPassword,
+                ]);
+            }
         }
 
         Auth::login($user, true);
