@@ -22,6 +22,7 @@ class LetterTemplateService
         'charge_failed_attempts_left' => 'Не удалось списать',
         'access_ended_after_cancel' => 'Доступ завершён',
         'access_suspended_after_3_attempts' => 'Доступ приостановлен',
+        'password_reset' => 'Восстановление пароля',
     ];
 
     public function __construct()

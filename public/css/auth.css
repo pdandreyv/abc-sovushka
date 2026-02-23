@@ -114,6 +114,18 @@ body {
 .form-box button:hover {
   background-color: #00307e;
 }
+.form-box .forgot-link {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 14px;
+}
+.form-box .forgot-link a {
+  color: var(--blue);
+  text-decoration: none;
+}
+.form-box .forgot-link a:hover {
+  text-decoration: underline;
+}
 .social-login {
   margin: 24px 0;
   text-align: center;

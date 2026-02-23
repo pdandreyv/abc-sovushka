@@ -20,6 +20,7 @@
                 <div class="tab-switcher">
                     <div id="tab-login" class="active" onclick="switchTab('login')">{{ site_lang('auth|tab_login', 'Вход') }}</div>
                     <div id="tab-register" onclick="switchTab('register')">{{ site_lang('auth|tab_register', 'Регистрация') }}</div>
+                    <div id="tab-forgot" onclick="switchTab('forgot')">{{ site_lang('auth|tab_forgot', 'Забыли пароль?') }}</div>
                 </div>
             <div id="login-box">
                 <h2>{{ site_lang('auth|login_heading', 'Вход в личный кабинет') }}</h2>
@@ -48,6 +49,7 @@
                         <div class="field-error">{{ $message }}</div>
                     @enderror
                     <button type="submit">{{ site_lang('auth|login_button', 'Войти') }}</button>
+                    <p class="forgot-link"><a href="#" onclick="switchTab('forgot'); return false;">{{ site_lang('auth|forgot_password', 'Забыли пароль?') }}</a></p>
                 </form>
                 <div class="social-login">
                     <p>{{ site_lang('auth|social_title', 'или через соцсети:') }}</p>
@@ -187,6 +189,21 @@
                     <p class="form-legal">{!! site_lang('auth|register_consent', 'Регистрируясь, я принимаю условия Пользовательского соглашения об использовании Личного кабинета Клиента и соглашаюсь с Политикой обработки персональных данных.') !!}</p>
                 </form>
             </div>
+
+            <div id="forgot-box" style="display:none">
+                <h2>{{ site_lang('auth|forgot_heading', 'Восстановление пароля') }}</h2>
+                @if (session('forgot_success'))
+                    <div class="alert alert-success">{{ session('forgot_success') }}</div>
+                @endif
+                @if (session('forgot_error'))
+                    <div class="alert alert-danger">{{ session('forgot_error') }}</div>
+                @endif
+                <form method="POST" action="{{ route('password.email') }}" id="forgot-form">
+                    @csrf
+                    <input type="email" name="email" placeholder="{{ site_lang('auth|login_email_placeholder', 'Email') }}" value="{{ old('email') }}" required autofocus />
+                    <button type="submit">{{ site_lang('auth|forgot_send', 'Отправить') }}</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -210,15 +227,20 @@ if (localStorage.getItem("cookieAccepted")) {
     function switchTab(tab) {
         const loginTab = document.getElementById('tab-login');
         const registerTab = document.getElementById('tab-register');
+        const forgotTab = document.getElementById('tab-forgot');
         const loginBox = document.getElementById('login-box');
         const registerBox = document.getElementById('register-box');
+        const forgotBox = document.getElementById('forgot-box');
         const formBox = document.querySelector('.form-box');
 
+        loginTab.classList.toggle('active', tab === 'login');
+        registerTab.classList.toggle('active', tab === 'register');
+        forgotTab.classList.toggle('active', tab === 'forgot');
+        loginBox.style.display = tab === 'login' ? 'block' : 'none';
+        registerBox.style.display = tab === 'register' ? 'block' : 'none';
+        forgotBox.style.display = tab === 'forgot' ? 'block' : 'none';
+
         if (tab === 'login') {
-            loginTab.classList.add('active');
-            registerTab.classList.remove('active');
-            loginBox.style.display = 'block';
-            registerBox.style.display = 'none';
             
             // Скрываем ВСЕ проявления ошибок во всем контейнере формы при переключении на "Вход"
             if (formBox) {
@@ -246,13 +268,12 @@ if (localStorage.getItem("cookieAccepted")) {
                     validationList.innerHTML = '';
                 }
             }
-        } else {
-            loginTab.classList.remove('active');
-            registerTab.classList.add('active');
-            loginBox.style.display = 'none';
-            registerBox.style.display = 'block';
         }
     }
+
+    @if(request()->get('tab') === 'forgot' || session('forgot_success') || session('forgot_error'))
+    document.addEventListener('DOMContentLoaded', function() { switchTab('forgot'); });
+    @endif
 
     // Переключение на вкладку регистрации, если есть ошибки валидации регистрации
     @if($errors->any() && old('last_name'))
