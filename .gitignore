@@ -18,7 +18,8 @@
 /public/hot
 /public/storage
 /public/files
-/public/abc/files
+/public/abc/files/*
+!/public/abc/files/letter_templates/
 /storage/*.key
 /storage/pail
 /vendor

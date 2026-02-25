@@ -68,6 +68,8 @@ class LetterTemplateService
             return false;
         }
 
+        $variables['logo_url'] = asset('images/logo_mail.png');
+
         $subject = $this->substitute(file_get_contents($subjectFile), $variables, false);
         $body = $this->substitute(file_get_contents($bodyFile), $variables, true);
 
