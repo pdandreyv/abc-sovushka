@@ -335,7 +335,7 @@ class ProcessSubscriptionRecurring extends Command
             ->pluck('title')
             ->implode(', ') ?: 'Подписка';
         $failReason = $this->yookassa->isConfigured() ? 'Платёж не прошёл в ЮKassa' : 'Ошибка списания';
-        $updatePaymentUrl = route('profile.show') . '#payment';
+        $updatePaymentUrl = route('subscriptions.index');
 
         // Всегда отправляем только P4 (остались попытки). P6 не отправляем: 3-я неудача будет когда тариф уже не действует, пользователь получит P5 (доступ завершён).
         $attemptsLeft = max(0, 3 - $errorsAfter);
