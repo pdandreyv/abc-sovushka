@@ -313,7 +313,7 @@ class ProcessSubscriptionRecurring extends Command
         $this->letterTemplates->send('charge_success_renewed', $user->email, [
             'subject' => 'Подписка продлена',
             'year' => now()->year,
-            'amount' => number_format($amount, 0, ',', ' '),
+            'amount' => number_format($amount, 0, ',', ' ') . ' р',
             'plan_name' => $planName,
             'charged_at' => now()->format('d.m.Y H:i'),
             'access_until' => $order->date_till ? $order->date_till->format('d.m.Y') : '',
@@ -343,7 +343,7 @@ class ProcessSubscriptionRecurring extends Command
         $this->letterTemplates->send('charge_failed_attempts_left', $user->email, [
             'year' => now()->year,
             'plan_name' => $planName,
-            'amount' => number_format($amount, 0, ',', ' '),
+            'amount' => number_format($amount, 0, ',', ' ') . ' р',
             'fail_reason' => $failReason,
             'attempt_number' => (string) $attemptNumber,
             'attempts_left' => (string) $attemptsLeft,
