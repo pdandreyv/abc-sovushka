@@ -753,6 +753,7 @@ function form_file ($type,$key, $param = array()) {
 						break;
 					}
 				}
+				closedir($handle);
 				// Для PDF и ZIP файлов используем простое копирование (copy2 удаляет всю папку)
 				if ($module['table'] == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) {
 					// Убеждаемся, что папка назначения существует
@@ -812,6 +813,28 @@ function form_file ($type,$key, $param = array()) {
 				mysql_fn('update',$module['table'],$q);
 				//удаляем временный файл
 				delete_all($temp,true);
+			}
+			// Идеи: если в форме пришло имя файла (не temp id), а файла в папке записи ещё нет —
+			// возможно, загрузка была при id=0 или id=new; переносим из files/ideas/0/image/ или files/ideas/new/image/
+			elseif ($module['table'] == 'ideas' && $key == 'image' && $file !== '' && !is_numeric($file)) {
+				if (!is_file($root . $file)) {
+					$srcRoots = array(
+						ROOT_DIR . 'files/ideas/0/image/',
+						ROOT_DIR . 'files/ideas/new/image/',
+					);
+					foreach ($srcRoots as $srcRoot) {
+						if (is_file($srcRoot . $file)) {
+							if (is_dir($root) || mkdir($root, 0755, true)) {
+								if (copy($srcRoot . $file, $root . $file)) {
+									$q[$key] = $file;
+									$post[$key] = $file;
+									@unlink($srcRoot . $file);
+								}
+							}
+							break;
+						}
+					}
+				}
 			}
 		}
 		// Для PDF и ZIP (ideas), демо-файла (subscription_levels) проверяем файл в public/files
