@@ -6,12 +6,13 @@ use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Наложение ФИО (или email/phone/user_code) на изображение сертификата.
- * Три отдельных текстовых блока: фамилия, имя, отчество. Параметры — в config/portfolio.php.
+ * Наложение ФИО на изображение сертификата.
+ * Две строки: 1 — фамилия, 2 — имя и отчество в одну строку.
+ * Шрифт задаётся в config/portfolio.php (например Lumberjack bold).
  */
 class CertificateImageService
 {
-    private const MAX_LINES = 3;
+    private const MAX_LINES = 2;
 
     private string $fontPath;
 
@@ -30,6 +31,10 @@ class CertificateImageService
     {
         $candidates = [
             config('portfolio.certificate.certificate_font_path'),
+            public_path('fonts/LumberjackBold.ttf'),
+            public_path('fonts/Lumberjack Bold.ttf'),
+            public_path('fonts/Lumberjack.ttf'),
+            public_path('fonts/DejaVuSans-Bold.ttf'),
             public_path('fonts/DejaVuSans.ttf'),
             public_path('fonts/arial.ttf'),
             storage_path('app/fonts/DejaVuSans.ttf'),
@@ -54,8 +59,8 @@ class CertificateImageService
     }
 
     /**
-     * Три строки для сертификата: 1 — фамилия, 2 — имя, 3 — отчество.
-     * Если ФИО пустое, подставляется fallback (email/phone/user_code), разбитый на до 3 строк.
+     * Две строки для сертификата: 1 — фамилия, 2 — имя и отчество в одну строку.
+     * Если ФИО пустое, подставляется fallback (email/phone/user_code), разбитый на до 2 строк.
      *
      * @return array<int, string>
      */
@@ -66,10 +71,10 @@ class CertificateImageService
         $patronymic = trim((string) ($user->middle_name ?? ''));
 
         if ($surname !== '' || $name !== '' || $patronymic !== '') {
+            $line2 = trim($name . ' ' . $patronymic);
             return [
                 $surname,
-                $name,
-                $patronymic,
+                $line2,
             ];
         }
 
@@ -117,7 +122,7 @@ class CertificateImageService
         $lineSpacing = (float) config('portfolio.certificate.line_spacing', 0.028);
         $fontSize = (int) config('portfolio.certificate.font_size', 28);
 
-        $this->drawThreeBlocks($image, $lines, $width, $height, $centerX, $blockTop, $lineSpacing, $fontSize);
+        $this->drawTextBlocks($image, $lines, $width, $height, $centerX, $blockTop, $lineSpacing, $fontSize);
 
         $ext = strtolower(pathinfo($sourcePath, PATHINFO_EXTENSION)) ?: 'png';
         $dir = storage_path('app');
@@ -196,11 +201,11 @@ class CertificateImageService
     }
 
     /**
-     * Рисует 3 отдельных текстовых блока (фамилия, имя, отчество).
-     * Каждый блок центрируется по горизонтали в одной точке centerX; вертикально — block_top + i * line_spacing.
+     * Рисует текстовые блоки (2 строки: фамилия, имя отчество).
+     * Каждый блок центрируется по горизонтали; вертикально — block_top + i * line_spacing.
      *
      * @param  resource  $image
-     * @param  array<int, string>  $lines  Ровно 3 строки
+     * @param  array<int, string>  $lines  Строки (2 для ФИО)
      * @param  int  $width  Ширина изображения
      * @param  int  $height  Высота изображения
      * @param  float  $centerX  Центр по горизонтали (доля 0..1)
@@ -208,7 +213,7 @@ class CertificateImageService
      * @param  float  $lineSpacing  Расстояние между строками (доля от высоты)
      * @param  int  $fontSize  Размер шрифта в пунктах
      */
-    private function drawThreeBlocks($image, array $lines, int $width, int $height, float $centerX, float $blockTop, float $lineSpacing, int $fontSize): void
+    private function drawTextBlocks($image, array $lines, int $width, int $height, float $centerX, float $blockTop, float $lineSpacing, int $fontSize): void
     {
         $color = imagecolorallocate($image, 0, 0, 80);
         $hasTtf = is_file($this->fontPath);

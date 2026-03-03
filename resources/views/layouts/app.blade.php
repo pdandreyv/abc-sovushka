@@ -7,6 +7,39 @@
     <title>@yield('title', 'Совушкина школа')</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
     @stack('styles')
+    <style>
+      /* Кнопка «Вверх» — появляется при прокрутке вниз */
+      .scroll-top-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 48px;
+        height: 48px;
+        border: none;
+        border-radius: 50%;
+        background-color: #00bf63;
+        color: #fff;
+        font-size: 20px;
+        line-height: 1;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        transition: opacity 0.25s ease, transform 0.2s ease, visibility 0.25s ease;
+        z-index: 1000;
+      }
+      .scroll-top-btn[hidden] {
+        visibility: hidden;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .scroll-top-btn:hover {
+        transform: scale(1.08);
+        background-color: #00a356;
+      }
+      .scroll-top-btn:focus {
+        outline: 2px solid #00bf63;
+        outline-offset: 2px;
+      }
+    </style>
 </head>
 <body>
     @yield('content')
@@ -47,6 +80,33 @@
         </div>
     </footer>
     @endif
+    <button type="button" id="scrollTopBtn" class="scroll-top-btn" title="Наверх" aria-label="Прокрутить страницу вверх" hidden>
+      <span aria-hidden="true">↑</span>
+    </button>
+    <script>
+      (function() {
+        var btn = document.getElementById("scrollTopBtn");
+        if (!btn) return;
+        var main = document.querySelector(".main");
+        var scrollEl = main || window;
+        function updateBtn() {
+          var top = main ? main.scrollTop : window.scrollY;
+          if (top > 300) {
+            btn.removeAttribute("hidden");
+          } else {
+            btn.setAttribute("hidden", "");
+          }
+        }
+        scrollEl.addEventListener("scroll", updateBtn, { passive: true });
+        btn.addEventListener("click", function() {
+          if (main) {
+            main.scrollTo({ top: 0, behavior: "smooth" });
+          } else {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+        });
+      })();
+    </script>
     @stack('scripts')
 </body>
 </html>
