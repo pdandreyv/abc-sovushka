@@ -79,7 +79,12 @@ $modules_admin = array(
 		'icon'=>'award',
 	),
 	array(
-		'name'=>'subscriptions',
+		'module'=>'dashboard_blocks',
+		'name'=>'Баннеры и объявления',
+		'image'=>'dashboard',
+		'icon'=>'layout',
+	),
+	array(
 		'image'=>'subscriptions',
 		'icon'=>'credit-card',
 		'module'=>array(

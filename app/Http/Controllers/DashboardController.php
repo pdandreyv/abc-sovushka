@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Idea;
+use App\Models\DashboardBlock;
 use App\Models\SubscriptionLevel;
 use App\Models\SubscriptionOrder;
 use Illuminate\Support\Facades\Auth;
@@ -46,9 +47,16 @@ class DashboardController extends Controller
             ->orderByDesc('created_at')
             ->first(['id', 'title']);
 
+        $dashboardBlocks = DashboardBlock::query()
+            ->where('display', true)
+            ->orderByDesc('rank')
+            ->orderByDesc('id')
+            ->get();
+
         return view('dashboard', [
             'subscriptionLevels' => $subscriptionLevels,
             'latestIdea' => $latestIdea,
+            'dashboardBlocks' => $dashboardBlocks,
         ]);
     }
 

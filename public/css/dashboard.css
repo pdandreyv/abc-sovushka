@@ -260,6 +260,110 @@ body {
   color: #666;
 }
 
+/* Блоки дашборда: Карточка (3 колонки) и Блок на всю ширину */
+.dashboard-blocks {
+  margin-bottom: 24px;
+}
+.dashboard-banners-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+@media (max-width: 900px) {
+  .dashboard-banners-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 520px) {
+  .dashboard-banners-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* Карточка: ссылка на всю карточку */
+.dashboard-block--link,
+.dashboard-block--link-full {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+.dashboard-block--link:hover,
+.dashboard-block--link-full:hover {
+  color: inherit;
+}
+/* Карточка с картинкой или без */
+.dashboard-block--card.award-card {
+  height: 100%;
+}
+.dashboard-block--card .award-thumb {
+  margin-bottom: 12px;
+}
+.dashboard-block--card .award-thumb:empty,
+.dashboard-block--card .dashboard-block__body:empty {
+  display: none;
+}
+.dashboard-block__link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  line-height: 0;
+}
+.dashboard-block__link img,
+.dashboard-block--card .dashboard-block__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.dashboard-block__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dashboard-block__title {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 0;
+  color: var(--text);
+}
+.dashboard-block--card .dashboard-block__title.award-title {
+  margin-top: 0;
+}
+.dashboard-block__text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #555;
+}
+/* Блок на всю ширину */
+.dashboard-block--full {
+  background: var(--light-gray);
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: block;
+}
+.dashboard-block--full.dashboard-block--link-full {
+  text-decoration: none;
+  color: inherit;
+}
+.dashboard-block--full.dashboard-block--link-full:hover {
+  color: inherit;
+}
+.dashboard-block__full-img-wrap {
+  margin: -16px -20px 12px -20px;
+  border-radius: 12px 12px 0 0;
+  overflow: hidden;
+  line-height: 0;
+}
+.dashboard-block__full-img {
+  width: auto;
+  max-width: 100%;
+  max-height: 200px;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+.dashboard-block--full .dashboard-block__title {
+  margin-bottom: 6px;
+}
+
 /* --- Дополнения для страницы профиля (новый пользователь) --- */
 .page-hint {
   margin: 8px 0 18px;

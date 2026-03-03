@@ -94,7 +94,8 @@ if (
 	$temp = trim($temp, '/');
 	// Файлы subscription_levels, ideas, topic_materials могут быть в public/files/ или в public/abc/files/
 	$temp_fs = ROOT_DIR . $temp;
-	if (preg_match('#^files/(subscription_levels|ideas|topic_materials)/#', $temp)) {
+	// Файлы subscription_levels, ideas, topic_materials, dashboard_blocks, portfolio_items могут быть в public/files/
+	if (preg_match('#^files/(subscription_levels|ideas|topic_materials|dashboard_blocks|portfolio_items)/#', $temp)) {
 		$temp_fs_public = ROOT_DIR . '../' . $temp;
 		$temp_fs = file_exists($temp_fs_public) ? $temp_fs_public : $temp_fs;
 	}

@@ -22,6 +22,7 @@
       </div>
     @endif
     <h1>{{ site_lang('lk_dashboard|welcome', 'Добро пожаловать') }}, {{ Auth::user()->first_name }}!</h1>
+    
     <div class="cards">
       <div class="card">
         <h3>{{ site_lang('lk_dashboard|card_subscriptions_title', 'Мои подписки') }}</h3>
@@ -43,7 +44,64 @@
         <h3>{{ site_lang('lk_dashboard|card_portfolio_title', 'Портфолио') }}</h3>
         <p>{{ site_lang('lk_dashboard|card_portfolio_text', 'Ваши награды и сертификаты') }}</p>
       </a>
-    </div>
+    </div><br><br>
+    @if(($dashboardBlocks ?? collect())->isNotEmpty())
+      <div class="dashboard-blocks cards portfolio-grid dashboard-banners-grid">
+        @foreach($dashboardBlocks as $block)
+          @if($block->type === 'banner')
+            @php $hasContent = $block->image || $block->title || $block->text; @endphp
+            @if($hasContent)
+              @if($block->url)
+                <a href="{{ $block->url }}" target="_blank" rel="noopener noreferrer" class="dashboard-block dashboard-block--card card award-card dashboard-block--link">
+              @else
+                <div class="dashboard-block dashboard-block--card card award-card">
+              @endif
+                @if($block->image)
+                  <div class="award-thumb">
+                    <img src="{{ asset('files/dashboard_blocks/' . $block->id . '/image/' . $block->image) }}" alt="{{ $block->title ?: '' }}" class="dashboard-block__img">
+                  </div>
+                @endif
+                @if($block->title || $block->text)
+                  <div class="dashboard-block__body">
+                    @if($block->title)<div class="dashboard-block__title award-title">{{ $block->title }}</div>@endif
+                    @if($block->text)<div class="dashboard-block__text">{!! nl2br(e($block->text)) !!}</div>@endif
+                  </div>
+                @endif
+              @if($block->url)
+                </a>
+              @else
+                </div>
+              @endif
+            @endif
+          @elseif($block->type === 'announcement')
+            @php $hasContent = $block->image || $block->title || $block->text; @endphp
+            @if($hasContent)
+              @if($block->url)
+                <a href="{{ $block->url }}" target="_blank" rel="noopener noreferrer" class="dashboard-block dashboard-block--full dashboard-block--link-full" style="grid-column: 1 / -1;">
+              @else
+                <div class="dashboard-block dashboard-block--full" style="grid-column: 1 / -1;">
+              @endif
+                @if($block->image)
+                  <div class="dashboard-block__full-img-wrap">
+                    <img src="{{ asset('files/dashboard_blocks/' . $block->id . '/image/' . $block->image) }}" alt="{{ $block->title ?: '' }}" class="dashboard-block__full-img">
+                  </div>
+                @endif
+                @if($block->title || $block->text)
+                  <div class="dashboard-block__body">
+                    @if($block->title)<div class="dashboard-block__title">{{ $block->title }}</div>@endif
+                    @if($block->text)<div class="dashboard-block__text">{!! nl2br(e($block->text)) !!}</div>@endif
+                  </div>
+                @endif
+              @if($block->url)
+                </a>
+              @else
+                </div>
+              @endif
+            @endif
+          @endif
+        @endforeach
+      </div>
+    @endif
   </div>
 </div>
 @endsection

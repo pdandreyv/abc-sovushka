@@ -399,8 +399,8 @@ function get_img($table,$q,$key='img',$p='') {
 	$site = '';
 	//одна картинка
 	if (@$q[$key]) {
-		// Для PDF/ZIP (ideas), файлов материалов и демо-файла уровней подписок — public/files/
-		if (($table == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) || $table == 'topic_materials' || ($table == 'subscription_levels' && $key == 'demo_file')) {
+		// Файлы subscription_levels, ideas, topic_materials, dashboard_blocks, portfolio_items могут быть в public/files/
+	if (($table == 'ideas' && in_array($key, array('pdf_file', 'zip_file'))) || $table == 'topic_materials' || ($table == 'subscription_levels' && $key == 'demo_file') || $table == 'dashboard_blocks' || $table == 'portfolio_items') {
 			$field_dir = ($table == 'ideas' && $key == 'pdf_file') ? 'pdf' : (($table == 'ideas' && $key == 'zip_file') ? 'zip' : $key);
 			$new_path = '/files/'.$table.'/'.$q['id'].'/'.$field_dir.'/'.$p.$q[$key];
 			$legacy_path = '/files/'.$p.$q[$key];

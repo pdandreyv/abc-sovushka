@@ -6,7 +6,7 @@ $modules2 = $q;
 $m = @$_GET['m'];
 if ($m=='') $m='index';
 foreach ($modules2 as $key => $value) {
-	$value['name'] = isset($value['name']) ? $value['name'] : $value['module'];
+	$value['name'] = isset($value['name']) ? $value['name'] : (is_array($value['module']) ? (isset($value['image']) ? $value['image'] : '') : $value['module']);
 	$value['icon'] = @$value['icon'] ? $value['icon'] : 'bar-chart-2';
 	if (is_array($value['module'])) {
 		$i=0;

@@ -621,6 +621,10 @@ function form_file ($type,$key, $param = array()) {
 		// Портфолио (сертификаты) — в public/files/ для выдачи через Laravel
 		elseif ($module['table'] == 'portfolio_items' && in_array($key, array('image_file', 'image_thumb'))) {
 			$root = $publicRoot.'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/';
+		}
+		// Блоки дашборда (баннеры) — в public/files/ для выдачи в ЛК
+		elseif ($module['table'] == 'dashboard_blocks' && $key == 'image') {
+			$root = $publicRoot.'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/';
 		} else {
 			$root = ROOT_DIR.'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/'; //папка от корня основной папки
 		}
@@ -633,7 +637,7 @@ function form_file ($type,$key, $param = array()) {
 		$message = '';//сообщение с ошибкой
 		if ($get['u']=='edit') {
 			if (is_uploaded_file($temp)) {//проверка записался ли файл на сервер во временную папку
-				if (($module['table'] == 'topic_materials' || $module['table'] == 'ideas' || $module['table'] == 'portfolio_items') && !is_dir($root)) {
+				if (($module['table'] == 'topic_materials' || $module['table'] == 'ideas' || $module['table'] == 'portfolio_items' || $module['table'] == 'dashboard_blocks') && !is_dir($root)) {
 					if (!mkdir($root,0755,true)) {
 						$message = 'ошибка создания каталога!';
 					}
@@ -716,6 +720,10 @@ function form_file ($type,$key, $param = array()) {
 		// Портфолио (сертификаты) — в public/files/ для выдачи через Laravel
 		elseif ($module['table'] == 'portfolio_items' && in_array($key, array('image_file', 'image_thumb'))) {
 			$root = $publicRoot.'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/';
+		}
+		// Блоки дашборда (баннеры) — в public/files/ для выдачи в ЛК
+		elseif ($module['table'] == 'dashboard_blocks' && $key == 'image') {
+			$root = $publicRoot.'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/';
 		} else {
 			$relative = 'files/'.$module['table'].'/'.$get['id'].'/'.$key.'/'; //v1.3.17 относительный путь папки
 			$root = ROOT_DIR.$relative; //папка от корня основной папки
@@ -793,6 +801,13 @@ function form_file ($type,$key, $param = array()) {
 						$q[$key] = copy($temp_file, $root.$file) ? $file : '';
 					}
 				} elseif ($module['table'] == 'portfolio_items' && in_array($key, array('image_file', 'image_thumb'))) {
+					if (!is_dir($root) && !mkdir($root,0755,true)) {
+						$q[$key] = '';
+					} else {
+						if (file_exists($root.$file)) @unlink($root.$file);
+						$q[$key] = copy($temp_file, $root.$file) ? $file : '';
+					}
+				} elseif ($module['table'] == 'dashboard_blocks' && $key == 'image') {
 					if (!is_dir($root) && !mkdir($root,0755,true)) {
 						$q[$key] = '';
 					} else {
