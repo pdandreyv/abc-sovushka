@@ -901,10 +901,10 @@ body {
   cursor: pointer;
 }
 
-/* Сетка из 3-х шагов */
+/* Сетка из 3-х шагов: левая колонка — по ширине контента (макс. 360px), остальные — равные */
 .steps-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: fit-content(360px) 1fr 1fr;
   gap: 18px;
   margin-top: 16px;
 }
@@ -1036,6 +1036,25 @@ body {
   gap: 18px;
 }
 
+/* Итог внутри карточки шага 3 (объединённый блок 3+4) */
+.checkout-inline {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(0,0,0,0.1);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.checkout-selected-names {
+  font-size: 13px;
+  color: #555;
+  margin: -2px 0 6px 0;
+  padding-left: 0;
+  line-height: 1.4;
+}
+
 .checkout-left {
   flex: 1;
   min-width: 240px;
@@ -1098,7 +1117,8 @@ body {
   .steps-grid {
     grid-template-columns: 1fr;
   }
-  .checkout-panel {
+  .checkout-panel,
+  .checkout-inline {
     flex-direction: column;
   }
   .checkout-right {

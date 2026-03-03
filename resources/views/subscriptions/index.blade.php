@@ -302,41 +302,38 @@
           <div id="promoMessage" class="promo-message" aria-live="polite"></div>
         </div>
 
+        <!-- Итог и кнопка оплаты (объединённый блок 3+4) -->
         <div class="step-note">
           <small>{{ site_lang('lk_subscriptions|step3_note', 'Скидка применяется автоматически и отображается в расчёте ниже.') }}</small>
         </div>
-      </div>
-    </div>
-
-    <!-- ===== ИТОГ / ОПЛАТА ===== -->
-    <div class="checkout-panel">
-      <div class="checkout-left">
-        <div class="checkout-line">
-          <span>{{ site_lang('lk_subscriptions|summary_count', 'Выбрано подписок:') }}</span>
-          <b id="sumCount">0</b>
+        <div class="checkout-inline">
+          <div class="checkout-left">
+            <div class="checkout-line">
+              <span>{{ site_lang('lk_subscriptions|summary_count', 'Выбрано подписок:') }}</span>
+              <b id="sumCount">0</b>
+            </div>
+            <div id="sumSelectedNames" class="checkout-selected-names" aria-live="polite"></div>
+            <div class="checkout-line">
+              <span>{{ site_lang('lk_subscriptions|summary_tariff', 'Тариф:') }}</span>
+              <b id="sumTariff">—</b>
+            </div>
+            <div class="checkout-line">
+              <span>{{ site_lang('lk_subscriptions|summary_subtotal', 'Стоимость:') }}</span>
+              <b id="sumSubtotal">0 ₽</b>
+            </div>
+            <div class="checkout-line">
+              <span>{{ site_lang('lk_subscriptions|summary_discount', 'Скидка:') }}</span>
+              <b id="sumDiscount">0 ₽</b>
+            </div>
+            <div class="checkout-total">
+              <span>{{ site_lang('lk_subscriptions|summary_total', 'Итого:') }}</span>
+              <b id="sumTotal">0 ₽</b>
+            </div>
+          </div>
         </div>
-        <div class="checkout-line">
-          <span>{{ site_lang('lk_subscriptions|summary_tariff', 'Тариф:') }}</span>
-          <b id="sumTariff">—</b>
-        </div>
-        <div class="checkout-line">
-          <span>{{ site_lang('lk_subscriptions|summary_subtotal', 'Стоимость:') }}</span>
-          <b id="sumSubtotal">0 ₽</b>
-        </div>
-        <div class="checkout-line">
-          <span>{{ site_lang('lk_subscriptions|summary_discount', 'Скидка:') }}</span>
-          <b id="sumDiscount">0 ₽</b>
-        </div>
-        <div class="checkout-total">
-          <span>{{ site_lang('lk_subscriptions|summary_total', 'Итого:') }}</span>
-          <b id="sumTotal">0 ₽</b>
-        </div>
-      </div>
-
-      <div class="checkout-right">
-        <button id="payBtn" class="btn btn-primary btn-pay" type="button" disabled>{{ site_lang('lk_subscriptions|pay', 'Оформить подписку') }}</button>
-        <div class="checkout-note">
-          <small>{{ site_lang('lk_subscriptions|pay_note', 'Демо: оплата будет подключена позже (через бэкенд / платёжного провайдера).') }}</small>
+        <br><br>
+        <div class="checkout-right">
+          <button id="payBtn" class="btn btn-primary btn-pay" type="button" disabled>{{ site_lang('lk_subscriptions|pay', 'Оформить подписку') }}</button>
         </div>
       </div>
     </div>
@@ -521,6 +518,14 @@
 
     // Обновить UI
     $("#sumCount").textContent = String(count);
+    const namesEl = $("#sumSelectedNames");
+    if (namesEl) {
+      const titles = selectedIds.map((id) => {
+        const sub = SUBSCRIPTIONS.find((s) => String(s.id) === String(id));
+        return sub ? sub.title : "";
+      }).filter(Boolean);
+      namesEl.textContent = titles.length > 0 ? titles.join(", ") : "";
+    }
     $("#sumTariff").textContent = tariff ? `${tariff.title} (${formatRUB(tariff.price)})` : "—";
     $("#sumSubtotal").textContent = formatRUB(subtotal);
     $("#sumDiscount").textContent = discountPercent > 0 ? `−${formatRUB(discount)} (${discountPercent}%)` : "0 ₽";
