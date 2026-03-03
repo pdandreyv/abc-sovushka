@@ -195,6 +195,7 @@
               $activeInfo = $activeByLevel[$level->id] ?? null;
               $recurringInfo = $recurringByLevel[$level->id] ?? null;
               $activeTariff = $activeInfo && !empty($activeInfo['tariff_id']) ? $tariffs->firstWhere('id', $activeInfo['tariff_id']) : null;
+              $showTariffAndNextCharge = !$recurringInfo || (int)($recurringInfo['errors'] ?? 0) < 3;
             @endphp
             <div class="sub-details">
               @if($activeInfo || $recurringInfo)
@@ -205,6 +206,7 @@
                     {{ \Illuminate\Support\Carbon::parse($activeInfo['date_till'])->format('d.m.Y') }}
                   </div>
                   @endif
+                  @if($showTariffAndNextCharge)
                   @if($recurringInfo && !empty($recurringInfo['is_promotion']))
                     <div>
                       {{ site_lang('lk_subscriptions|tariff_label', 'Тариф:') }}
@@ -221,13 +223,13 @@
                       {{ $recurringInfo['tariff_title'] }} ({{ number_format($recurringInfo['sum_next_pay'], 0, ',', ' ') }} {{ site_lang('lk_subscriptions|rubles', '₽') }})
                     </div>
                   @endif
-                    @if($recurringInfo)
-                    @if($recurringInfo['auto'])
-                      <div>
-                        {{ site_lang('lk_subscriptions|next_charge', 'Следующее списание:') }}
-                        {{ \Illuminate\Support\Carbon::parse($recurringInfo['date_next_pay'])->format('d.m.Y') }}
-                      </div>
-                    @endif
+                  @if($recurringInfo && $recurringInfo['auto'])
+                    <div>
+                      {{ site_lang('lk_subscriptions|next_charge', 'Следующее списание:') }}
+                      {{ \Illuminate\Support\Carbon::parse($recurringInfo['date_next_pay'])->format('d.m.Y') }}
+                    </div>
+                  @endif
+                  @endif
                     <div class="sub-meta-actions">
                       @if(!empty($recurringInfo['card_last4']))
                         <span class="sub-card-info">**** {{ $recurringInfo['card_last4'] }}</span>
