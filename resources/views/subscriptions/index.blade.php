@@ -109,6 +109,25 @@
   .promo-message { margin-top: 8px; font-size: 14px; min-height: 1.4em; }
   .promo-message.success { color: #2e7d32; }
   .promo-message.error { color: #c62828; }
+  /* Размер шрифта на странице Подписки на 2px крупнее */
+  .page-subscriptions { font-size: 18px; }
+  .page-subscriptions h1 { font-size: 26px; }
+  .page-subscriptions .page-hint { font-size: 16px; }
+  .page-subscriptions .sub-meta { font-size: 15px; }
+  .page-subscriptions .sub-card-info { font-size: 15px; }
+  .page-subscriptions .sub-meta-actions .btn { font-size: 14px; }
+  .page-subscriptions .promo-message { font-size: 16px; }
+  .page-subscriptions .promo-input { font-size: 1.125rem; }
+  .page-subscriptions .promo-label { font-size: 1.0625rem; }
+  .page-subscriptions .btn { font-size: 16px; }
+  .page-subscriptions .toast-success { font-size: 17px; }
+  .page-subscriptions .tariff-note { font-size: 14px; }
+  .page-subscriptions .discount-hint { font-size: 14px; }
+  .page-subscriptions .checkout-selected-names { font-size: 15px; }
+  .page-subscriptions .checkout-total { font-size: 20px; }
+  .page-subscriptions .btn-sm { font-size: 15px; }
+  .page-subscriptions .btn-pay { font-size: 17px; }
+  .page-subscriptions .checkout-note { font-size: 14px; }
 </style>
 @endpush
 
@@ -122,7 +141,7 @@
       ['label' => site_lang('lk_subscriptions|crumb_subscriptions', 'Подписки'), 'url' => null],
     ],
   ])
-  <div class="content">
+  <div class="content page-subscriptions">
     <h1>{{ site_lang('lk_subscriptions|heading', 'Подписки') }}</h1>
     @if (session('success'))
       <div id="toast-success" class="toast-success" role="alert">{{ session('success') }}</div>
