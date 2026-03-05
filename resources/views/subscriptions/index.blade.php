@@ -244,8 +244,8 @@
                         </button>
                       </form>
                     </div>
-                  @endif
                 </div>
+                @endif
             </div>
           </div>
           @endforeach
