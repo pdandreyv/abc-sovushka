@@ -75,6 +75,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/subscriptions/checkout', [SubscriptionPaymentController::class, 'create'])->name('subscriptions.checkout.create');
     Route::post('/subscriptions/checkout/confirm', [SubscriptionPaymentController::class, 'confirm'])->name('subscriptions.checkout.confirm');
     Route::post('/subscriptions/checkout/yookassa/redirect', [SubscriptionPaymentController::class, 'redirectToPayment'])->name('subscriptions.yookassa.redirect');
+    Route::post('/subscriptions/checkout/yookassa/widget-token', [SubscriptionPaymentController::class, 'widgetToken'])->name('subscriptions.yookassa.widget-token');
     Route::get('/subscriptions/yookassa/return', [SubscriptionPaymentController::class, 'returnFromYooKassa'])->name('subscriptions.yookassa.return');
 
     // Акция (персональная, при наличии неиспользованной)

@@ -142,20 +142,35 @@
           <a class="btn btn-secondary" href="{{ route('subscriptions.index') }}">{{ site_lang('lk_subscriptions|checkout_back', 'Вернуться к выбору') }}</a>
         </div>
       @elseif (!empty($useYookassa))
+        @if($isPromotionAttach ?? false)
         <form method="POST" action="{{ route('subscriptions.yookassa.redirect') }}">
           @csrf
           <input type="hidden" name="order_id" value="{{ $order->id }}">
           <div class="checkout-actions">
-            <button class="btn btn-primary" type="submit">{{ ($isPromotionAttach ?? false) ? site_lang('lk_promotion|attach_card', 'Привязать карту') : site_lang('lk_subscriptions|checkout_pay', 'Оплатить') }} (ЮKassa)</button>
-            <a class="btn btn-secondary" href="{{ ($isPromotionAttach ?? false) ? route('promotion.index') : route('subscriptions.index') }}">{{ site_lang('lk_subscriptions|checkout_back', 'Вернуться к выбору') }}</a>
+            <button class="btn btn-primary" type="submit">{{ site_lang('lk_promotion|attach_card', 'Привязать карту') }}</button>
+            <a class="btn btn-secondary" href="{{ route('promotion.index') }}">{{ site_lang('lk_subscriptions|checkout_back', 'Вернуться к выбору') }}</a>
           </div>
         </form>
         <div class="checkout-note">
-          Вы будете перенаправлены на защищённую страницу оплаты ЮKassa. Оплата доступна картой, СБП и другими способами.
+          Вы будете перенаправлены на страницу ЮKassa для привязки карты.
           @if(!empty($yookassaRecurringEnabled))
           Карта сохранится для автопродления подписки.
           @endif
         </div>
+        @else
+        <div id="yookassa-widget-loading" class="checkout-note">Загрузка формы оплаты…</div>
+        <div id="payment-form" style="min-width: 288px; display: none;" data-order-id="{{ $order->id }}" data-token-url="{{ route('subscriptions.yookassa.widget-token') }}"></div>
+        <div id="yookassa-widget-error" class="checkout-errors" style="display: none;" role="alert"></div>
+        <div class="checkout-actions" style="margin-top: 16px;">
+          <a class="btn btn-secondary" href="{{ route('subscriptions.index') }}">{{ site_lang('lk_subscriptions|checkout_back', 'Вернуться к выбору') }}</a>
+        </div>
+        <div class="checkout-note">
+          Оплата картой, СБП, SberPay и другими способами — на этой странице. После оплаты вы вернётесь в личный кабинет.
+          @if(!empty($yookassaRecurringEnabled))
+          Карта сохранится для автопродления подписки.
+          @endif
+        </div>
+        @endif
       @else
         <form id="checkout-form" method="POST" action="{{ route('subscriptions.checkout.confirm') }}">
           @csrf
@@ -241,6 +256,70 @@
 
 @push('scripts')
 <script src="{{ asset_versioned('js/dashboard.js') }}"></script>
+@if(empty($isPromotionAttach) && !empty($useYookassa))
+<script src="https://yookassa.ru/checkout-widget/v1/checkout-widget.js"></script>
+<script>
+(function () {
+  var paymentForm = document.getElementById('payment-form');
+  if (!paymentForm || !paymentForm.dataset.orderId) return;
+  var orderId = paymentForm.dataset.orderId;
+  var tokenUrl = paymentForm.dataset.tokenUrl;
+  var loadingEl = document.getElementById('yookassa-widget-loading');
+  var errorEl = document.getElementById('yookassa-widget-error');
+  var csrfToken = document.querySelector('meta[name="csrf-token"]') && document.querySelector('meta[name="csrf-token"]').content;
+
+  function showError(msg) {
+    if (loadingEl) loadingEl.style.display = 'none';
+    if (errorEl) {
+      errorEl.textContent = msg;
+      errorEl.style.display = 'block';
+    }
+  }
+
+  fetch(tokenUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'X-CSRF-TOKEN': csrfToken || '',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: JSON.stringify({ order_id: parseInt(orderId, 10), _token: csrfToken || '' })
+  })
+  .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+  .then(function (result) {
+    if (!result.ok && result.data && result.data.error) {
+      showError(result.data.error);
+      return;
+    }
+    if (!result.data.confirmation_token) {
+      showError('Не получен токен оплаты. Попробуйте обновить страницу.');
+      return;
+    }
+    if (typeof window.YooMoneyCheckoutWidget === 'undefined') {
+      showError('Виджет ЮKassa не загрузился. Проверьте интернет и обновите страницу.');
+      return;
+    }
+    var checkout = new window.YooMoneyCheckoutWidget({
+      confirmation_token: result.data.confirmation_token,
+      return_url: result.data.return_url,
+      error_callback: function (error) {
+        if (error && error.error) showError('Ошибка оплаты: ' + (error.error.message || error.error));
+      }
+    });
+    checkout.render('payment-form').then(function () {
+      if (loadingEl) loadingEl.style.display = 'none';
+      if (paymentForm) paymentForm.style.display = 'block';
+    }).catch(function (err) {
+      showError('Не удалось отобразить форму оплаты. Попробуйте обновить страницу.');
+    });
+  })
+  .catch(function () {
+    showError('Не удалось загрузить форму оплаты. Проверьте соединение и обновите страницу.');
+  });
+})();
+</script>
+@endif
 <script>
   (function () {
     "use strict";

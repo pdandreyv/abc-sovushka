@@ -122,7 +122,62 @@ class SubscriptionPaymentController extends Controller
     }
 
     /**
-     * Возврат пользователя после оплаты на ЮKassa (return_url).
+     * Создать платёж с типом embedded и вернуть confirmation_token для виджета ЮKassa.
+     * Используется на странице checkout для отображения формы оплаты на сайте (карта, СБП и др.).
+     */
+    public function widgetToken(Request $request)
+    {
+        $request->validate(['order_id' => ['required', 'integer']]);
+
+        $order = SubscriptionOrder::query()
+            ->where('id', $request->order_id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        if ($order->paid) {
+            return response()->json(['error' => 'Заказ уже оплачен.'], 400);
+        }
+
+        if (! $this->yookassa->isConfigured()) {
+            return response()->json(['error' => 'Оплата через ЮKassa не настроена.'], 400);
+        }
+
+        // Привязка карты по акции (нулевая сумма) — только редирект, виджет не используем
+        if ($order->promotion_id && (float) $order->sum_subscription <= 0) {
+            return response()->json(['error' => 'Для привязки карты используйте кнопку «Привязать карту».'], 400);
+        }
+
+        $returnUrl = route('subscriptions.yookassa.return', ['order_id' => $order->id]);
+        $user = $order->user;
+        $customerName = $user ? trim(implode(' ', array_filter([
+            $user->last_name ?? '',
+            $user->first_name ?? '',
+            $user->middle_name ?? '',
+        ]))) : '';
+
+        $result = $this->yookassa->createPaymentForWidget([
+            'amount' => (float) $order->sum_subscription,
+            'return_url' => $returnUrl,
+            'description' => 'Подписка №' . $order->id,
+            'order_id' => $order->id,
+            'customer_email' => $user?->email,
+            'customer_phone' => $user?->phone,
+            'customer_name' => $customerName,
+        ]);
+
+        if (isset($result['error'])) {
+            return response()->json(['error' => 'ЮKassa: ' . $result['error']], 400);
+        }
+
+        $order->update(['yookassa_payment_id' => $result['id']]);
+
+        return response()->json([
+            'confirmation_token' => $result['confirmation_token'],
+            'return_url' => $returnUrl,
+        ]);
+    }
+
+    /**
      */
     public function returnFromYooKassa(Request $request)
     {

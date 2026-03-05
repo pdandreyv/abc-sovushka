@@ -82,6 +82,60 @@ class YooKassaService
     }
 
     /**
+     * Создать платёж для YooMoney Checkout Widget (форма оплаты на вашем сайте).
+     * confirmation.type = embedded, в ответе — confirmation_token для инициализации виджета.
+     * Документация: https://yookassa.ru/developers/payment-acceptance/integration-scenarios/widget/quick-start
+     *
+     * @param  array{amount: float, return_url: string, description: string, order_id: int, customer_email?: string, customer_phone?: string}  $params
+     * @return array{id: string, status: string, confirmation_token: string}|array{error: string}
+     */
+    public function createPaymentForWidget(array $params): array
+    {
+        $amountRub = (int) ceil((float) ($params['amount'] ?? 0));
+        $amount = number_format($amountRub, 2, '.', '');
+        $returnUrl = $params['return_url'] ?? '';
+        $description = $params['description'] ?? 'Оплата подписки';
+        $orderId = (int) ($params['order_id'] ?? 0);
+
+        $body = [
+            'amount' => [
+                'value' => $amount,
+                'currency' => 'RUB',
+            ],
+            'capture' => true,
+            'confirmation' => [
+                'type' => 'embedded',
+                'return_url' => $returnUrl,
+            ],
+            'description' => mb_substr($description, 0, 128),
+            'metadata' => [
+                'order_id' => (string) $orderId,
+            ],
+            'receipt' => $this->buildReceipt($amount, $description, $params),
+        ];
+        if ($this->recurringEnabled) {
+            $body['save_payment_method'] = true;
+        }
+
+        $response = $this->request('POST', '/payments', $body);
+
+        if (isset($response['id'], $response['status'])) {
+            $token = $response['confirmation']['confirmation_token'] ?? null;
+            if ($token) {
+                return [
+                    'id' => $response['id'],
+                    'status' => $response['status'],
+                    'confirmation_token' => $token,
+                ];
+            }
+        }
+
+        return [
+            'error' => $response['description'] ?? $response['code'] ?? 'Unknown YooKassa error',
+        ];
+    }
+
+    /**
      * Привязка карты на нулевую сумму (без списания).
      * Документация: https://yookassa.ru/developers/payment-acceptance/scenario-extensions/recurring-payments/save-payment-method/save-without-payment
      * Запрос к POST /payment_methods — без поля amount.
