@@ -187,7 +187,7 @@
               </label>
               @if($levelLink)
                 <div class="sub-actions">
-                  <a class="btn btn-secondary btn-sm" href="{{ $levelLink }}">{{ site_lang('lk_subscriptions|view', 'Посмотреть') }}</a>
+                  <a class="btn btn-secondary btn-sm" target="_blank" href="{{ $levelLink }}">{{ site_lang('lk_subscriptions|view', 'Посмотреть') }}</a>
                 </div>
               @endif
             </div>

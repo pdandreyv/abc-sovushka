@@ -4,7 +4,9 @@
 @endphp
 <div class="sidebar">
   <div>
-    <img alt="Логотип" class="logo" src="{{ asset('images/logo.png') }}"/>
+    <a href="{{ route('dashboard') }}" class="sidebar-logo-link" aria-label="{{ site_lang('lk_menu|home', 'Главная') }}">
+      <img alt="Логотип" class="logo" src="{{ asset('images/logo.png') }}"/>
+    </a>
     <div class="user-name">{{ strtoupper(Auth::user()->first_name . ' ' . Auth::user()->last_name) }}</div>
     <div class="user-code">ID: {{ Auth::user()->user_code }}</div>
     <a href="#" class="user-logout-link" data-logout>{{ site_lang('lk_menu|logout', 'Выйти') }}</a>

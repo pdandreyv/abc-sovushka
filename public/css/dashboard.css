@@ -48,7 +48,21 @@ body {
 }
 .sidebar .logo {
   max-width: 160px;
+  width: 100%;
+  height: auto;
+  display: block;
   margin: 0 auto 24px;
+}
+.sidebar .sidebar-logo-link {
+  display: block;
+  text-align: center;
+  margin-bottom: 24px;
+}
+.sidebar .sidebar-logo-link .logo {
+  margin-bottom: 0;
+}
+.sidebar .sidebar-logo-link:hover .logo {
+  opacity: 0.9;
 }
 .sidebar .user-name {
   text-align: center;
