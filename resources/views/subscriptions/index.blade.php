@@ -230,6 +230,7 @@
                     </div>
                   @endif
                   @endif
+                  @if($activeInfo)
                     <div class="sub-meta-actions">
                       @if(!empty($recurringInfo['card_last4']))
                         <span class="sub-card-info">**** {{ $recurringInfo['card_last4'] }}</span>
@@ -244,6 +245,7 @@
                         </button>
                       </form>
                     </div>
+                  @endif
                 </div>
                 @endif
             </div>
