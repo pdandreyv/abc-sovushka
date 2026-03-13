@@ -62,9 +62,6 @@ class YooKassaService
             ],
             'receipt' => $this->buildReceipt($amount, $description, $params),
         ];
-        if ($this->recurringEnabled) {
-            $body['save_payment_method'] = true;
-        }
 
         $response = $this->request('POST', '/payments', $body);
 
